@@ -1,135 +1,125 @@
 'use client'
+
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Menu, X, Shield } from 'lucide-react'
-import { isLoggedIn, login, logout } from '@/lib/auth'
+import { useRouter, usePathname } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { Home, Menu, X, LogOut, User, LayoutDashboard, BookOpen, Users, HelpCircle, Settings } from 'lucide-react'
 
-interface HeaderProps { currentPage?: string }
-
-export default function Header({ currentPage }: HeaderProps) {
+export default function Header() {
   const router = useRouter()
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [loginOpen, setLoginOpen] = useState(false)
-  const [signupOpen, setSignupOpen] = useState(false)
-  const [authed, setAuthed] = useState(false)
+  const pathname = usePathname()
+  const [open, setOpen] = useState(false)
+  const [user, setUser] = useState<{ email: string; name?: string } | null>(null)
 
   useEffect(() => {
-    setAuthed(isLoggedIn())
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({ email: session.user.email || '', name: session.user.user_metadata?.name })
+      }
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (session?.user) {
+        setUser({ email: session.user.email || '', name: session.user.user_metadata?.name })
+      } else {
+        setUser(null)
+      }
+    })
+    return () => subscription.unsubscribe()
   }, [])
 
-  function handleLogin() {
-    login()
-    setAuthed(true)
-    setLoginOpen(false)
-    router.push('/dashboard')
-  }
-
-  function handleSignup() {
-    login()
-    setAuthed(true)
-    setSignupOpen(false)
-    router.push('/dashboard')
-  }
-
-  function handleLogout() {
-    logout()
-    setAuthed(false)
+  async function signOut() {
+    await supabase.auth.signOut()
     router.push('/')
   }
 
   const nav = [
-    { label: 'Home', href: '/' },
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Community', href: '/community' },
-    { label: 'Resources', href: '/resources' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Profile', href: '/profile' },
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/blog', label: 'Blog', icon: BookOpen },
+    { href: '/community', label: 'Community', icon: Users },
+    { href: '/resources', label: 'Resources', icon: HelpCircle },
   ]
 
   return (
-    <>
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-teal-600 rounded-lg flex items-center justify-center">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-bold text-navy-600 text-lg tracking-tight">OLUSO<span className="text-amber-500">.CO</span></span>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 h-16">
+      <div className="max-w-6xl mx-auto px-4 h-full flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2 font-bold text-blue-600 text-lg">
+          <Home size={22} /> Oluso
+        </Link>
+
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {nav.map(({ href, label, icon: Icon }) => (
+            <Link key={href} href={href}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                pathname === href ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'
+              }`}>
+              <Icon size={15} /> {label}
             </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              {nav.map(n => (
-                <Link key={n.href} href={n.href} className={`text-sm font-medium transition-colors ${currentPage===n.label ? 'text-teal-600' : 'text-gray-600 hover:text-teal-600'}`}>{n.label}</Link>
-              ))}
-            </nav>
-            <div className="hidden md:flex items-center gap-3">
-              {authed ? (
-                <button onClick={handleLogout} className="text-sm font-medium text-gray-600 hover:text-teal-600 transition-colors">Log out</button>
-              ) : (
-                <>
-                  <button onClick={() => setLoginOpen(true)} className="text-sm font-medium text-gray-600 hover:text-teal-600 transition-colors">Log in</button>
-                  <button onClick={() => setSignupOpen(true)} className="btn-amber text-sm py-2 px-4">Get started free</button>
-                </>
-              )}
-            </div>
-            <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+          ))}
+        </nav>
+
+        {/* Desktop right */}
+        <div className="hidden md:flex items-center gap-2">
+          {user ? (
+            <>
+              <Link href="/profile"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+                <User size={15} /> {user.name || user.email.split('@')[0]}
+              </Link>
+              <button onClick={signOut}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-500 hover:bg-gray-100 transition-colors">
+                <LogOut size={15} /> Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm text-gray-600 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">Sign in</Link>
+              <Link href="/signup" className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">Get started</Link>
+            </>
+          )}
         </div>
-        {mobileOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-3">
-            {nav.map(n => <Link key={n.href} href={n.href} className="text-sm font-medium text-gray-700 hover:text-teal-600" onClick={() => setMobileOpen(false)}>{n.label}</Link>)}
-            {authed ? (
-              <button onClick={() => { handleLogout(); setMobileOpen(false) }} className="text-sm font-medium text-gray-600 text-left">Log out</button>
+
+        {/* Mobile menu button */}
+        <button onClick={() => setOpen(!open)} className="md:hidden p-2 rounded-lg hover:bg-gray-100">
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </div>
+
+      {/* Mobile menu */}
+      {open && (
+        <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg px-4 py-4 space-y-1">
+          {nav.map(({ href, label, icon: Icon }) => (
+            <Link key={href} href={href} onClick={() => setOpen(false)}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${
+                pathname === href ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <Icon size={16} /> {label}
+            </Link>
+          ))}
+          <div className="border-t border-gray-100 pt-3 mt-3">
+            {user ? (
+              <>
+                <Link href="/profile" onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
+                  <User size={16} /> {user.name || user.email}
+                </Link>
+                <button onClick={() => { signOut(); setOpen(false); }}
+                  className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
+                  <LogOut size={16} /> Sign out
+                </button>
+              </>
             ) : (
               <>
-                <button onClick={() => { setLoginOpen(true); setMobileOpen(false) }} className="text-sm font-medium text-gray-600 text-left">Log in</button>
-                <button onClick={() => { setSignupOpen(true); setMobileOpen(false) }} className="btn-amber text-sm py-2 px-4 text-center">Get started free</button>
+                <Link href="/login" onClick={() => setOpen(false)}
+                  className="block px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Sign in</Link>
+                <Link href="/signup" onClick={() => setOpen(false)}
+                  className="block px-3 py-2.5 rounded-lg text-sm bg-blue-600 text-white font-medium mt-1 text-center">Get started free</Link>
               </>
             )}
           </div>
-        )}
-      </header>
-
-      {loginOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setLoginOpen(false)}>
-          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-navy-600">Welcome back</h2>
-              <button onClick={() => setLoginOpen(false)}><X className="w-5 h-5 text-gray-400" /></button>
-            </div>
-            <p className="text-gray-500 mb-6">Pick up where you left off. Your records are right here.</p>
-            <div className="flex flex-col gap-4">
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="you@example.com" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Password</label><input type="password" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" /></div>
-              <button onClick={handleLogin} className="w-full bg-navy-600 text-white font-semibold py-3 rounded-lg text-center hover:bg-navy-700 transition-colors">Sign in</button>
-            </div>
-            <p className="text-center text-sm text-gray-500 mt-4">New to Oluso? <button onClick={() => { setLoginOpen(false); setSignupOpen(true) }} className="text-teal-600 font-medium hover:underline">Create an account</button></p>
-          </div>
         </div>
       )}
-
-      {signupOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSignupOpen(false)}>
-          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-navy-600">Start your record</h2>
-              <button onClick={() => setSignupOpen(false)}><X className="w-5 h-5 text-gray-400" /></button>
-            </div>
-            <p className="text-gray-500 mb-6">Two minutes to set up. Built for the long haul of warranty paperwork.</p>
-            <div className="flex flex-col gap-4">
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Your name</label><input type="text" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="e.g. Marisol Chen" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="you@example.com" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Password</label><input type="password" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" /><p className="text-xs text-gray-400 mt-1">At least 8 characters.</p></div>
-              <div><label className="block text-sm font-medium text-gray-700 mb-1">Home address <span className="text-gray-400">(optional)</span></label><input type="text" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="2418 Magnolia Ridge Dr." /></div>
-              <button onClick={handleSignup} className="w-full bg-amber-500 text-white font-semibold py-3 rounded-lg text-center hover:bg-amber-600 transition-colors">Create account</button>
-            </div>
-            <p className="text-center text-sm text-gray-500 mt-4">Already have an account? <button onClick={() => { setSignupOpen(false); setLoginOpen(true) }} className="text-teal-600 font-medium hover:underline">Sign in</button></p>
-          </div>
-        </div>
-      )}
-    </>
+    </header>
   )
 }
