@@ -9,8 +9,8 @@ const CLAIMS = [
   { id:3, title:'HVAC Not Cooling Master Bedroom', category:'HVAC', status:'Waiting on Builder', severity:'Medium', desc:'Master bedroom remains 5-8 degrees warmer than thermostat setting despite multiple adjustments.', location:'Master Bedroom', date:'Jan 20, 2025', builder:'Mike Torres - Climate Pro', nextFollowup:'Jan 28, 2025' },
 ]
 
-const SEVERITIES = { Critical:'bg-red-100 text-red-700', High:'bg-orange-100 text-orange-700', Medium:'bg-amber-100 text-amber-700', Low:'bg-green-100 text-green-700' }
-const STATUSES = { 'In Progress':'badge-progress', 'Overdue':'badge-high', 'Resolved':'badge-resolved', 'Waiting on Builder':'badge-medium', 'Draft':'bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-1 rounded-full' }
+const SEVERITIES: Record<string,string> = { Critical:'bg-red-100 text-red-700', High:'bg-orange-100 text-orange-700', Medium:'bg-amber-100 text-amber-700', Low:'bg-green-100 text-green-700' }
+const STATUSES: Record<string,string> = { 'In Progress':'badge-progress', 'Overdue':'badge-high', 'Resolved':'badge-resolved', 'Waiting on Builder':'badge-medium', 'Draft':'bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-1 rounded-full' }
 
 export default function Dashboard() {
   const [showNew, setShowNew] = useState(false)
