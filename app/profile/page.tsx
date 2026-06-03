@@ -5,7 +5,7 @@ import { Edit2, User, Users, LogOut, Bell } from 'lucide-react'
 
 export default function Profile() {
   const [editing, setEditing] = useState(false)
-  const [notifications, setNotifications] = useState({ email: true, sms: false, weekly: true })
+  const [notifications, setNotifications] = useState<Record<string,boolean>>({ email: true, sms: false, weekly: true })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -86,7 +86,7 @@ export default function Profile() {
                   <div className="text-xs text-gray-500">{n.desc}</div>
                 </div>
                 <button
-                  onClick={() => setNotifications(prev => ({...prev, [n.key]: !prev[n.key as keyof typeof prev]}))}
+                  onClick={() => setNotifications(prev => ({...prev, [n.key]: !prev[n.key]}))}
                   className={`w-10 h-6 rounded-full transition-colors ${notifications[n.key as keyof typeof notifications] ? 'bg-teal-500' : 'bg-gray-200'}`}
                 >
                   <div className={`w-4 h-4 bg-white rounded-full shadow transition-transform mx-1 ${notifications[n.key as keyof typeof notifications] ? 'translate-x-4' : 'translate-x-0'}`} />
