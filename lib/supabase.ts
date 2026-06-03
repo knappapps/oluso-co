@@ -5,9 +5,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Types for our database tables
 export interface User {
   id: string
+  auth_id: string | null
   email: string
   name: string | null
   phone: string | null
@@ -20,6 +20,7 @@ export interface User {
   warranty_start: string | null
   warranty_end: string | null
   plan: 'free' | 'basic' | 'pro'
+  onboarding_complete: boolean
   created_at: string
 }
 
@@ -28,13 +29,10 @@ export interface Builder {
   name: string
   company: string | null
   email: string | null
-  phone: string | null
-  region: string | null
   state: string | null
   response_time_avg_hours: number | null
   total_claims: number
   resolved_claims: number
-  created_at: string
 }
 
 export interface Claim {
@@ -43,16 +41,15 @@ export interface Claim {
   builder_id: string | null
   title: string
   description: string | null
-  category: 'structural' | 'water' | 'electrical' | 'hvac' | 'plumbing' | 'cosmetic' | 'landscaping' | 'other'
-  severity: 'low' | 'medium' | 'high' | 'critical'
-  status: 'open' | 'in_progress' | 'awaiting_builder' | 'resolved' | 'escalated' | 'closed'
+  category: string
+  severity: string
+  status: string
   email_thread_address: string | null
   builder_email: string | null
   created_at: string
   first_response_at: string | null
   resolved_at: string | null
-  resolution_days: number | null
-  builder?: Builder
+  attachments?: Attachment[]
   messages?: Message[]
 }
 
@@ -64,7 +61,30 @@ export interface Message {
   to_email: string
   subject: string | null
   body: string | null
-  message_id: string | null
-  in_reply_to: string | null
   sent_at: string
+}
+
+export interface Attachment {
+  id: string
+  claim_id: string
+  file_name: string
+  file_path: string
+  file_size: number | null
+  file_type: string | null
+  storage_bucket: string
+  uploaded_at: string
+}
+
+export async function getSession() {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session
+}
+
+export async function getProfile(authId: string): Promise<User | null> {
+  const { data } = await supabase
+    .from('users')
+    .select('*')
+    .eq('auth_id', authId)
+    .single()
+  return data
 }
