@@ -1,275 +1,345 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import AuthGuard from '@/components/AuthGuard'
-import Header from '@/components/Header'
-import { BarChart3, Clock, AlertTriangle, TrendingUp, Building, MapPin, CheckCircle } from 'lucide-react'
+import { useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import { Users, FileText, Building2, MessageSquare, TrendingUp, AlertTriangle, CheckCircle, Clock, Download, RefreshCw, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 
-interface BuilderStat {
-  name: string
-  company: string
-  totalClaims: number
-  avgResponseDays: number
-  resolvedRate: number
-  criticalClaims: number
-  state: string
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// ─── Types ──────────────────────────────────────────────────────────────────
+interface User { id: string; name: string; email: string; builder_name: string; city: string; state: string; plan: string; onboarding_complete: boolean; created_at: string; }
+interface Claim { id: string; title: string; category: string; severity: string; status: string; created_at: string; resolved_at: string | null; first_response_at: string | null; user_id: string; builder_id: string; email_thread_address: string; users?: { name: string; email: string }; builders?: { name: string }; }
+interface Builder { id: string; name: string; }
+interface Stats { totalUsers: number; totalClaims: number; openClaims: number; resolvedClaims: number; criticalClaims: number; totalMessages: number; avgResponseDays: number | null; }
+
+const SEVERITY_COLOR: Record<string, string> = { critical: 'bg-red-100 text-red-700', high: 'bg-orange-100 text-orange-700', medium: 'bg-yellow-100 text-yellow-700', low: 'bg-blue-100 text-blue-700' };
+const STATUS_COLOR: Record<string, string> = { open: 'bg-blue-100 text-blue-700', in_progress: 'bg-yellow-100 text-yellow-700', awaiting_builder: 'bg-orange-100 text-orange-700', resolved: 'bg-green-100 text-green-700', escalated: 'bg-red-100 text-red-700', closed: 'bg-gray-100 text-gray-600' };
+
+function exportCSV(data: object[], filename: string) {
+  if (!data.length) return;
+  const headers = Object.keys(data[0]);
+  const rows = data.map(r => headers.map(h => JSON.stringify((r as Record<string,unknown>)[h] ?? '')).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
 }
 
-interface CategoryStat {
-  category: string
-  count: number
-  avgDays: number
+// ─── Stat Card ───────────────────────────────────────────────────────────────
+function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string | number; color: string }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+      <div className={`p-3 rounded-lg ${color}`}><Icon size={20} /></div>
+      <div><p className="text-sm text-gray-500">{label}</p><p className="text-2xl font-bold text-gray-900">{value}</p></div>
+    </div>
+  );
 }
 
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'builders' | 'categories' | 'data'>('overview')
+  const [tab, setTab] = useState<'overview' | 'users' | 'claims' | 'builders' | 'messages'>('overview');
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [builders, setBuilders] = useState<Builder[]>([]);
+  const [messages, setMessages] = useState<{ id: string; claim_id: string; direction: string; from_email: string; subject: string; sent_at: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [claimFilter, setClaimFilter] = useState('all');
+  const [expandedClaim, setExpandedClaim] = useState<string | null>(null);
 
-  // Demo analytics data representing the kind of data we collect
-  const builderStats: BuilderStat[] = [
-    { name: 'David Weekley Homes', company: 'David Weekley Homes', totalClaims: 47, avgResponseDays: 12.3, resolvedRate: 62, criticalClaims: 8, state: 'UT' },
-    { name: 'Ivory Homes', company: 'Ivory Homes LLC', totalClaims: 31, avgResponseDays: 7.1, resolvedRate: 84, criticalClaims: 2, state: 'UT' },
-    { name: 'Woodside Homes', company: 'Woodside Homes', totalClaims: 22, avgResponseDays: 9.8, resolvedRate: 77, criticalClaims: 3, state: 'UT' },
-    { name: 'Toll Brothers', company: 'Toll Brothers Inc', totalClaims: 18, avgResponseDays: 5.2, resolvedRate: 89, criticalClaims: 1, state: 'UT' },
-    { name: 'Lennar Homes', company: 'Lennar Corporation', totalClaims: 15, avgResponseDays: 14.7, resolvedRate: 53, criticalClaims: 5, state: 'UT' },
-  ]
+  async function loadAll() {
+    setLoading(true);
+    const [usersRes, claimsRes, buildersRes, messagesRes] = await Promise.all([
+      supabase.from('users').select('*').order('created_at', { ascending: false }),
+      supabase.from('claims').select('*, users(name, email), builders(name)').order('created_at', { ascending: false }),
+      supabase.from('builders').select('*').order('name'),
+      supabase.from('messages').select('id, claim_id, direction, from_email, subject, sent_at').order('sent_at', { ascending: false }).limit(100),
+    ]);
 
-  const categoryStats: CategoryStat[] = [
-    { category: 'Structural', count: 28, avgDays: 18.4 },
-    { category: 'Water', count: 35, avgDays: 11.2 },
-    { category: 'HVAC', count: 21, avgDays: 8.7 },
-    { category: 'Plumbing', count: 19, avgDays: 7.3 },
-    { category: 'Electrical', count: 12, avgDays: 6.1 },
-    { category: 'Cosmetic', count: 42, avgDays: 22.8 },
-  ]
+    const u = usersRes.data || [];
+    const c = claimsRes.data || [];
+    const b = buildersRes.data || [];
+    const m = messagesRes.data || [];
 
-  const totalClaims = builderStats.reduce((s, b) => s + b.totalClaims, 0)
-  const avgResponseAll = (builderStats.reduce((s, b) => s + b.avgResponseDays * b.totalClaims, 0) / totalClaims).toFixed(1)
-  const worstResponder = builderStats.reduce((a, b) => a.avgResponseDays > b.avgResponseDays ? a : b)
+    setUsers(u as User[]);
+    setClaims(c as Claim[]);
+    setBuilders(b as Builder[]);
+    setMessages(m);
+
+    const resolved = c.filter(cl => cl.resolved_at && cl.first_response_at);
+    const totalResponseDays = resolved.reduce((sum, cl) => {
+      const days = (new Date(cl.first_response_at!).getTime() - new Date(cl.created_at).getTime()) / 86400000;
+      return sum + days;
+    }, 0);
+
+    setStats({
+      totalUsers: u.length,
+      totalClaims: c.length,
+      openClaims: c.filter(cl => cl.status === 'open').length,
+      resolvedClaims: c.filter(cl => cl.status === 'resolved' || cl.status === 'closed').length,
+      criticalClaims: c.filter(cl => cl.severity === 'critical').length,
+      totalMessages: m.length,
+      avgResponseDays: resolved.length ? Math.round((totalResponseDays / resolved.length) * 10) / 10 : null,
+    });
+    setLoading(false);
+  }
+
+  useEffect(() => { loadAll(); }, []);
+
+  // Builder scorecard derived from claims
+  const builderScorecard = builders.map(b => {
+    const bClaims = claims.filter(c => c.builder_id === b.id);
+    const bResolved = bClaims.filter(c => c.resolved_at && c.first_response_at);
+    const avgDays = bResolved.length
+      ? Math.round(bResolved.reduce((sum, c) => sum + (new Date(c.first_response_at!).getTime() - new Date(c.created_at).getTime()) / 86400000, 0) / bResolved.length * 10) / 10
+      : null;
+    return { name: b.name, total: bClaims.length, critical: bClaims.filter(c => c.severity === 'critical').length, resolved: bResolved.length, avgDays, resolveRate: bClaims.length ? Math.round((bClaims.filter(c => c.status === 'resolved' || c.status === 'closed').length / bClaims.length) * 100) : 0 };
+  }).filter(b => b.total > 0).sort((a, b) => b.total - a.total);
+
+  const filteredClaims = claimFilter === 'all' ? claims : claims.filter(c => c.status === claimFilter);
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: TrendingUp },
+    { id: 'users', label: `Users (${users.length})`, icon: Users },
+    { id: 'claims', label: `Claims (${claims.length})`, icon: FileText },
+    { id: 'builders', label: 'Builders', icon: Building2 },
+    { id: 'messages', label: `Messages (${messages.length})`, icon: MessageSquare },
+  ] as const;
 
   return (
-    <AuthGuard>
-      <Header />
-      <main className="min-h-screen bg-gray-50 pt-16">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
-            <p className="text-gray-500 text-sm mt-1">Builder accountability data — powered by real homeowner claims</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-gray-500 text-sm mt-1">Real-time data from Supabase</p>
           </div>
-
-          {/* Tab Nav */}
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-8 w-fit">
-            {(['overview', 'builders', 'categories', 'data'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
-                  activeTab === tab ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          {/* Overview */}
-          {activeTab === 'overview' && (
-            <div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                  <div className="text-3xl font-bold text-blue-600">{totalClaims}</div>
-                  <div className="text-sm text-gray-500 mt-1">Total Claims Tracked</div>
-                </div>
-                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                  <div className="text-3xl font-bold text-orange-500">{avgResponseAll}</div>
-                  <div className="text-sm text-gray-500 mt-1">Avg Response Days</div>
-                </div>
-                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                  <div className="text-3xl font-bold text-red-500">{builderStats.reduce((s, b) => s + b.criticalClaims, 0)}</div>
-                  <div className="text-sm text-gray-500 mt-1">Critical Issues</div>
-                </div>
-                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                  <div className="text-3xl font-bold text-green-600">{builderStats.length}</div>
-                  <div className="text-sm text-gray-500 mt-1">Builders Tracked</div>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <AlertTriangle size={16} className="text-red-500" />
-                    Worst Responders
-                  </h3>
-                  {builderStats.sort((a, b) => b.avgResponseDays - a.avgResponseDays).slice(0, 3).map(b => (
-                    <div key={b.name} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                      <div>
-                        <div className="text-sm font-medium text-gray-800">{b.name}</div>
-                        <div className="text-xs text-gray-400">{b.totalClaims} claims</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-semibold text-red-500">{b.avgResponseDays}d avg</div>
-                        <div className="text-xs text-gray-400">{b.resolvedRate}% resolved</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <BarChart3 size={16} className="text-blue-500" />
-                    Top Issue Categories
-                  </h3>
-                  {categoryStats.sort((a, b) => b.count - a.count).slice(0, 5).map(c => (
-                    <div key={c.category} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700">{c.category}</span>
-                          <span className="text-xs text-gray-400">{c.count} claims · {c.avgDays}d avg</span>
-                        </div>
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-blue-500 rounded-full"
-                            style={{ width: `${(c.count / Math.max(...categoryStats.map(x => x.count))) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Builder Scorecards */}
-          {activeTab === 'builders' && (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100">
-                <h2 className="font-semibold text-gray-900">Builder Scorecards</h2>
-                <p className="text-xs text-gray-400 mt-1">Ranked by response time (worst first) — anonymized data available for licensing</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
-                      <th className="text-left px-5 py-3">Builder</th>
-                      <th className="text-center px-4 py-3">Claims</th>
-                      <th className="text-center px-4 py-3">Avg Response</th>
-                      <th className="text-center px-4 py-3">Resolution Rate</th>
-                      <th className="text-center px-4 py-3">Critical</th>
-                      <th className="text-center px-4 py-3">Grade</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {builderStats.sort((a, b) => b.avgResponseDays - a.avgResponseDays).map((b, i) => {
-                      const grade = b.avgResponseDays <= 5 && b.resolvedRate >= 85 ? 'A'
-                        : b.avgResponseDays <= 10 && b.resolvedRate >= 70 ? 'B'
-                        : b.avgResponseDays <= 15 && b.resolvedRate >= 60 ? 'C'
-                        : b.resolvedRate >= 50 ? 'D' : 'F'
-                      const gradeColor = { A: 'text-green-600', B: 'text-blue-600', C: 'text-yellow-600', D: 'text-orange-600', F: 'text-red-600' }[grade]
-                      return (
-                        <tr key={b.name} className="border-t border-gray-100 hover:bg-gray-50">
-                          <td className="px-5 py-3">
-                            <div className="font-medium text-gray-800">{b.name}</div>
-                            <div className="text-xs text-gray-400 flex items-center gap-1"><MapPin size={10} />{b.state}</div>
-                          </td>
-                          <td className="px-4 py-3 text-center text-gray-700">{b.totalClaims}</td>
-                          <td className={`px-4 py-3 text-center font-semibold ${b.avgResponseDays > 10 ? 'text-red-500' : 'text-green-600'}`}>
-                            {b.avgResponseDays}d
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span className={`font-semibold ${b.resolvedRate >= 75 ? 'text-green-600' : 'text-red-500'}`}>
-                              {b.resolvedRate}%
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span className={`${b.criticalClaims > 3 ? 'text-red-500 font-semibold' : 'text-gray-600'}`}>
-                              {b.criticalClaims}
-                            </span>
-                          </td>
-                          <td className={`px-4 py-3 text-center text-xl font-bold ${gradeColor}`}>{grade}</td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* Categories */}
-          {activeTab === 'categories' && (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-              <h2 className="font-semibold text-gray-900 mb-4">Issue Categories Breakdown</h2>
-              <div className="space-y-4">
-                {categoryStats.sort((a, b) => b.count - a.count).map(c => (
-                  <div key={c.category}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-700">{c.category}</span>
-                      <div className="text-xs text-gray-500">
-                        <span className="font-semibold text-gray-700">{c.count}</span> claims · 
-                        <span className={`ml-1 font-semibold ${c.avgDays > 15 ? 'text-red-500' : 'text-green-600'}`}>{c.avgDays}d</span> avg resolution
-                      </div>
-                    </div>
-                    <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all"
-                        style={{ width: `${(c.count / Math.max(...categoryStats.map(x => x.count))) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Data Licensing */}
-          {activeTab === 'data' && (
-            <div className="space-y-6">
-              <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-6 text-white">
-                <h2 className="text-xl font-bold mb-2">Data Licensing</h2>
-                <p className="text-blue-100 text-sm">
-                  Oluso collects anonymized homebuilder performance data across thousands of claims. 
-                  Our dataset provides unique insights into builder response times, issue frequencies, 
-                  and resolution patterns by region.
-                </p>
-              </div>
-              <div className="grid md:grid-cols-3 gap-4">
-                {[
-                  { title: 'Insurance Underwriters', icon: '🏦', desc: 'Risk scoring for new home insurance policies based on builder reputation and historical claim rates.' },
-                  { title: 'Real Estate Attorneys', icon: '⚖️', desc: 'Builder response time benchmarks and claim documentation for litigation support.' },
-                  { title: 'RE Investors', icon: '📊', desc: 'Community-level quality scores and defect rates to assess resale risk in new developments.' },
-                ].map(item => (
-                  <div key={item.title} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                    <div className="text-3xl mb-3">{item.icon}</div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
-                    <p className="text-sm text-gray-500">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-3">What We Track</h3>
-                <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-600">
-                  {[
-                    'Builder response time (hours to first reply)',
-                    'Issue categories by builder and region',
-                    'Resolution rates and time-to-close',
-                    'Critical/structural issue frequency',
-                    'Community-level defect clustering',
-                    'Seasonal patterns in issue types',
-                    'Builder communication quality scores',
-                    'Escalation rates and outcomes'
-                  ].map(item => (
-                    <div key={item} className="flex items-center gap-2">
-                      <CheckCircle size={14} className="text-green-500 shrink-0" />
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+          <button onClick={loadAll} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+            <RefreshCw size={14} /> Refresh
+          </button>
         </div>
-      </main>
-    </AuthGuard>
-  )
+
+        {/* Tabs */}
+        <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit">
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id as typeof tab)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === t.id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+              <t.icon size={14} />{t.label}
+            </button>
+          ))}
+        </div>
+
+        {loading && <div className="text-center py-20 text-gray-400">Loading data from Supabase...</div>}
+
+        {/* ── OVERVIEW ── */}
+        {!loading && tab === 'overview' && stats && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <StatCard icon={Users} label="Total Users" value={stats.totalUsers} color="bg-blue-100 text-blue-600" />
+              <StatCard icon={FileText} label="Total Claims" value={stats.totalClaims} color="bg-indigo-100 text-indigo-600" />
+              <StatCard icon={Clock} label="Open Claims" value={stats.openClaims} color="bg-yellow-100 text-yellow-600" />
+              <StatCard icon={CheckCircle} label="Resolved" value={stats.resolvedClaims} color="bg-green-100 text-green-600" />
+              <StatCard icon={AlertTriangle} label="Critical" value={stats.criticalClaims} color="bg-red-100 text-red-600" />
+              <StatCard icon={MessageSquare} label="Messages" value={stats.totalMessages} color="bg-purple-100 text-purple-600" />
+            </div>
+            {stats.avgResponseDays !== null && (
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <p className="text-sm text-gray-500 mb-1">Avg. Builder First Response</p>
+                <p className="text-3xl font-bold text-orange-600">{stats.avgResponseDays} days</p>
+                <p className="text-xs text-gray-400 mt-1">Based on {claims.filter(c => c.first_response_at).length} claims with recorded responses</p>
+              </div>
+            )}
+            {/* Recent Claims */}
+            <div className="bg-white rounded-xl border border-gray-200">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 className="font-semibold text-gray-800">Recent Claims</h3>
+                <button onClick={() => setTab('claims')} className="text-xs text-blue-600 hover:underline">View all →</button>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {claims.slice(0, 8).map(c => (
+                  <div key={c.id} className="px-5 py-3 flex items-center justify-between text-sm">
+                    <div>
+                      <p className="font-medium text-gray-800">{c.title}</p>
+                      <p className="text-gray-400 text-xs">{(c as Claim & { users?: {name:string} }).users?.name} · {(c as Claim & { builders?: {name:string} }).builders?.name} · {new Date(c.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${SEVERITY_COLOR[c.severity] || 'bg-gray-100 text-gray-600'}`}>{c.severity}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLOR[c.status] || 'bg-gray-100 text-gray-600'}`}>{c.status.replace('_', ' ')}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── USERS ── */}
+        {!loading && tab === 'users' && (
+          <div className="bg-white rounded-xl border border-gray-200">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800">All Users ({users.length})</h3>
+              <button onClick={() => exportCSV(users, 'oluso-users.csv')} className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700"><Download size={12} /> Export CSV</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                  <tr>{['Name','Email','Builder','City/State','Plan','Onboarding','Joined'].map(h => <th key={h} className="px-4 py-3 text-left">{h}</th>)}</tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {users.map(u => (
+                    <tr key={u.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-800">{u.name || '—'}</td>
+                      <td className="px-4 py-3 text-gray-600">{u.email}</td>
+                      <td className="px-4 py-3 text-gray-600">{u.builder_name || '—'}</td>
+                      <td className="px-4 py-3 text-gray-500">{u.city ? `${u.city}, ${u.state}` : '—'}</td>
+                      <td className="px-4 py-3"><span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">{u.plan || 'free'}</span></td>
+                      <td className="px-4 py-3">{u.onboarding_complete ? <span className="text-green-600 text-xs">✓ Done</span> : <span className="text-gray-400 text-xs">Pending</span>}</td>
+                      <td className="px-4 py-3 text-gray-400">{new Date(u.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {!users.length && <p className="text-center py-12 text-gray-400">No users yet.</p>}
+            </div>
+          </div>
+        )}
+
+        {/* ── CLAIMS ── */}
+        {!loading && tab === 'claims' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex gap-2 flex-wrap">
+                {['all','open','in_progress','awaiting_builder','resolved','escalated','closed'].map(s => (
+                  <button key={s} onClick={() => setClaimFilter(s)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium ${claimFilter === s ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                    {s === 'all' ? `All (${claims.length})` : `${s.replace(/_/g, ' ')} (${claims.filter(c => c.status === s).length})`}
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => exportCSV(claims.map(c => ({...c, user: (c as Claim & {users?:{name:string}}).users?.name, builder: (c as Claim & {builders?:{name:string}}).builders?.name})), 'oluso-claims.csv')}
+                className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700"><Download size={12} /> Export CSV</button>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200">
+              <div className="divide-y divide-gray-100">
+                {filteredClaims.map(c => (
+                  <div key={c.id}>
+                    <div className="px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50" onClick={() => setExpandedClaim(expandedClaim === c.id ? null : c.id)}>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-800 truncate">{c.title}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{(c as Claim & {users?:{name:string}}).users?.name} · {(c as Claim & {builders?:{name:string}}).builders?.name} · {new Date(c.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${SEVERITY_COLOR[c.severity]}`}>{c.severity}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLOR[c.status]}`}>{c.status.replace(/_/g,' ')}</span>
+                        {expandedClaim === c.id ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+                      </div>
+                    </div>
+                    {expandedClaim === c.id && (
+                      <div className="px-5 pb-4 bg-gray-50 border-t border-gray-100 text-sm text-gray-600 space-y-1">
+                        <p><span className="font-medium">Email thread:</span> {c.email_thread_address || '—'}</p>
+                        <p><span className="font-medium">Category:</span> {c.category}</p>
+                        <p><span className="font-medium">First response:</span> {c.first_response_at ? new Date(c.first_response_at).toLocaleString() : 'None yet'}</p>
+                        <p><span className="font-medium">Resolved:</span> {c.resolved_at ? new Date(c.resolved_at).toLocaleString() : 'Not resolved'}</p>
+                        <p className="text-xs text-gray-400">Claim ID: {c.id}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {!filteredClaims.length && <p className="text-center py-12 text-gray-400">No claims match this filter.</p>}
+            </div>
+          </div>
+        )}
+
+        {/* ── BUILDERS ── */}
+        {!loading && tab === 'builders' && (
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <button onClick={() => exportCSV(builderScorecard, 'oluso-builder-scorecard.csv')}
+                className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700"><Download size={12} /> Export Scorecard CSV</button>
+            </div>
+            {builderScorecard.length === 0 && (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center text-gray-400">
+                <Building2 size={32} className="mx-auto mb-3 opacity-30" />
+                <p>No claim data yet. Builder scorecards will appear once homeowners file claims.</p>
+              </div>
+            )}
+            <div className="grid gap-4">
+              {builderScorecard.map(b => (
+                <div key={b.name} className="bg-white rounded-xl border border-gray-200 p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-gray-800 text-lg">{b.name}</h3>
+                    <div className="flex gap-3 text-sm">
+                      <span className="text-gray-500">{b.total} claims</span>
+                      {b.critical > 0 && <span className="text-red-600 font-medium">{b.critical} critical</span>}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Resolve Rate</p>
+                      <p className={`text-xl font-bold ${b.resolveRate >= 70 ? 'text-green-600' : b.resolveRate >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>{b.resolveRate}%</p>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Avg Response</p>
+                      <p className="text-xl font-bold text-gray-800">{b.avgDays !== null ? `${b.avgDays}d` : '—'}</p>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Resolved</p>
+                      <p className="text-xl font-bold text-gray-800">{b.resolved}/{b.total}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* All builders list */}
+            <div className="bg-white rounded-xl border border-gray-200">
+              <div className="px-5 py-4 border-b border-gray-100"><h3 className="font-semibold text-gray-800">All Tracked Builders ({builders.length})</h3></div>
+              <div className="divide-y divide-gray-50">
+                {builders.map(b => {
+                  const count = claims.filter(c => c.builder_id === b.id).length;
+                  return (
+                    <div key={b.id} className="px-5 py-3 flex items-center justify-between text-sm">
+                      <span className="text-gray-800">{b.name}</span>
+                      <span className="text-gray-400">{count} {count === 1 ? 'claim' : 'claims'}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── MESSAGES ── */}
+        {!loading && tab === 'messages' && (
+          <div className="bg-white rounded-xl border border-gray-200">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800">Recent Email Activity ({messages.length})</h3>
+              <button onClick={() => exportCSV(messages, 'oluso-messages.csv')}
+                className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700"><Download size={12} /> Export CSV</button>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {messages.map(m => (
+                <div key={m.id} className="px-5 py-3 flex items-center justify-between text-sm">
+                  <div>
+                    <p className="font-medium text-gray-800">{m.subject || '(no subject)'}</p>
+                    <p className="text-xs text-gray-400">{m.from_email} · Claim {m.claim_id.slice(0,8)}...</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${m.direction === 'inbound' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{m.direction}</span>
+                    <span className="text-gray-400 text-xs">{new Date(m.sent_at).toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
+              {!messages.length && <p className="text-center py-12 text-gray-400">No messages yet.</p>}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
