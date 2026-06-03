@@ -24,7 +24,7 @@ const CONTACTS = [
 export default function Admin() {
   const [activeTab, setActiveTab] = useState('overview')
   const [routingMode, setRoutingMode] = useState('landing')
-  const [flags, setFlags] = useState({ aiMessaging: true, premiumResources: true, communityFeatures: true })
+  const [flags, setFlags] = useState<Record<string,boolean>>({ aiMessaging: true, premiumResources: true, communityFeatures: true })
   const [userSearch, setUserSearch] = useState('')
 
   const tabs = ['overview','users','content','contacts','analytics','settings']
@@ -201,7 +201,7 @@ export default function Admin() {
                 {[{key:'aiMessaging',label:'AI Messaging',desc:'Enable AI-powered follow-up generation'},{key:'premiumResources',label:'Premium Resources',desc:'Gate resource library for premium users'},{key:'communityFeatures',label:'Community Features',desc:'Enable neighborhood visibility features'}].map(s=>(
                   <div key={s.key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div><div className="font-medium text-navy-600 text-sm">{s.label}</div><div className="text-xs text-gray-500">{s.desc}</div></div>
-                    <input type="checkbox" checked={flags[s.key as keyof typeof flags]} onChange={e=>setFlags(f=>({...f,[s.key]:e.target.checked}))} className="w-4 h-4 accent-teal-600" />
+                    <input type="checkbox" checked={!!flags[s.key]} onChange={e=>setFlags((f:Record<string,boolean>)=>({...f,[s.key]:e.target.checked}))} className="w-4 h-4 accent-teal-600" />
                   </div>
                 ))}
               </div>
