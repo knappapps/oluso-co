@@ -1,14 +1,42 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Menu, X, Shield } from 'lucide-react'
+import { isLoggedIn, login, logout } from '@/lib/auth'
 
 interface HeaderProps { currentPage?: string }
 
 export default function Header({ currentPage }: HeaderProps) {
+  const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [loginOpen, setLoginOpen] = useState(false)
   const [signupOpen, setSignupOpen] = useState(false)
+  const [authed, setAuthed] = useState(false)
+
+  useEffect(() => {
+    setAuthed(isLoggedIn())
+  }, [])
+
+  function handleLogin() {
+    login()
+    setAuthed(true)
+    setLoginOpen(false)
+    router.push('/dashboard')
+  }
+
+  function handleSignup() {
+    login()
+    setAuthed(true)
+    setSignupOpen(false)
+    router.push('/dashboard')
+  }
+
+  function handleLogout() {
+    logout()
+    setAuthed(false)
+    router.push('/')
+  }
 
   const nav = [
     { label: 'Home', href: '/' },
@@ -36,8 +64,14 @@ export default function Header({ currentPage }: HeaderProps) {
               ))}
             </nav>
             <div className="hidden md:flex items-center gap-3">
-              <button onClick={() => setLoginOpen(true)} className="text-sm font-medium text-gray-600 hover:text-teal-600 transition-colors">Log in</button>
-              <button onClick={() => setSignupOpen(true)} className="btn-amber text-sm py-2 px-4">Get started free</button>
+              {authed ? (
+                <button onClick={handleLogout} className="text-sm font-medium text-gray-600 hover:text-teal-600 transition-colors">Log out</button>
+              ) : (
+                <>
+                  <button onClick={() => setLoginOpen(true)} className="text-sm font-medium text-gray-600 hover:text-teal-600 transition-colors">Log in</button>
+                  <button onClick={() => setSignupOpen(true)} className="btn-amber text-sm py-2 px-4">Get started free</button>
+                </>
+              )}
             </div>
             <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -47,8 +81,14 @@ export default function Header({ currentPage }: HeaderProps) {
         {mobileOpen && (
           <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-3">
             {nav.map(n => <Link key={n.href} href={n.href} className="text-sm font-medium text-gray-700 hover:text-teal-600" onClick={() => setMobileOpen(false)}>{n.label}</Link>)}
-            <button onClick={() => { setLoginOpen(true); setMobileOpen(false) }} className="text-sm font-medium text-gray-600 text-left">Log in</button>
-            <button onClick={() => { setSignupOpen(true); setMobileOpen(false) }} className="btn-amber text-sm py-2 px-4 text-center">Get started free</button>
+            {authed ? (
+              <button onClick={() => { handleLogout(); setMobileOpen(false) }} className="text-sm font-medium text-gray-600 text-left">Log out</button>
+            ) : (
+              <>
+                <button onClick={() => { setLoginOpen(true); setMobileOpen(false) }} className="text-sm font-medium text-gray-600 text-left">Log in</button>
+                <button onClick={() => { setSignupOpen(true); setMobileOpen(false) }} className="btn-amber text-sm py-2 px-4 text-center">Get started free</button>
+              </>
+            )}
           </div>
         )}
       </header>
@@ -64,7 +104,7 @@ export default function Header({ currentPage }: HeaderProps) {
             <div className="flex flex-col gap-4">
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="you@example.com" /></div>
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Password</label><input type="password" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" /></div>
-              <Link href="/dashboard" className="w-full bg-navy-600 text-white font-semibold py-3 rounded-lg text-center block hover:bg-navy-700 transition-colors">Sign in</Link>
+              <button onClick={handleLogin} className="w-full bg-navy-600 text-white font-semibold py-3 rounded-lg text-center hover:bg-navy-700 transition-colors">Sign in</button>
             </div>
             <p className="text-center text-sm text-gray-500 mt-4">New to Oluso? <button onClick={() => { setLoginOpen(false); setSignupOpen(true) }} className="text-teal-600 font-medium hover:underline">Create an account</button></p>
           </div>
@@ -84,7 +124,7 @@ export default function Header({ currentPage }: HeaderProps) {
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Email</label><input type="email" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="you@example.com" /></div>
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Password</label><input type="password" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" /><p className="text-xs text-gray-400 mt-1">At least 8 characters.</p></div>
               <div><label className="block text-sm font-medium text-gray-700 mb-1">Home address <span className="text-gray-400">(optional)</span></label><input type="text" className="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="2418 Magnolia Ridge Dr." /></div>
-              <Link href="/dashboard" className="w-full bg-amber-500 text-white font-semibold py-3 rounded-lg text-center block hover:bg-amber-600 transition-colors">Create account</Link>
+              <button onClick={handleSignup} className="w-full bg-amber-500 text-white font-semibold py-3 rounded-lg text-center hover:bg-amber-600 transition-colors">Create account</button>
             </div>
             <p className="text-center text-sm text-gray-500 mt-4">Already have an account? <button onClick={() => { setSignupOpen(false); setLoginOpen(true) }} className="text-teal-600 font-medium hover:underline">Sign in</button></p>
           </div>
