@@ -1,186 +1,275 @@
 'use client'
-import { useState } from 'react'
-import Header from '@/components/Header'
+
+import { useState, useEffect } from 'react'
 import AuthGuard from '@/components/AuthGuard'
-import { Users, Crown, DollarSign, TrendingDown, Search, Edit2, Key, Trash2, PlusCircle, Download, Shield, Wrench } from 'lucide-react'
+import Header from '@/components/Header'
+import { BarChart3, Clock, AlertTriangle, TrendingUp, Building, MapPin, CheckCircle } from 'lucide-react'
 
-const USERS = [
-{ name:'Sarah Mitchell', email:'sarah.m@email.com', role:'Homeowner', community:'Oakwood Estates', lastLogin:'Jan 15, 2025' },
-{ name:'James Park', email:'james.p@email.com', role:'Admin', community:'Cedar Ridge', lastLogin:'Jan 20, 2025' },
-{ name:'Maria Torres', email:'m.torres@email.com', role:'Homeowner', community:'Willow Oaks', lastLogin:'Dec 28, 2024' },
-]
-const TESTIMONIALS = [
-{ name:'Alex Chen', community:'Willow Oaks', quote:'ClaimGuard helped me get 14 issues resolved before year one.', outcome:'Repairs completed 3x faster', status:'Published' },
-{ name:'Jamie Lee', community:'Cedar Ridge', quote:'The automated follow-ups saved me hours every month.', outcome:'Builder responded within 48hrs', status:'Draft' },
-]
-const RESOURCES = [
-{ name:'John Smith, VP Operations', type:'Executive Contact', location:'Austin, TX', desc:'Senior executive for escalation', visibility:'Premium Only' },
-{ name:"First-Time Buyer's Warranty Guide", type:'Guide', location:'Texas', desc:'Comprehensive guide for new homeowners', visibility:'All Users' },
-]
-const CONTACTS = [
-{ builder:'Horizon Homes', contact:'Robert Chen', role:'Regional Director', email:'r.chen@horizonhomes.com', phone:'(512) 555-0147' },
-{ builder:'Prestige Homes LLC', contact:'Diana Walsh', role:'Warranty Manager', email:'d.walsh@prestighomes.com', phone:'(512) 555-0293' },
-]
-
-function AdminContent() {
-const [activeTab, setActiveTab] = useState('overview')
-const [routingMode, setRoutingMode] = useState('landing')
-const [flags, setFlags] = useState<Record<string,boolean>>({ aiMessaging: true, premiumResources: true, communityFeatures: true })
-const [userSearch, setUserSearch] = useState('')
-
-const tabs = ['overview','users','content','contacts','analytics','settings']
-
-return (
-<div className="min-h-screen bg-gray-50">
-<Header currentPage="Dashboard" />
-<div className="max-w-7xl mx-auto px-4 py-8">
-<div className="flex items-center gap-3 mb-6">
-<div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center"><Wrench className="w-5 h-5 text-amber-600" /></div>
-<div><h1 className="text-2xl font-bold text-navy-600">Admin Console</h1><p className="text-gray-500 text-sm">Platform management and monitoring</p></div>
-</div>
-<div className="flex gap-2 mb-6 flex-wrap">
-{tabs.map(t=>(
-<button key={t} onClick={()=>setActiveTab(t)} className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${activeTab===t ? 'bg-teal-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{t}</button>
-))}
-<div className="ml-auto flex gap-2">
-<button className={`border px-3 py-1.5 rounded-lg text-sm ${routingMode==='landing'?'border-teal-500 text-teal-600 bg-teal-50':'border-gray-200 text-gray-600'}`} onClick={()=>setRoutingMode('landing')}>View as Free</button>
-<button className={`border px-3 py-1.5 rounded-lg text-sm ${routingMode==='premium'?'border-amber-500 text-amber-600 bg-amber-50':'border-gray-200 text-gray-600'}`} onClick={()=>setRoutingMode('premium')}>View as Premium</button>
-</div>
-</div>
-{(activeTab==='overview'||activeTab==='analytics') && (
-<div className="space-y-6 mb-6">
-<h2 className="text-lg font-bold text-navy-600">Revenue & Growth Metrics</h2>
-<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-{[
-{icon:Users,label:'Total Active Users',value:'2,847',change:'+12% from last month',color:'text-teal-500',pos:true},
-{icon:Crown,label:'Premium Subscribers',value:'486',change:'+8% from last month',color:'text-amber-500',pos:true},
-{icon:DollarSign,label:'Monthly Recurring Revenue',value:'$4,860',change:'+15% from last month',color:'text-green-500',pos:true},
-{icon:TrendingDown,label:'Monthly Churn Rate',value:'2.3%',change:'-0.5% from last month',color:'text-red-500',pos:false},
-].map(m=>(
-<div key={m.label} className="card">
-<div className="flex items-center gap-2 text-gray-500 text-xs mb-2"><m.icon className={`w-4 h-4 ${m.color}`}/>{m.label}</div>
-<div className="text-2xl font-bold text-navy-600 mb-1">{m.value}</div>
-<div className={`text-xs ${m.pos?'text-green-600':'text-red-500'}`}>{m.change}</div>
-</div>
-))}
-</div>
-<div className="grid md:grid-cols-2 gap-6">
-{[{title:'Signups Over Time'},{title:'Premium Subscription Growth'}].map(c=>(
-<div key={c.title} className="card">
-<div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-navy-600">{c.title}</h3><select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><option>Last 30 days</option><option>Last 3 months</option><option>Last year</option></select></div>
-<div className="h-32 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 text-sm">{c.title} chart will render here</div>
-</div>
-))}
-</div>
-<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-{[{label:'Total Claims',value:'12,847'},{label:'Open Claims',value:'3,241'},{label:'Closed Claims',value:'9,606'},{label:'Avg. Resolution Time',value:'14 days'}].map(s=>(
-<div key={s.label} className="card"><div className="text-xs text-gray-500 mb-1">{s.label}</div><div className="text-xl font-bold text-navy-600">{s.value}</div></div>
-))}
-</div>
-</div>
-)}
-{activeTab==='overview' && (
-<div className="card mb-6">
-<h2 className="font-bold text-navy-600 mb-1">Activity log</h2>
-<p className="text-sm text-gray-500 mb-4">Review recent admin and system activities across the workspace.</p>
-<div className="grid md:grid-cols-4 gap-3 mb-4">
-<input type="date" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-<input type="date" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-<select className="border border-gray-200 rounded-lg px-3 py-2 text-sm"><option>All users</option></select>
-<select className="border border-gray-200 rounded-lg px-3 py-2 text-sm"><option>All types</option><option>Login</option><option>Settings change</option></select>
-</div>
-<div className="flex items-center justify-between mb-3">
-<span className="text-sm text-gray-500">Results</span>
-<button className="border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-1"><Download className="w-4 h-4" /> Export</button>
-</div>
-<div className="border border-gray-100 rounded-lg overflow-hidden">
-<table className="w-full text-sm">
-<thead className="bg-gray-50"><tr><th className="text-left px-4 py-3 text-gray-500 font-medium">Timestamp</th><th className="text-left px-4 py-3 text-gray-500 font-medium">User</th><th className="text-left px-4 py-3 text-gray-500 font-medium">Action</th></tr></thead>
-<tbody>
-{[{ts:'2025-01-15 14:32',user:'Jane Admin',action:'Updated global settings'},{ts:'2025-01-15 13:10',user:'System',action:'Automated follow-up sent to 14 builders'},{ts:'2025-01-14 09:45',user:'Jane Admin',action:'Added new Premium resource'}].map((row,i)=>(
-<tr key={i} className="border-t border-gray-100 hover:bg-gray-50"><td className="px-4 py-3 text-gray-500">{row.ts}</td><td className="px-4 py-3 font-medium text-navy-600">{row.user}</td><td className="px-4 py-3 text-gray-600">{row.action}</td></tr>
-))}
-</tbody>
-</table>
-</div>
-</div>
-)}
-{activeTab==='users' && (
-<div className="card mb-6">
-<div className="flex items-center justify-between mb-4"><h2 className="font-bold text-navy-600 text-lg">User Management</h2></div>
-<div className="flex gap-3 mb-4">
-<div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input value={userSearch} onChange={e=>setUserSearch(e.target.value)} placeholder="Search by name or email..." className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm" /></div>
-<select className="border border-gray-200 rounded-lg px-3 py-2 text-sm"><option>All Roles</option></select>
-<select className="border border-gray-200 rounded-lg px-3 py-2 text-sm"><option>All Plans</option></select>
-<button className="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-600 flex items-center gap-1"><Search className="w-4 h-4" /> Search</button>
-</div>
-<div className="border border-gray-100 rounded-lg overflow-hidden">
-<table className="w-full text-sm">
-<thead className="bg-gray-50"><tr>{['Name','Email','Role','Community','Last Login','Actions'].map(h=><th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>)}</tr></thead>
-<tbody>{USERS.filter(u=>!userSearch||u.name.toLowerCase().includes(userSearch.toLowerCase())||u.email.toLowerCase().includes(userSearch.toLowerCase())).map((u,i)=>(
-<tr key={i} className="border-t border-gray-100 hover:bg-gray-50">
-<td className="px-4 py-3 font-medium text-navy-600">{u.name}</td>
-<td className="px-4 py-3 text-teal-600">{u.email}</td>
-<td className="px-4 py-3 text-gray-600">{u.role}</td>
-<td className="px-4 py-3 text-gray-600">{u.community}</td>
-<td className="px-4 py-3 text-gray-400">{u.lastLogin}</td>
-<td className="px-4 py-3"><div className="flex gap-2"><button className="text-teal-600 hover:text-teal-700"><Edit2 className="w-4 h-4" /></button><button className="text-gray-400 hover:text-gray-600"><Key className="w-4 h-4" /></button><button className="text-red-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button></div></td>
-</tr>
-))}</tbody>
-</table>
-</div>
-</div>
-)}
-{activeTab==='content' && (
-<div className="space-y-6">
-<div className="card">
-<div className="flex items-center justify-between mb-4"><h2 className="font-bold text-navy-600 text-lg">Testimonial Management</h2><button className="bg-amber-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-amber-600 flex items-center gap-1"><PlusCircle className="w-4 h-4" /> Add Testimonial</button></div>
-<table className="w-full text-sm"><thead className="bg-gray-50"><tr>{['Name','Community','Quote','Outcome','Status','Actions'].map(h=><th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>)}</tr></thead><tbody>{TESTIMONIALS.map((t,i)=><tr key={i} className="border-t border-gray-100"><td className="px-4 py-3 font-medium">{t.name}</td><td className="px-4 py-3 text-gray-500">{t.community}</td><td className="px-4 py-3 text-gray-600 max-w-xs truncate">{t.quote}</td><td className="px-4 py-3 text-gray-600">{t.outcome}</td><td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-medium ${t.status==='Published'?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600'}`}>{t.status}</span></td><td className="px-4 py-3"><div className="flex gap-2"><button className="text-teal-600"><Edit2 className="w-4 h-4" /></button><button className="text-red-400"><Trash2 className="w-4 h-4" /></button></div></td></tr>)}</tbody></table>
-</div>
-<div className="card">
-<div className="flex items-center justify-between mb-4"><h2 className="font-bold text-navy-600 text-lg">Premium Resource Management</h2><button className="bg-amber-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-amber-600 flex items-center gap-1"><PlusCircle className="w-4 h-4" /> Add Resource</button></div>
-<table className="w-full text-sm"><thead className="bg-gray-50"><tr>{['Name','Type','Location','Description','Visibility','Actions'].map(h=><th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>)}</tr></thead><tbody>{RESOURCES.map((r,i)=><tr key={i} className="border-t border-gray-100"><td className="px-4 py-3 font-medium">{r.name}</td><td className="px-4 py-3 text-gray-500">{r.type}</td><td className="px-4 py-3 text-gray-500">{r.location}</td><td className="px-4 py-3 text-gray-600 max-w-xs truncate">{r.desc}</td><td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full ${r.visibility==='Premium Only'?'bg-amber-100 text-amber-700':'bg-green-100 text-green-700'}`}>{r.visibility}</span></td><td className="px-4 py-3"><div className="flex gap-2"><button className="text-teal-600"><Edit2 className="w-4 h-4" /></button><button className="text-red-400"><Trash2 className="w-4 h-4" /></button></div></td></tr>)}</tbody></table>
-</div>
-</div>
-)}
-{activeTab==='contacts' && (
-<div className="card">
-<div className="flex items-center justify-between mb-4"><h2 className="font-bold text-navy-600 text-lg">Builder Executive Contacts Library</h2><div className="flex gap-2"><button className="border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-1"><Download className="w-4 h-4" /> Import CSV</button><button className="bg-amber-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-amber-600 flex items-center gap-1"><PlusCircle className="w-4 h-4" /> Add Contact</button></div></div>
-<table className="w-full text-sm"><thead className="bg-gray-50"><tr>{['Builder','Contact Name','Role','Email','Phone','Actions'].map(h=><th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>)}</tr></thead><tbody>{CONTACTS.map((c,i)=><tr key={i} className="border-t border-gray-100 hover:bg-gray-50"><td className="px-4 py-3 font-medium">{c.builder}</td><td className="px-4 py-3">{c.contact}</td><td className="px-4 py-3 text-gray-500">{c.role}</td><td className="px-4 py-3 text-teal-600">{c.email}</td><td className="px-4 py-3 text-gray-600">{c.phone}</td><td className="px-4 py-3"><div className="flex gap-2"><button className="text-teal-600"><Edit2 className="w-4 h-4" /></button><button className="text-red-400"><Trash2 className="w-4 h-4" /></button></div></td></tr>)}</tbody></table>
-</div>
-)}
-{activeTab==='settings' && (
-<div className="grid md:grid-cols-2 gap-6">
-<div className="card">
-<h2 className="font-bold text-navy-600 text-lg mb-4 flex items-center gap-2"><Shield className="w-5 h-5 text-teal-600" /> Global Settings</h2>
-<div className="space-y-4">
-{[{key:'aiMessaging',label:'AI Messaging',desc:'Enable AI-powered follow-up generation'},{key:'premiumResources',label:'Premium Resources',desc:'Gate resource library for premium users'},{key:'communityFeatures',label:'Community Features',desc:'Enable neighborhood visibility features'}].map(s=>(
-<div key={s.key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-<div><div className="font-medium text-navy-600 text-sm">{s.label}</div><div className="text-xs text-gray-500">{s.desc}</div></div>
-<input type="checkbox" checked={!!flags[s.key]} onChange={e=>setFlags((f:Record<string,boolean>)=>({...f,[s.key]:e.target.checked}))} className="w-4 h-4 accent-teal-600" />
-</div>
-))}
-</div>
-</div>
-<div className="card">
-<h2 className="font-bold text-navy-600 text-lg mb-4">Routing & Ad Settings</h2>
-<div className="mb-4">
-<label className="block text-sm font-medium text-gray-700 mb-2">Visitor Routing Mode</label>
-<div className="flex gap-3">
-<label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={routingMode==='landing'} onChange={()=>setRoutingMode('landing')} className="accent-teal-600" /><span className="text-sm">Show public landing first</span></label>
-<label className="flex items-center gap-2 cursor-pointer"><input type="radio" checked={routingMode==='login'} onChange={()=>setRoutingMode('login')} className="accent-teal-600" /><span className="text-sm">Direct to internal login</span></label>
-</div>
-</div>
-<div className="mb-4"><label className="block text-sm font-medium text-gray-700 mb-1">Ad Partner ID</label><input placeholder="Enter partner tracking ID" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" /></div>
-<button className="w-full bg-amber-500 text-white font-semibold py-3 rounded-lg hover:bg-amber-600 flex items-center justify-center gap-2"><Shield className="w-4 h-4" /> Save Settings</button>
-</div>
-</div>
-)}
-</div>
-</div>
-)
+interface BuilderStat {
+  name: string
+  company: string
+  totalClaims: number
+  avgResponseDays: number
+  resolvedRate: number
+  criticalClaims: number
+  state: string
 }
 
-export default function Admin() {
-  return <AuthGuard><AdminContent /></AuthGuard>
+interface CategoryStat {
+  category: string
+  count: number
+  avgDays: number
+}
+
+export default function AdminPage() {
+  const [activeTab, setActiveTab] = useState<'overview' | 'builders' | 'categories' | 'data'>('overview')
+
+  // Demo analytics data representing the kind of data we collect
+  const builderStats: BuilderStat[] = [
+    { name: 'David Weekley Homes', company: 'David Weekley Homes', totalClaims: 47, avgResponseDays: 12.3, resolvedRate: 62, criticalClaims: 8, state: 'UT' },
+    { name: 'Ivory Homes', company: 'Ivory Homes LLC', totalClaims: 31, avgResponseDays: 7.1, resolvedRate: 84, criticalClaims: 2, state: 'UT' },
+    { name: 'Woodside Homes', company: 'Woodside Homes', totalClaims: 22, avgResponseDays: 9.8, resolvedRate: 77, criticalClaims: 3, state: 'UT' },
+    { name: 'Toll Brothers', company: 'Toll Brothers Inc', totalClaims: 18, avgResponseDays: 5.2, resolvedRate: 89, criticalClaims: 1, state: 'UT' },
+    { name: 'Lennar Homes', company: 'Lennar Corporation', totalClaims: 15, avgResponseDays: 14.7, resolvedRate: 53, criticalClaims: 5, state: 'UT' },
+  ]
+
+  const categoryStats: CategoryStat[] = [
+    { category: 'Structural', count: 28, avgDays: 18.4 },
+    { category: 'Water', count: 35, avgDays: 11.2 },
+    { category: 'HVAC', count: 21, avgDays: 8.7 },
+    { category: 'Plumbing', count: 19, avgDays: 7.3 },
+    { category: 'Electrical', count: 12, avgDays: 6.1 },
+    { category: 'Cosmetic', count: 42, avgDays: 22.8 },
+  ]
+
+  const totalClaims = builderStats.reduce((s, b) => s + b.totalClaims, 0)
+  const avgResponseAll = (builderStats.reduce((s, b) => s + b.avgResponseDays * b.totalClaims, 0) / totalClaims).toFixed(1)
+  const worstResponder = builderStats.reduce((a, b) => a.avgResponseDays > b.avgResponseDays ? a : b)
+
+  return (
+    <AuthGuard>
+      <Header />
+      <main className="min-h-screen bg-gray-50 pt-16">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="text-gray-500 text-sm mt-1">Builder accountability data — powered by real homeowner claims</p>
+          </div>
+
+          {/* Tab Nav */}
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-8 w-fit">
+            {(['overview', 'builders', 'categories', 'data'] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
+                  activeTab === tab ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Overview */}
+          {activeTab === 'overview' && (
+            <div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <div className="text-3xl font-bold text-blue-600">{totalClaims}</div>
+                  <div className="text-sm text-gray-500 mt-1">Total Claims Tracked</div>
+                </div>
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <div className="text-3xl font-bold text-orange-500">{avgResponseAll}</div>
+                  <div className="text-sm text-gray-500 mt-1">Avg Response Days</div>
+                </div>
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <div className="text-3xl font-bold text-red-500">{builderStats.reduce((s, b) => s + b.criticalClaims, 0)}</div>
+                  <div className="text-sm text-gray-500 mt-1">Critical Issues</div>
+                </div>
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                  <div className="text-3xl font-bold text-green-600">{builderStats.length}</div>
+                  <div className="text-sm text-gray-500 mt-1">Builders Tracked</div>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <AlertTriangle size={16} className="text-red-500" />
+                    Worst Responders
+                  </h3>
+                  {builderStats.sort((a, b) => b.avgResponseDays - a.avgResponseDays).slice(0, 3).map(b => (
+                    <div key={b.name} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                      <div>
+                        <div className="text-sm font-medium text-gray-800">{b.name}</div>
+                        <div className="text-xs text-gray-400">{b.totalClaims} claims</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-red-500">{b.avgResponseDays}d avg</div>
+                        <div className="text-xs text-gray-400">{b.resolvedRate}% resolved</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <BarChart3 size={16} className="text-blue-500" />
+                    Top Issue Categories
+                  </h3>
+                  {categoryStats.sort((a, b) => b.count - a.count).slice(0, 5).map(c => (
+                    <div key={c.category} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-gray-700">{c.category}</span>
+                          <span className="text-xs text-gray-400">{c.count} claims · {c.avgDays}d avg</span>
+                        </div>
+                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500 rounded-full"
+                            style={{ width: `${(c.count / Math.max(...categoryStats.map(x => x.count))) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Builder Scorecards */}
+          {activeTab === 'builders' && (
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h2 className="font-semibold text-gray-900">Builder Scorecards</h2>
+                <p className="text-xs text-gray-400 mt-1">Ranked by response time (worst first) — anonymized data available for licensing</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+                      <th className="text-left px-5 py-3">Builder</th>
+                      <th className="text-center px-4 py-3">Claims</th>
+                      <th className="text-center px-4 py-3">Avg Response</th>
+                      <th className="text-center px-4 py-3">Resolution Rate</th>
+                      <th className="text-center px-4 py-3">Critical</th>
+                      <th className="text-center px-4 py-3">Grade</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {builderStats.sort((a, b) => b.avgResponseDays - a.avgResponseDays).map((b, i) => {
+                      const grade = b.avgResponseDays <= 5 && b.resolvedRate >= 85 ? 'A'
+                        : b.avgResponseDays <= 10 && b.resolvedRate >= 70 ? 'B'
+                        : b.avgResponseDays <= 15 && b.resolvedRate >= 60 ? 'C'
+                        : b.resolvedRate >= 50 ? 'D' : 'F'
+                      const gradeColor = { A: 'text-green-600', B: 'text-blue-600', C: 'text-yellow-600', D: 'text-orange-600', F: 'text-red-600' }[grade]
+                      return (
+                        <tr key={b.name} className="border-t border-gray-100 hover:bg-gray-50">
+                          <td className="px-5 py-3">
+                            <div className="font-medium text-gray-800">{b.name}</div>
+                            <div className="text-xs text-gray-400 flex items-center gap-1"><MapPin size={10} />{b.state}</div>
+                          </td>
+                          <td className="px-4 py-3 text-center text-gray-700">{b.totalClaims}</td>
+                          <td className={`px-4 py-3 text-center font-semibold ${b.avgResponseDays > 10 ? 'text-red-500' : 'text-green-600'}`}>
+                            {b.avgResponseDays}d
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`font-semibold ${b.resolvedRate >= 75 ? 'text-green-600' : 'text-red-500'}`}>
+                              {b.resolvedRate}%
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`${b.criticalClaims > 3 ? 'text-red-500 font-semibold' : 'text-gray-600'}`}>
+                              {b.criticalClaims}
+                            </span>
+                          </td>
+                          <td className={`px-4 py-3 text-center text-xl font-bold ${gradeColor}`}>{grade}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Categories */}
+          {activeTab === 'categories' && (
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+              <h2 className="font-semibold text-gray-900 mb-4">Issue Categories Breakdown</h2>
+              <div className="space-y-4">
+                {categoryStats.sort((a, b) => b.count - a.count).map(c => (
+                  <div key={c.category}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-gray-700">{c.category}</span>
+                      <div className="text-xs text-gray-500">
+                        <span className="font-semibold text-gray-700">{c.count}</span> claims · 
+                        <span className={`ml-1 font-semibold ${c.avgDays > 15 ? 'text-red-500' : 'text-green-600'}`}>{c.avgDays}d</span> avg resolution
+                      </div>
+                    </div>
+                    <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all"
+                        style={{ width: `${(c.count / Math.max(...categoryStats.map(x => x.count))) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Data Licensing */}
+          {activeTab === 'data' && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-6 text-white">
+                <h2 className="text-xl font-bold mb-2">Data Licensing</h2>
+                <p className="text-blue-100 text-sm">
+                  Oluso collects anonymized homebuilder performance data across thousands of claims. 
+                  Our dataset provides unique insights into builder response times, issue frequencies, 
+                  and resolution patterns by region.
+                </p>
+              </div>
+              <div className="grid md:grid-cols-3 gap-4">
+                {[
+                  { title: 'Insurance Underwriters', icon: '🏦', desc: 'Risk scoring for new home insurance policies based on builder reputation and historical claim rates.' },
+                  { title: 'Real Estate Attorneys', icon: '⚖️', desc: 'Builder response time benchmarks and claim documentation for litigation support.' },
+                  { title: 'RE Investors', icon: '📊', desc: 'Community-level quality scores and defect rates to assess resale risk in new developments.' },
+                ].map(item => (
+                  <div key={item.title} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                    <div className="text-3xl mb-3">{item.icon}</div>
+                    <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                    <p className="text-sm text-gray-500">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-3">What We Track</h3>
+                <div className="grid md:grid-cols-2 gap-3 text-sm text-gray-600">
+                  {[
+                    'Builder response time (hours to first reply)',
+                    'Issue categories by builder and region',
+                    'Resolution rates and time-to-close',
+                    'Critical/structural issue frequency',
+                    'Community-level defect clustering',
+                    'Seasonal patterns in issue types',
+                    'Builder communication quality scores',
+                    'Escalation rates and outcomes'
+                  ].map(item => (
+                    <div key={item} className="flex items-center gap-2">
+                      <CheckCircle size={14} className="text-green-500 shrink-0" />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+    </AuthGuard>
+  )
 }
