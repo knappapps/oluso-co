@@ -1,0 +1,104 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+import { Home, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+
+export default function LoginPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+      if (authError) { setError(authError.message); return }
+      if (data.session) {
+        // Check if onboarding complete
+        const { data: profile } = await supabase
+          .from('users').select('onboarding_complete').eq('auth_id', data.session.user.id).single()
+        if (!profile || !profile.onboarding_complete) {
+          router.push('/onboarding')
+        } else {
+          router.push('/dashboard')
+        }
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2 text-blue-600 font-bold text-2xl mb-2">
+            <Home size={28} /> Oluso
+          </Link>
+          <p className="text-gray-500 text-sm">Sign in to your account</p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <h1 className="text-xl font-bold text-gray-900 mb-6">Welcome back</h1>
+
+          {error && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4 text-sm">
+              <AlertCircle size={16} className="shrink-0" />
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Email address</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'} required value={password}
+                  onChange={e => setPassword(e.target.value)} placeholder="••••••••"
+                  className="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" disabled={loading}
+              className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2">
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </form>
+
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Don't have an account?{' '}
+            <Link href="/signup" className="text-blue-600 font-medium hover:underline">Create one free</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
