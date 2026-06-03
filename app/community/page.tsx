@@ -1,110 +1,58 @@
-import Header from '@/components/Header'
+'use client'
+
 import AuthGuard from '@/components/AuthGuard'
-import { MapPin, Users, AlertCircle, Share2, Download, CheckCircle, Mail, UserPlus } from 'lucide-react'
+import Header from '@/components/Header'
+import { Users, MapPin } from 'lucide-react'
 
-const SHARED_ISSUES = [
-{ title:'Foundation Crack in Garage', category:'Structural', severity:'Critical', desc:'Multiple homes in the community are experiencing foundation cracks appearing in the garage area near the expansion joints.', date:'Dec 15, 2024', contributor:'J.S.', status:'Open' },
-{ title:'HVAC Condensate Drain Backup', category:'HVAC', severity:'High', desc:'Condensate drain lines backing up causing water damage in attic insulation. Affects units in buildings 3-7.', date:'Jan 8, 2025', contributor:'M.R.', status:'In Progress' },
-{ title:'Exterior Paint Peeling — South Facing', category:'Exterior', severity:'Medium', desc:'Paint peeling on south-facing walls within 18 months of move-in. Builder warranty covers exterior paint for 2 years.', date:'Nov 20, 2024', contributor:'T.K.', status:'Waiting on Builder' },
+const stories = [
+  { name: 'Sarah M.', city: 'Lehi, UT', builder: 'Woodside Homes', issue: 'Foundation drainage', resolved: true, days: 23 },
+  { name: 'James K.', city: 'Herriman, UT', builder: 'Ivory Homes', issue: 'HVAC undersized', resolved: false, days: 47 },
+  { name: 'Maria L.', city: 'South Jordan, UT', builder: 'David Weekley', issue: 'Stucco cracking', resolved: true, days: 89 },
+  { name: 'Tom R.', city: 'Draper, UT', builder: 'Toll Brothers', issue: 'Window leaks', resolved: true, days: 12 },
 ]
 
-const CATEGORIES = [
-{name:'Structural',count:23,color:'bg-blue-500',pct:'75%'},
-{name:'Plumbing',count:16,color:'bg-teal-500',pct:'55%'},
-{name:'HVAC',count:12,color:'bg-amber-500',pct:'40%'},
-{name:'Electrical',count:10,color:'bg-green-500',pct:'33%'},
-{name:'Exterior',count:7,color:'bg-purple-500',pct:'23%'},
-]
-const SEVERITIES = [
-{name:'Critical',count:8,color:'bg-red-500',pct:'30%'},
-{name:'High',count:14,color:'bg-orange-500',pct:'50%'},
-{name:'Medium',count:19,color:'bg-amber-500',pct:'65%'},
-{name:'Low',count:27,color:'bg-green-500',pct:'90%'},
-]
-
-function CommunityContent() {
-return (
-<div className="min-h-screen bg-gray-50">
-<Header currentPage="Community" />
-<section className="bg-gradient-to-r from-gray-100 to-gray-200 py-8 px-4">
-<div className="max-w-6xl mx-auto">
-<div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-<div>
-<h1 className="text-3xl font-bold text-navy-600 flex items-center gap-2 mb-2">🏘 Oakwood Estates</h1>
-<div className="flex flex-wrap gap-4 text-sm text-gray-600">
-<span className="flex items-center gap-1"><MapPin className="w-4 h-4" />Austin, TX 78745</span>
-<span className="flex items-center gap-2 bg-teal-100 text-teal-700 px-3 py-1 rounded-full"><Users className="w-4 h-4" />47 Members</span>
-<span className="flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-full"><AlertCircle className="w-4 h-4" />12 Active Issues</span>
-</div>
-</div>
-<div className="flex gap-3">
-<button className="bg-amber-500 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-amber-600"><Share2 className="w-4 h-4" /> Invite Neighbors</button>
-<button className="border border-gray-200 text-gray-600 text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white"><Download className="w-4 h-4" /> Export Summary</button>
-</div>
-</div>
-</div>
-</section>
-<div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-<div>
-<h2 className="text-xl font-bold text-navy-600 mb-4">Community Overview</h2>
-<div className="grid md:grid-cols-2 gap-6">
-<div className="card">
-<div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-navy-600">Issues by Category</h3><span className="text-gray-300">●</span></div>
-<div className="space-y-3">{CATEGORIES.map(c=><div key={c.name} className="flex items-center gap-3"><div className={`h-3 rounded-full ${c.color}`} style={{width:c.pct}}></div><span className="text-sm text-gray-600 whitespace-nowrap">{c.name} ({c.count})</span></div>)}</div>
-</div>
-<div className="card">
-<div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-navy-600">Issues by Severity</h3><span className="text-gray-300">📊</span></div>
-<div className="space-y-3">{SEVERITIES.map(s=><div key={s.name} className="flex items-center gap-3"><div className={`h-3 rounded-full ${s.color}`} style={{width:s.pct}}></div><span className="text-sm text-gray-600 whitespace-nowrap">{s.name} ({s.count})</span></div>)}</div>
-</div>
-</div>
-</div>
-<div>
-<div className="flex items-center justify-between mb-4">
-<div><h2 className="text-xl font-bold text-navy-600">Shared Community Issues</h2><p className="text-sm text-gray-500">Issues that neighbors have chosen to share with the community</p></div>
-<div className="flex gap-2">
-<button className="bg-amber-500 text-white text-sm font-medium px-4 py-2 rounded-lg">All Shared</button>
-<button className="border border-gray-200 text-gray-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-white">My Contributions</button>
-</div>
-</div>
-<div className="card mb-4">
-<div className="grid md:grid-cols-4 gap-3">{['All Categories','All Statuses','All Severities'].map(p=><select key={p} className="border border-gray-200 rounded-lg px-3 py-2 text-sm"><option>{p}</option></select>)}<button className="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-medium">Apply Filters</button></div>
-</div>
-<div className="grid md:grid-cols-2 gap-4">
-{SHARED_ISSUES.map((issue,i)=>(
-<div key={i} className="card">
-<div className="flex items-start justify-between mb-2"><h3 className="font-semibold text-navy-600">{issue.title}</h3><span className="text-xs bg-orange-100 text-orange-700 font-semibold px-2 py-1 rounded-full">{issue.severity}</span></div>
-<div className="text-teal-600 text-sm font-medium mb-2">{issue.category}</div>
-<p className="text-gray-600 text-sm mb-4">{issue.desc}</p>
-<div className="flex items-center justify-between text-xs text-gray-400">
-<span className={`px-2 py-1 rounded-full font-medium ${issue.status==='Open'?'bg-blue-100 text-blue-700':issue.status==='In Progress'?'bg-amber-100 text-amber-700':'bg-gray-100 text-gray-600'}`}>{issue.status}</span>
-<span>{issue.date}</span>
-</div>
-<div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2 text-xs text-gray-400"><div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-xs">👤</div>Contributed by {issue.contributor}</div>
-</div>
-))}
-</div>
-</div>
-<div>
-<h2 className="text-xl font-bold text-navy-600 mb-4">Coordinate with Your Community</h2>
-<div className="grid md:grid-cols-3 gap-6">
-{[
-{ icon: CheckCircle, title: 'Recommended Steps', color: 'text-teal-600', bullets: ['Document all issues with photos and descriptions','Share anonymized details with your community','Use ClaimGuard to track follow-up responses','Escalate through community if individual requests fail'] },
-{ icon: Mail, title: 'Contact Builder as a Group', color: 'text-amber-500', desc: 'Use this pre-formatted message when reaching out to your builder as a community:', action: 'Copy Group Message' },
-{ icon: UserPlus, title: 'Invite Your Neighbors', color: 'text-teal-600', desc: 'Share this link with your neighbors so they can join the community and contribute their warranty issues:', action: 'Copy Invite Link' },
-].map(c=>(
-<div key={c.title} className="card">
-<div className="flex items-center gap-2 mb-3"><c.icon className={`w-5 h-5 ${c.color}`} /><h3 className="font-semibold text-navy-600">{c.title}</h3></div>
-{c.bullets && <ul className="space-y-2">{c.bullets.map(b=><li key={b} className="flex items-start gap-2 text-sm text-gray-600"><CheckCircle className="w-4 h-4 text-teal-500 mt-0.5 flex-shrink-0" />{b}</li>)}</ul>}
-{c.desc && <><p className="text-sm text-gray-600 mb-3">{c.desc}</p><button className="border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-lg hover:bg-gray-50 w-full">{c.action}</button></>}
-</div>
-))}
-</div>
-</div>
-</div>
-</div>
-)
-}
-
-export default function Community() {
-  return <AuthGuard><CommunityContent /></AuthGuard>
+export default function CommunityPage() {
+  return (
+    <AuthGuard>
+      <Header />
+      <main className="min-h-screen bg-gray-50 pt-16">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">Community</h1>
+            <p className="text-gray-500 text-sm mt-1">Real stories from homeowners navigating builder warranty claims</p>
+          </div>
+          <div className="grid gap-4">
+            {stories.map((s, i) => (
+              <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">{s.name.charAt(0)}</div>
+                    <div>
+                      <p className="font-semibold text-gray-900">{s.name}</p>
+                      <p className="text-xs text-gray-400 flex items-center gap-1"><MapPin size={11} /> {s.city}</p>
+                    </div>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${s.resolved ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                    {s.resolved ? 'Resolved' : 'In progress'}
+                  </span>
+                </div>
+                <div className="mt-3 flex items-center gap-4 text-sm text-gray-600">
+                  <span className="font-medium">{s.builder}</span>
+                  <span className="text-gray-400">·</span>
+                  <span>{s.issue}</span>
+                  <span className="text-gray-400">·</span>
+                  <span className={`${s.days > 30 ? 'text-red-500' : 'text-green-600'} font-medium`}>{s.days} days</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 bg-blue-50 rounded-2xl p-6 text-center border border-blue-100">
+            <Users size={32} className="mx-auto text-blue-500 mb-3" />
+            <h3 className="font-bold text-gray-900 mb-2">Share your story</h3>
+            <p className="text-sm text-gray-500">Your experience helps other homeowners and creates accountability for builders.</p>
+          </div>
+        </div>
+      </main>
+    </AuthGuard>
+  )
 }
