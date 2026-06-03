@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { Users, FileText, Building2, MessageSquare, TrendingUp, AlertTriangle, CheckCircle, Clock, Download, RefreshCw, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, FileText, Building2, MessageSquare, TrendingUp, AlertTriangle, CheckCircle, Clock, Download, RefreshCw, ChevronDown, ChevronUp, ShieldAlert } from 'lucide-react';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+const ADMIN_EMAIL = 'rknapp@gmail.com';
+
 interface User { id: string; name: string; email: string; builder_name: string; city: string; state: string; plan: string; onboarding_complete: boolean; created_at: string; }
 interface Claim { id: string; title: string; category: string; severity: string; status: string; created_at: string; resolved_at: string | null; first_response_at: string | null; user_id: string; builder_id: string; email_thread_address: string; users?: { name: string; email: string }; builders?: { name: string }; }
 interface Builder { id: string; name: string; }
@@ -29,7 +31,6 @@ function exportCSV(data: object[], filename: string) {
   URL.revokeObjectURL(url);
 }
 
-// ─── Stat Card ───────────────────────────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string | number; color: string }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
@@ -39,8 +40,10 @@ function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 export default function AdminPage() {
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [tab, setTab] = useState<'overview' | 'users' | 'claims' | 'builders' | 'messages'>('overview');
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -51,6 +54,16 @@ export default function AdminPage() {
   const [claimFilter, setClaimFilter] = useState('all');
   const [expandedClaim, setExpandedClaim] = useState<string | null>(null);
 
+  // ── Admin guard ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) { router.replace('/login'); return; }
+      if (session.user.email !== ADMIN_EMAIL) { router.replace('/dashboard'); return; }
+      setIsAdmin(true);
+      setAuthChecked(true);
+    });
+  }, [router]);
+
   async function loadAll() {
     setLoading(true);
     const [usersRes, claimsRes, buildersRes, messagesRes] = await Promise.all([
@@ -59,44 +72,23 @@ export default function AdminPage() {
       supabase.from('builders').select('*').order('name'),
       supabase.from('messages').select('id, claim_id, direction, from_email, subject, sent_at').order('sent_at', { ascending: false }).limit(100),
     ]);
-
     const u = usersRes.data || [];
     const c = claimsRes.data || [];
     const b = buildersRes.data || [];
     const m = messagesRes.data || [];
-
-    setUsers(u as User[]);
-    setClaims(c as Claim[]);
-    setBuilders(b as Builder[]);
-    setMessages(m);
-
+    setUsers(u as User[]); setClaims(c as Claim[]); setBuilders(b as Builder[]); setMessages(m);
     const resolved = c.filter(cl => cl.resolved_at && cl.first_response_at);
-    const totalResponseDays = resolved.reduce((sum, cl) => {
-      const days = (new Date(cl.first_response_at!).getTime() - new Date(cl.created_at).getTime()) / 86400000;
-      return sum + days;
-    }, 0);
-
-    setStats({
-      totalUsers: u.length,
-      totalClaims: c.length,
-      openClaims: c.filter(cl => cl.status === 'open').length,
-      resolvedClaims: c.filter(cl => cl.status === 'resolved' || cl.status === 'closed').length,
-      criticalClaims: c.filter(cl => cl.severity === 'critical').length,
-      totalMessages: m.length,
-      avgResponseDays: resolved.length ? Math.round((totalResponseDays / resolved.length) * 10) / 10 : null,
-    });
+    const totalResponseDays = resolved.reduce((sum, cl) => sum + (new Date(cl.first_response_at!).getTime() - new Date(cl.created_at).getTime()) / 86400000, 0);
+    setStats({ totalUsers: u.length, totalClaims: c.length, openClaims: c.filter(cl => cl.status === 'open').length, resolvedClaims: c.filter(cl => cl.status === 'resolved' || cl.status === 'closed').length, criticalClaims: c.filter(cl => cl.severity === 'critical').length, totalMessages: m.length, avgResponseDays: resolved.length ? Math.round((totalResponseDays / resolved.length) * 10) / 10 : null });
     setLoading(false);
   }
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => { if (isAdmin) loadAll(); }, [isAdmin]);
 
-  // Builder scorecard derived from claims
   const builderScorecard = builders.map(b => {
     const bClaims = claims.filter(c => c.builder_id === b.id);
     const bResolved = bClaims.filter(c => c.resolved_at && c.first_response_at);
-    const avgDays = bResolved.length
-      ? Math.round(bResolved.reduce((sum, c) => sum + (new Date(c.first_response_at!).getTime() - new Date(c.created_at).getTime()) / 86400000, 0) / bResolved.length * 10) / 10
-      : null;
+    const avgDays = bResolved.length ? Math.round(bResolved.reduce((sum, c) => sum + (new Date(c.first_response_at!).getTime() - new Date(c.created_at).getTime()) / 86400000, 0) / bResolved.length * 10) / 10 : null;
     return { name: b.name, total: bClaims.length, critical: bClaims.filter(c => c.severity === 'critical').length, resolved: bResolved.length, avgDays, resolveRate: bClaims.length ? Math.round((bClaims.filter(c => c.status === 'resolved' || c.status === 'closed').length / bClaims.length) * 100) : 0 };
   }).filter(b => b.total > 0).sort((a, b) => b.total - a.total);
 
@@ -110,10 +102,29 @@ export default function AdminPage() {
     { id: 'messages', label: `Messages (${messages.length})`, icon: MessageSquare },
   ] as const;
 
+  // Show nothing while checking auth
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-400">Checking access...</p>
+      </div>
+    );
+  }
+
+  // Double-check — should never reach here due to redirect, but safety net
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
+        <ShieldAlert size={48} className="text-red-400" />
+        <h1 className="text-xl font-semibold text-gray-800">Access Denied</h1>
+        <p className="text-gray-500">This page is restricted to administrators.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -124,7 +135,6 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit">
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id as typeof tab)}
@@ -136,7 +146,6 @@ export default function AdminPage() {
 
         {loading && <div className="text-center py-20 text-gray-400">Loading data from Supabase...</div>}
 
-        {/* ── OVERVIEW ── */}
         {!loading && tab === 'overview' && stats && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -154,7 +163,6 @@ export default function AdminPage() {
                 <p className="text-xs text-gray-400 mt-1">Based on {claims.filter(c => c.first_response_at).length} claims with recorded responses</p>
               </div>
             )}
-            {/* Recent Claims */}
             <div className="bg-white rounded-xl border border-gray-200">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">Recent Claims</h3>
@@ -173,12 +181,12 @@ export default function AdminPage() {
                     </div>
                   </div>
                 ))}
+                {!claims.length && <p className="text-center py-8 text-gray-400 text-sm">No claims yet.</p>}
               </div>
             </div>
           </div>
         )}
 
-        {/* ── USERS ── */}
         {!loading && tab === 'users' && (
           <div className="bg-white rounded-xl border border-gray-200">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -209,10 +217,9 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ── CLAIMS ── */}
         {!loading && tab === 'claims' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex gap-2 flex-wrap">
                 {['all','open','in_progress','awaiting_builder','resolved','escalated','closed'].map(s => (
                   <button key={s} onClick={() => setClaimFilter(s)}
@@ -256,7 +263,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ── BUILDERS ── */}
         {!loading && tab === 'builders' && (
           <div className="space-y-4">
             <div className="flex justify-end">
@@ -296,7 +302,6 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
-            {/* All builders list */}
             <div className="bg-white rounded-xl border border-gray-200">
               <div className="px-5 py-4 border-b border-gray-100"><h3 className="font-semibold text-gray-800">All Tracked Builders ({builders.length})</h3></div>
               <div className="divide-y divide-gray-50">
@@ -314,7 +319,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ── MESSAGES ── */}
         {!loading && tab === 'messages' && (
           <div className="bg-white rounded-xl border border-gray-200">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
