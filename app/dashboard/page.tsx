@@ -97,11 +97,11 @@ function ShareNeighborCard({ referralCode, builderName }: { referralCode: string
                       <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
                                             <Share2 size={16} className="opacity-80" />
-                                            <h3 className="font-semibold text-sm">Share with your neighbor</h3>h3>
-                                </div>div>
+                                            <h3 className="font-semibold text-sm">Share with your neighbor</h3>
+                                </div>
                                 <p className="text-blue-100 text-xs leading-relaxed mb-3">
                                             Your neighbors have the same builder and the same warranty window. Share Oluso so they can track their claims too{builderName ? ` — link pre-fills ${builderName}` : ''}.
-                                </p>p>
+                                </p>
                                 <div className="flex flex-wrap gap-2">
                                             <button
                                                             onClick={copyLink}
@@ -109,29 +109,29 @@ function ShareNeighborCard({ referralCode, builderName }: { referralCode: string
                                                           >
                                               {copied ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
                                               {copied ? 'Copied!' : 'Copy link'}
-                                            </button>button>
+                                            </button>
                                             <a
                                                             href={`sms:?body=${smsText}`}
                                                             className="flex items-center gap-1.5 bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-blue-400 transition-colors"
                                                           >
                                                           <MessageSquare size={12} /> Text a neighbor
-                                            </a>a>
+                                            </a>
                                             <a
                                                             href={`mailto:?subject=${emailSubject}&body=${emailBody}`}
                                                             className="flex items-center gap-1.5 bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-blue-400 transition-colors"
                                                           >
                                                           <Mail size={12} /> Send email
-                                            </a>a>
-                                </div>div>
-                      </div>div>
+                                            </a>
+                                </div>
+                      </div>
                       <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-blue-500 shrink-0">
                                 <Share2 size={18} />
-                      </div>div>
-              </div>div>
+                      </div>
+              </div>
               <div className="mt-3 pt-3 border-t border-blue-500">
-                      <p className="text-blue-200 text-xs font-mono truncate">{shareUrl}</p>p>
-              </div>div>
-        </div>div>
+                      <p className="text-blue-200 text-xs font-mono truncate">{shareUrl}</p>
+              </div>
+        </div>
       )
 }
 
@@ -309,14 +309,14 @@ export default function DashboardPage() {
                                         <div className="max-w-5xl mx-auto px-4 py-8">
                                                   <div className="flex items-center justify-between mb-6">
                                                               <div>
-                                                                            <h1 className="text-2xl font-bold text-gray-900">My Claims</h1>h1>
-                                                                            <p className="text-gray-500 text-sm mt-1">Track warranty issues and builder communications</p>p>
-                                                              </div>div>
+                                                                            <h1 className="text-2xl font-bold text-gray-900">My Claims</h1>
+                                                                            <p className="text-gray-500 text-sm mt-1">Track warranty issues and builder communications</p>
+                                                              </div>
                                                               <button onClick={() => setShowNew(!showNew)}
                                                                               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                                                                             <Plus size={16} /> New Claim
-                                                              </button>button>
-                                                  </div>div>
+                                                              </button>
+                                                  </div>
                                         
                                           {userProfile?.warranty_start && (
                                         <div className="mb-6">
@@ -326,7 +326,7 @@ export default function DashboardPage() {
                                                                         totalClaims={claims.length}
                                                                         openClaims={openClaims.length}
                                                                       />
-                                        </div>div>
+                                        </div>
                                                   )}
                                         
                                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -337,11 +337,11 @@ export default function DashboardPage() {
                             { label: 'Total Claims', value: claims.length, color: 'text-gray-700' }
                                         ].map(s => (
                                                         <div key={s.label} className="bg-white rounded-xl p-4 border border-gray-200">
-                                                                        <div className={'text-2xl font-bold ' + s.color}>{s.value}</div>div>
-                                                                        <div className="text-xs text-gray-500 mt-1">{s.label}</div>div>
-                                                        </div>div>
+                                                                        <div className={'text-2xl font-bold ' + s.color}>{s.value}</div>
+                                                                        <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+                                                        </div>
                                                       ))}
-                                                  </div>div>
+                                                  </div>
                                         
                                           {/* Share with neighbor card — shown when user has a referral code */}
                                           {userProfile?.referral_code && (
@@ -353,111 +353,111 @@ export default function DashboardPage() {
                                         
                                           {showNew && (
                                         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
-                                                      <h2 className="font-semibold text-gray-900 mb-4">File a New Claim</h2>h2>
+                                                      <h2 className="font-semibold text-gray-900 mb-4">File a New Claim</h2>
                                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                       <div className="md:col-span-2">
-                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Claim Title *</label>label>
+                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Claim Title *</label>
                                                                                         <input type="text" placeholder="e.g. Foundation crack in garage"
                                                                                                               value={newClaim.title} onChange={e => setNewClaim(p => ({ ...p, title: e.target.value }))}
                                                                                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                                                      </div>div>
+                                                                      </div>
                                                                       <div className="md:col-span-2">
-                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>label>
+                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
                                                                                         <textarea rows={3} placeholder="Describe the issue in detail..."
                                                                                                               value={newClaim.description} onChange={e => setNewClaim(p => ({ ...p, description: e.target.value }))}
                                                                                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                                                      </div>div>
+                                                                      </div>
                                                                       <div>
-                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>label>
+                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
                                                                                         <select value={newClaim.category}
                                                                                                               onChange={e => setNewClaim(p => ({ ...p, category: e.target.value, defect_location: '', defect_sub_category: '' }))}
                                                                                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                                                                           {CATEGORIES.map(c => (
-                                                                                                                                      <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>option>
+                                                                                                                                      <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
                                                                                                                                     ))}
-                                                                                          </select>select>
-                                                                      </div>div>
+                                                                                          </select>
+                                                                      </div>
                                                                       <div>
-                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Severity</label>label>
+                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Severity</label>
                                                                                         <select value={newClaim.severity} onChange={e => setNewClaim(p => ({ ...p, severity: e.target.value }))}
                                                                                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                                                                           {SEVERITIES.map(s => (
-                                                                                                                                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>option>
+                                                                                                                                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
                                                                                                                                     ))}
-                                                                                          </select>select>
-                                                                      </div>div>
+                                                                                          </select>
+                                                                      </div>
                                                                       <div>
-                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Location in Home</label>label>
+                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Location in Home</label>
                                                                                         <select value={newClaim.defect_location} onChange={e => setNewClaim(p => ({ ...p, defect_location: e.target.value }))}
                                                                                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                                                                            <option value="">Select location...</option>option>
+                                                                                                            <option value="">Select location...</option>
                                                                                           {locationOptions.map(l => (
-                                                                                                                                      <option key={l} value={l}>{l}</option>option>
+                                                                                                                                      <option key={l} value={l}>{l}</option>
                                                                                                                                     ))}
-                                                                                          </select>select>
-                                                                      </div>div>
+                                                                                          </select>
+                                                                      </div>
                                                                       <div>
-                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Defect Type</label>label>
+                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Defect Type</label>
                                                                                         <select value={newClaim.defect_sub_category} onChange={e => setNewClaim(p => ({ ...p, defect_sub_category: e.target.value }))}
                                                                                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                                                                            <option value="">Select type...</option>option>
+                                                                                                            <option value="">Select type...</option>
                                                                                           {subCatOptions.map(s => (
-                                                                                                                                      <option key={s} value={s}>{s}</option>option>
+                                                                                                                                      <option key={s} value={s}>{s}</option>
                                                                                                                                     ))}
-                                                                                          </select>select>
-                                                                      </div>div>
+                                                                                          </select>
+                                                                      </div>
                                                                       <div>
-                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Est. Repair Cost ($)</label>label>
+                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Est. Repair Cost ($)</label>
                                                                                         <input type="number" min="0" step="50" placeholder="e.g. 2500"
                                                                                                               value={newClaim.estimated_repair_cost}
                                                                                                               onChange={e => setNewClaim(p => ({ ...p, estimated_repair_cost: e.target.value }))}
                                                                                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                                                      </div>div>
+                                                                      </div>
                                                                       <div>
-                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Warranty Year</label>label>
+                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Warranty Year</label>
                                                                                         <select value={newClaim.warranty_year} onChange={e => setNewClaim(p => ({ ...p, warranty_year: e.target.value }))}
                                                                                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                                                                            <option value="1">Year 1 (Workmanship)</option>option>
-                                                                                                            <option value="2">Year 2 (Mechanical systems)</option>option>
-                                                                                                            <option value="10">Year 10 (Structural)</option>option>
-                                                                                          </select>select>
-                                                                      </div>div>
+                                                                                                            <option value="1">Year 1 (Workmanship)</option>
+                                                                                                            <option value="2">Year 2 (Mechanical systems)</option>
+                                                                                                            <option value="10">Year 10 (Structural)</option>
+                                                                                          </select>
+                                                                      </div>
                                                                       <div>
-                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Builder Email</label>label>
+                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Builder Email</label>
                                                                                         <input type="email" placeholder="warranty@builder.com"
                                                                                                               value={newClaim.builder_email} onChange={e => setNewClaim(p => ({ ...p, builder_email: e.target.value }))}
                                                                                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                                                      </div>div>
+                                                                      </div>
                                                                       <div>
-                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Builder Company</label>label>
+                                                                                        <label className="block text-xs font-medium text-gray-700 mb-1">Builder Company</label>
                                                                                         <input type="text" placeholder="e.g. David Weekley Homes"
                                                                                                               value={newClaim.builder_name} onChange={e => setNewClaim(p => ({ ...p, builder_name: e.target.value }))}
                                                                                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                                                      </div>div>
+                                                                      </div>
                                                                       <div className="md:col-span-2">
                                                                                         <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                                                                            <span className="flex items-center gap-1"><Paperclip size={12} /> Attach photos / documents</span>span>
-                                                                                          </label>label>
+                                                                                                            <span className="flex items-center gap-1"><Paperclip size={12} /> Attach photos / documents</span>
+                                                                                          </label>
                                                                                         <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.doc,.docx"
                                                                                                               onChange={handleFileSelect} className="hidden" />
                                                                                         <button type="button" onClick={() => fileInputRef.current?.click()}
                                                                                                               className="w-full border-2 border-dashed border-gray-300 rounded-lg py-4 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center gap-2">
                                                                                                             <Upload size={16} /> Click to add photos or documents
-                                                                                          </button>button>
+                                                                                          </button>
                                                                         {pendingFiles.length > 0 && (
                                                               <div className="flex flex-wrap gap-2 mt-2">
                                                                 {pendingFiles.map((f, i) => (
                                                                                         <div key={i} className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-lg px-2 py-1 text-xs text-blue-700">
                                                                                           {fileIcon(f.type)}
-                                                                                                                  <span className="max-w-24 truncate">{f.name}</span>span>
+                                                                                                                  <span className="max-w-24 truncate">{f.name}</span>
                                                                                                                   <button onClick={() => setPendingFiles(prev => prev.filter((_, j) => j !== i))} className="text-blue-400 hover:text-blue-600 ml-1">
                                                                                                                                               <X size={12} />
-                                                                                                                    </button>button>
-                                                                                          </div>div>
+                                                                                                                    </button>
+                                                                                          </div>
                                                                                       ))}
-                                                              </div>div>
+                                                              </div>
                                                                                         )}
-                                                                      </div>div>
+                                                                      </div>
                                                                       <div className="md:col-span-2">
                                                                                         <label className="flex items-center gap-3 cursor-pointer">
                                                                                                             <div className="relative">
@@ -466,40 +466,40 @@ export default function DashboardPage() {
                                                                                                                                                             onChange={e => setNewClaim(p => ({ ...p, public_story: e.target.checked }))} />
                                                                                                                                   <div className={'w-10 h-6 rounded-full transition-colors ' + (newClaim.public_story ? 'bg-green-500' : 'bg-gray-300')} />
                                                                                                                                   <div className={'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ' + (newClaim.public_story ? 'translate-x-5' : 'translate-x-1')} />
-                                                                                                              </div>div>
+                                                                                                              </div>
                                                                                                             <div>
                                                                                                                                   <span className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
                                                                                                                                                           <Shield size={14} className="text-green-500" />
                                                                                                                                                           Share anonymously with community
-                                                                                                                                    </span>span>
-                                                                                                                                  <p className="text-xs text-gray-400 mt-0.5">Your name and address are never shown.</p>p>
-                                                                                                              </div>div>
-                                                                                          </label>label>
-                                                                      </div>div>
-                                                      </div>div>
+                                                                                                                                    </span>
+                                                                                                                                  <p className="text-xs text-gray-400 mt-0.5">Your name and address are never shown.</p>
+                                                                                                              </div>
+                                                                                          </label>
+                                                                      </div>
+                                                      </div>
                                                       <div className="flex gap-3 mt-4">
                                                                       <button onClick={createClaim} disabled={!newClaim.title}
                                                                                           className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
                                                                                         Create Claim
-                                                                      </button>button>
+                                                                      </button>
                                                                       <button onClick={() => { setShowNew(false); setPendingFiles([]) }}
                                                                                           className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
                                                                                         Cancel
-                                                                      </button>button>
-                                                      </div>div>
-                                        </div>div>
+                                                                      </button>
+                                                      </div>
+                                        </div>
                                                   )}
                                         
                                           {loading ? (
                                         <div className="text-center py-12 text-gray-400 flex items-center justify-center gap-2">
                                                       <Loader2 size={20} className="animate-spin" /> Loading claims...
-                                        </div>div>
+                                        </div>
                                       ) : claims.length === 0 ? (
                                         <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
                                                       <AlertTriangle size={48} className="mx-auto text-gray-300 mb-4" />
-                                                      <p className="text-gray-500 font-medium">No claims yet</p>p>
-                                                      <p className="text-gray-400 text-sm mt-1">Click "New Claim" to document your first warranty issue</p>p>
-                                        </div>div>
+                                                      <p className="text-gray-500 font-medium">No claims yet</p>
+                                                      <p className="text-gray-400 text-sm mt-1">Click "New Claim" to document your first warranty issue</p>
+                                        </div>
                                       ) : (
                                         <div className="space-y-4">
                                           {claims.map(claim => (
@@ -508,53 +508,53 @@ export default function DashboardPage() {
                                                                                                 <div className="flex items-start justify-between gap-3">
                                                                                                                       <div className="flex-1 min-w-0">
                                                                                                                                               <div className="flex items-center gap-2 flex-wrap">
-                                                                                                                                                                        <h3 className="font-semibold text-gray-900">{claim.title}</h3>h3>
+                                                                                                                                                                        <h3 className="font-semibold text-gray-900">{claim.title}</h3>
                                                                                                                                                                         <span className={'text-xs px-2 py-0.5 rounded-full font-medium ' + (STATUS_COLORS[claim.status] || 'bg-gray-100 text-gray-700')}>
                                                                                                                                                                           {claim.status.replace('_', ' ')}
-                                                                                                                                                                          </span>span>
+                                                                                                                                                                          </span>
                                                                                                                                                                         <span className={'text-xs font-medium ' + (SEVERITY_COLORS[claim.severity] || 'text-gray-600')}>
                                                                                                                                                                           {claim.severity}
-                                                                                                                                                                          </span>span>
+                                                                                                                                                                          </span>
                                                                                                                                                 {(claim as any).public_story && (
                                                                                         <span className="text-xs flex items-center gap-0.5 text-green-600">
                                                                                                                       <Shield size={10} /> shared
-                                                                                          </span>span>
+                                                                                          </span>
                                                                                                                                                                         )}
-                                                                                                                                                </div>div>
+                                                                                                                                                </div>
                                                                                                                         {claim.description && (
-                                                                                      <p className="text-sm text-gray-500 mt-1 truncate">{claim.description}</p>p>
+                                                                                      <p className="text-sm text-gray-500 mt-1 truncate">{claim.description}</p>
                                                                                                                                               )}
                                                                                                                                               <div className="flex items-center gap-4 mt-2 text-xs text-gray-400 flex-wrap">
-                                                                                                                                                                        <span className="flex items-center gap-1"><Calendar size={12} /> Filed {daysSince(claim.created_at)}d ago</span>span>
+                                                                                                                                                                        <span className="flex items-center gap-1"><Calendar size={12} /> Filed {daysSince(claim.created_at)}d ago</span>
                                                                                                                                                 {(claim as any).defect_location && (
-                                                                                        <span className="text-gray-500">{(claim as any).defect_location}</span>span>
+                                                                                        <span className="text-gray-500">{(claim as any).defect_location}</span>
                                                                                                                                                                         )}
                                                                                                                                                 {(claim as any).estimated_repair_cost && (
-                                                                                        <span className="text-orange-500 font-medium">Est. ${Number((claim as any).estimated_repair_cost).toLocaleString()}</span>span>
+                                                                                        <span className="text-orange-500 font-medium">Est. ${Number((claim as any).estimated_repair_cost).toLocaleString()}</span>
                                                                                                                                                                         )}
                                                                                                                                                 {(claim as any).warranty_year && (
-                                                                                        <span className="text-blue-400">Yr {(claim as any).warranty_year} warranty</span>span>
+                                                                                        <span className="text-blue-400">Yr {(claim as any).warranty_year} warranty</span>
                                                                                                                                                                         )}
                                                                                                                                                 {(claim as any).first_response_at ? (
                                                                                         <span className="flex items-center gap-1 text-green-600">
                                                                                                                       <CheckCircle size={12} /> Responded {daysSince((claim as any).first_response_at)}d ago
-                                                                                          </span>span>
+                                                                                          </span>
                                                                                       ) : claim.status === 'awaiting_builder' ? (
                                                                                         <span className="flex items-center gap-1 text-orange-500">
                                                                                                                       <Clock size={12} /> Waiting {daysSince(claim.created_at)}d
-                                                                                          </span>span>
+                                                                                          </span>
                                                                                       ) : null}
                                                                                                                                                 {(claim as any).email_thread_address && (
-                                                                                        <span className="flex items-center gap-1 text-blue-400"><Mail size={12} /> {(claim as any).email_thread_address}</span>span>
+                                                                                        <span className="flex items-center gap-1 text-blue-400"><Mail size={12} /> {(claim as any).email_thread_address}</span>
                                                                                                                                                                         )}
-                                                                                                                                                </div>div>
-                                                                                                                        </div>div>
+                                                                                                                                                </div>
+                                                                                                                        </div>
                                                                                                                       <div className="flex items-center gap-2 text-gray-400 shrink-0">
-                                                                                                                                              <span className="text-xs bg-gray-100 px-2 py-1 rounded capitalize">{claim.category}</span>span>
+                                                                                                                                              <span className="text-xs bg-gray-100 px-2 py-1 rounded capitalize">{claim.category}</span>
                                                                                                                         {expanded === claim.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                                                                                                                        </div>div>
-                                                                                                  </div>div>
-                                                                            </div>div>
+                                                                                                                        </div>
+                                                                                                  </div>
+                                                                            </div>
                                                           
                                                             {expanded === claim.id && (
                                                                                 <div className="border-t border-gray-100">
@@ -565,18 +565,18 @@ export default function DashboardPage() {
                                                                                                                                                           {attachments[claim.id]?.length > 0 && (
                                                                                                                 <span className="bg-blue-100 text-blue-700 rounded-full px-1.5 text-xs ml-1">
                                                                                                                   {attachments[claim.id].length}
-                                                                                                                  </span>span>
+                                                                                                                  </span>
                                                                                                                                                                                     )}
-                                                                                                                                                          </h4>h4>
+                                                                                                                                                          </h4>
                                                                                                                                                         <label className="flex items-center gap-1 text-xs text-blue-600 cursor-pointer hover:text-blue-700">
                                                                                                                                                                                     <Upload size={12} />
                                                                                                                                                           {uploading ? 'Uploading...' : 'Add files'}
                                                                                                                                                                                     <input type="file" multiple accept="image/*,.pdf,.doc,.docx" className="hidden"
                                                                                                                                                                                                                     onChange={e => e.target.files && handleUploadToExisting(claim.id, e.target.files)} />
-                                                                                                                                                          </label>label>
-                                                                                                                                </div>div>
+                                                                                                                                                          </label>
+                                                                                                                                </div>
                                                                                                         {!attachments[claim.id] || attachments[claim.id].length === 0 ? (
-                                                                                                            <p className="text-xs text-gray-400 italic">No attachments yet</p>p>
+                                                                                                            <p className="text-xs text-gray-400 italic">No attachments yet</p>
                                                                                                           ) : (
                                                                                                             <div className="flex flex-wrap gap-2">
                                                                                                               {attachments[claim.id].map(att => (
@@ -585,18 +585,18 @@ export default function DashboardPage() {
                                                                                                                                               {att.file_type?.startsWith('image/') ? (
                                                                                                                                                                                                                   <img src={getAttachmentUrl(att)} alt={att.file_name} className="w-8 h-8 object-cover rounded" />
                                                                                                                                                                                                                 ) : <FileText size={14} />}
-                                                                                                                                                                            <span className="max-w-32 truncate">{att.file_name}</span>span>
-                                                                                                                                              </a>a>
+                                                                                                                                                                            <span className="max-w-32 truncate">{att.file_name}</span>
+                                                                                                                                              </a>
                                                                                                                                           ))}
-                                                                                                              </div>div>
+                                                                                                              </div>
                                                                                                                               )}
-                                                                                                        </div>div>
+                                                                                                        </div>
                                                                                                       <div className="p-4 bg-gray-50 border-b border-gray-100">
                                                                                                                               <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1">
                                                                                                                                                         <MessageSquare size={12} /> Communication Thread
-                                                                                                                                </h4>h4>
+                                                                                                                                </h4>
                                                                                                         {!threads[claim.id] || threads[claim.id].length === 0 ? (
-                                                                                                            <p className="text-sm text-gray-400 italic">No messages yet. Send the first email to your builder below.</p>p>
+                                                                                                            <p className="text-sm text-gray-400 italic">No messages yet. Send the first email to your builder below.</p>
                                                                                                           ) : (
                                                                                                             <div className="space-y-3 max-h-64 overflow-y-auto">
                                                                                                               {threads[claim.id].map(msg => (
@@ -605,45 +605,45 @@ export default function DashboardPage() {
                                                                                                                                                                             <div className="flex items-center justify-between mb-1">
                                                                                                                                                                                                               <span className={'text-xs font-medium ' + (msg.direction === 'outbound' ? 'text-blue-600' : 'text-gray-600')}>
                                                                                                                                                                                                                                                   {msg.direction === 'outbound' ? 'You to Builder' : 'Builder to You'}
-                                                                                                                                                                                                                                                </span>span>
+                                                                                                                                                                                                                                                </span>
                                                                                                                                                                                                               <span className="text-xs text-gray-400">
                                                                                                                                                                                                                                                   {new Date(msg.sent_at).toLocaleDateString()} {new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                                                                                                                                                                                                </span>span>
-                                                                                                                                                                                                            </div>div>
-                                                                                                                                              {msg.subject && <div className="font-medium text-gray-700 text-xs mb-1">{msg.subject}</div>div>}
-                                                                                                                                                                            <div className="text-gray-600 whitespace-pre-wrap text-xs">{msg.body}</div>div>
-                                                                                                                                              </div>div>
+                                                                                                                                                                                                                                                </span>
+                                                                                                                                                                                                            </div>
+                                                                                                                                              {msg.subject && <div className="font-medium text-gray-700 text-xs mb-1">{msg.subject}</div>}
+                                                                                                                                                                            <div className="text-gray-600 whitespace-pre-wrap text-xs">{msg.body}</div>
+                                                                                                                                              </div>
                                                                                                                                           ))}
-                                                                                                              </div>div>
+                                                                                                              </div>
                                                                                                                               )}
-                                                                                                        </div>div>
+                                                                                                        </div>
                                                                                                       <div className="p-4 border-t border-gray-100">
                                                                                                         {!(claim as any).builder_email ? (
-                                                                                                            <p className="text-sm text-gray-400 italic flex items-center gap-2"><Mail size={14} /> No builder email on this claim</p>p>
+                                                                                                            <p className="text-sm text-gray-400 italic flex items-center gap-2"><Mail size={14} /> No builder email on this claim</p>
                                                                                                           ) : (
                                                                                                             <div>
                                                                                                                                         <div className="text-xs text-gray-500 mb-2">
-                                                                                                                                                                      Send to: <span className="font-medium text-gray-700">{(claim as any).builder_email}</span>span>
-                                                                                                                                          {(claim as any).email_thread_address && <span className="ml-2 text-blue-400">via {(claim as any).email_thread_address}</span>span>}
-                                                                                                                                          </div>div>
+                                                                                                                                                                      Send to: <span className="font-medium text-gray-700">{(claim as any).builder_email}</span>
+                                                                                                                                          {(claim as any).email_thread_address && <span className="ml-2 text-blue-400">via {(claim as any).email_thread_address}</span>}
+                                                                                                                                          </div>
                                                                                                                                         <textarea rows={3} placeholder="Type your message to the builder..."
                                                                                                                                                                         value={replyText} onChange={e => setReplyText(e.target.value)}
                                                                                                                                                                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2" />
                                                                                                                                         <button onClick={() => sendEmail(claim)} disabled={!replyText || sending}
                                                                                                                                                                         className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
                                                                                                                                                                       <Send size={14} /> {sending ? 'Sending...' : 'Send to Builder'}
-                                                                                                                                          </button>button>
-                                                                                                              </div>div>
+                                                                                                                                          </button>
+                                                                                                              </div>
                                                                                                                               )}
-                                                                                                        </div>div>
-                                                                                  </div>div>
+                                                                                                        </div>
+                                                                                  </div>
                                                                             )}
-                                                          </div>div>
+                                                          </div>
                                                         ))}
-                                        </div>div>
+                                        </div>
                                                   )}
-                                        </div>div>
-                                </main>main>
-                          </AuthGuard>AuthGuard>
+                                        </div>
+                                </main>
+                          </AuthGuard>
                         )
                       }</div>
