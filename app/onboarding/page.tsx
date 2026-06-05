@@ -294,6 +294,8 @@ function OnboardingInner() {
                       </div>
               </div>
         </div>
+              </div>
+        </div>
       )
 }
 
@@ -303,4 +305,4 @@ export default function OnboardingPage() {
                 <OnboardingInner />
           </Suspense>
         )
-}</div>
+}
