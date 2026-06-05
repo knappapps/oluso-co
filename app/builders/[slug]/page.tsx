@@ -8,46 +8,6 @@ import {
   Building2, TrendingUp, Clock, CheckCircle, AlertTriangle,
     BarChart3, Star, ChevronLeft, MapPin
     } from 'lucide-react'
-import type { Metadata } from 'next'
-
-export async function generateMetadata(
-  { params }: { params: { slug: string } }
-  ): Promise<Metadata> {
-    const name = params.slug
-      .split('-')
-      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ')
-    const title = `${name} Warranty Reviews & Accountability Score | Oluso`
-    const description = `See ${name}'s real-time accountability score, open warranty claims, and response times reported by homeowners. Track your builder with Oluso.`
-    const url = `https://oluso.co/builders/${params.slug}`
-    return {
-          title,
-          description,
-          openGraph: {
-                  title,
-                  description,
-                  url,
-                  siteName: 'Oluso',
-                  type: 'website',
-                  images: [
-                    {
-                                url: `https://oluso.co/og-builder.png`,
-                                width: 1200,
-                                height: 630,
-                                alt: `${name} accountability score on Oluso`,
-                    },
-                          ],
-          },
-          twitter: {
-                  card: 'summary_large_image',
-                  title,
-                  description,
-                  images: ['https://oluso.co/og-builder.png'],
-          },
-          alternates: { canonical: url },
-    }
-}
-
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_KEY!
@@ -76,6 +36,19 @@ export async function generateMetadata(
                               return {
                                   title: `${name} Warranty Claims & Reviews | Oluso`,
                                       description: `See real warranty claim data for ${name}: response times, resolution rates, and defect patterns from homeowners.`
+                                            openGraph: {
+                                              title: `${name} Warranty Claims & Reviews | Oluso`,
+                                                              description: `See real warranty claim data for ${name}: response times, resolution rates, and defect patterns from homeowners.`,
+                                                              url: `https://oluso.co/builders/${params.slug}`,
+                                                              siteName: 'Oluso',
+                                                              type: 'website',
+                                                },
+                                                            twitter: {
+                                                                            card: 'summary_large_image',
+                                                                                            title: `${name} Warranty Claims & Reviews | Oluso`,
+                                                                                            description: `See real warranty claim data for ${name}: response times, resolution rates, and defect patterns from homeowners.`,
+                                                                              },
+                                                                                          alternates: { canonical: `https://oluso.co/builders/${params.slug}` },
                                         }
                                         }
 
