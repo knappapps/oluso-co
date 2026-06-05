@@ -12,6 +12,9 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+[functions."refresh-builder-scores"]
+  schedule = "0 3 * * *"
+
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
