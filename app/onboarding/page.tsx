@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Home, MapPin, Building, Calendar, ChevronRight, CheckCircle } from 'lucide-react'
-export const dynamic = 'force-dynamic'
+
 
 const STEPS = ['Your Home', 'Your Builder', 'Warranty Dates', 'All Set!']
 
@@ -29,7 +29,7 @@ const SLUG_TO_BUILDER: Record<string, string> = {
       'century-communities': 'Century Communities',
 }
 
-export default function OnboardingPage() {
+function OnboardingInner() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [step, setStep] = useState(0)
@@ -287,3 +287,9 @@ return (
     </div>
     )
 }
+
+export default function OnboardingPage() {
+    return (
+        <Suspense><OnboardingInner />
+        )
+            }
