@@ -35,7 +35,7 @@ import {
                             const name = slugToName(params.slug)
                               return {
                                   title: `${name} Warranty Claims & Reviews | Oluso`,
-                                      description: `See real warranty claim data for ${name}: response times, resolution rates, and defect patterns from homeowners.`
+                                      description: `See real warranty claim data for ${name}: response times, resolution rates, and defect patterns from homeowners.`,
                                             openGraph: {
                                               title: `${name} Warranty Claims & Reviews | Oluso`,
                                                               description: `See real warranty claim data for ${name}: response times, resolution rates, and defect patterns from homeowners.`,
