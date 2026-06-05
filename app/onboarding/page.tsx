@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Home, MapPin, Building, Calendar, ChevronRight, CheckCircle } from 'lucide-react'
+export const dynamic = 'force-dynamic'
 
 const STEPS = ['Your Home', 'Your Builder', 'Warranty Dates', 'All Set!']
 
