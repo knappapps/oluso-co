@@ -21,7 +21,7 @@ export default function OnboardingPage() {
   const [form, setForm] = useState({
     address: '', city: '', state: '', zip: '',
     builder_name: '', community_name: '', builder_email: '',
-    warranty_start: '', warranty_end: ''
+    warranty_start: '', warranty_end: '', warranty_year: ''
   })
 
   useEffect(() => {
@@ -35,6 +35,15 @@ export default function OnboardingPage() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
+  // Derive warranty_year from warranty_start whenever it changes
+  function handleWarrantyStartChange(value: string) {
+    set('warranty_start', value)
+    if (value) {
+      const year = new Date(value).getFullYear()
+      if (!isNaN(year)) set('warranty_year', String(year))
+    }
+  }
+
   async function finish() {
     setSaving(true)
     try {
@@ -45,8 +54,10 @@ export default function OnboardingPage() {
         zip: form.zip,
         builder_name: form.builder_name,
         community_name: form.community_name,
+        builder_email: form.builder_email || null,
         warranty_start: form.warranty_start || null,
         warranty_end: form.warranty_end || null,
+        warranty_year: form.warranty_year ? parseInt(form.warranty_year) : null,
         onboarding_complete: true
       }).eq('auth_id', userId)
       router.push('/dashboard')
@@ -171,7 +182,12 @@ export default function OnboardingPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Warranty start date</label>
-                  {input('warranty_start', '', 'date')}
+                  <input
+                    type="date"
+                    value={form.warranty_start}
+                    onChange={e => handleWarrantyStartChange(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                   <p className="text-xs text-gray-400 mt-1">Usually your closing date or move-in date</p>
                 </div>
                 <div>
@@ -179,7 +195,12 @@ export default function OnboardingPage() {
                   {input('warranty_end', '', 'date')}
                   <p className="text-xs text-gray-400 mt-1">Most builders offer 1-year structural warranty</p>
                 </div>
-                <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
+                {form.warranty_year && (
+                  <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700">
+                    <strong>Warranty year detected:</strong> {form.warranty_year} — this will be saved to help match your claims to the correct coverage period.
+                  </div>
+                )}
+                <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-500">
                   <strong>Tip:</strong> Check your closing documents or your builder's warranty booklet for exact dates. Not sure? You can update this later.
                 </div>
               </div>
@@ -197,6 +218,9 @@ export default function OnboardingPage() {
                 <div className="flex justify-between"><span className="text-gray-500">Builder</span><span className="font-medium text-gray-800">{form.builder_name || 'Not set'}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Community</span><span className="font-medium text-gray-800">{form.community_name || 'Not set'}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Warranty</span><span className="font-medium text-gray-800">{form.warranty_start ? form.warranty_start + ' → ' + (form.warranty_end || 'TBD') : 'Not set'}</span></div>
+                {form.warranty_year && (
+                  <div className="flex justify-between"><span className="text-gray-500">Warranty year</span><span className="font-medium text-gray-800">{form.warranty_year}</span></div>
+                )}
               </div>
             </div>
           )}
