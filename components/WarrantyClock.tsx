@@ -1,199 +1,127 @@
-// Item 5: WarrantyClock.tsx
-// Displays warranty countdown, open claim count, and milestone alerts.
-// Triggers Resend emails at 90/30/7-day marks via send-warranty-alert Netlify function.
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Clock, AlertTriangle, CheckCircle, Bell, Shield } from 'lucide-react'
+import { Clock, AlertTriangle, CheckCircle, Shield } from 'lucide-react'
 
-interface WarrantyClockProps {
-    warrantyStart: string | null
-    warrantyEnd: string | null
-    openClaimsCount: number
-    resolvedClaimsCount: number
-    totalClaimsCount: number
-    userId: string
+interface Props {
+  warrantyStart: string
+  warrantyEnd?: string
+  totalClaims: number
+  openClaims: number
 }
 
-interface WarrantyPeriod {
-    label: string
-    end: Date
-    color: string
-    urgency: 'safe' | 'warning' | 'critical'
+function getMilestones(startDate: Date) {
+  return [
+    { label: '30-day walkthrough', days: 30, color: 'blue' },
+    { label: '11-month inspection', days: 335, color: 'orange' },
+    { label: 'Year 1 ends', days: 365, color: 'red' },
+    { label: 'Year 2 mechanical', days: 730, color: 'purple' },
+    { label: 'Year 10 structural', days: 3650, color: 'gray' },
+  ].map(m => ({
+    ...m,
+    date: new Date(startDate.getTime() + m.days * 86400000),
+  }))
 }
 
-function getDaysRemaining(endDate: Date): number {
-    const now = new Date()
-    const diff = endDate.getTime() - now.getTime()
-    return Math.ceil(diff / (1000 * 60 * 60 * 24))
-}
-
-function computeWarrantyPeriods(start: string, end: string): WarrantyPeriod[] {
-    const s = new Date(start)
-    const e = new Date(end)
-    const year1End = new Date(s)
-    year1End.setFullYear(year1End.getFullYear() + 1)
-    const year2End = new Date(s)
-    year2End.setFullYear(year2End.getFullYear() + 2)
-
-  const periods: WarrantyPeriod[] = []
-
-      const now = new Date()
-    if (year1End > now) {
-          const d = getDaysRemaining(year1End)
-          periods.push({
-                  label: 'Year 1 Warranty',
-                  end: year1End,
-                  color: d <= 30 ? 'text-red-600' : d <= 90 ? 'text-orange-500' : 'text-green-600',
-                  urgency: d <= 30 ? 'critical' : d <= 90 ? 'warning' : 'safe'
-          })
-    }
-
-  if (year2End > now && year2End <= e) {
-        const d = getDaysRemaining(year2End)
-        periods.push({
-                label: 'Year 2 Warranty',
-                end: year2End,
-                color: d <= 30 ? 'text-red-600' : d <= 90 ? 'text-orange-500' : 'text-blue-600',
-                urgency: d <= 30 ? 'critical' : d <= 90 ? 'warning' : 'safe'
-        })
-  }
-
-  if (e > now) {
-        const d = getDaysRemaining(e)
-        periods.push({
-                label: 'Full Warranty Period',
-                end: e,
-                color: d <= 30 ? 'text-red-600' : d <= 90 ? 'text-orange-500' : 'text-purple-600',
-                urgency: d <= 30 ? 'critical' : d <= 90 ? 'warning' : 'safe'
-        })
-  }
-
-  return periods
-}
-
-export default function WarrantyClock({
-    warrantyStart,
-    warrantyEnd,
-    openClaimsCount,
-    resolvedClaimsCount,
-    totalClaimsCount,
-    userId
-}: WarrantyClockProps) {
-    const [periods, setPeriods] = useState<WarrantyPeriod[]>([])
-    const [alertSent, setAlertSent] = useState(false)
+export default function WarrantyClock({ warrantyStart, warrantyEnd, totalClaims, openClaims }: Props) {
+  const [now, setNow] = useState(new Date())
 
   useEffect(() => {
-        if (!warrantyStart || !warrantyEnd) return
-        const computed = computeWarrantyPeriods(warrantyStart, warrantyEnd)
-        setPeriods(computed)
+    const interval = setInterval(() => setNow(new Date()), 60000)
+    return () => clearInterval(interval)
+  }, [])
 
-                // Send milestone alerts for critical/warning periods (once per session)
-                const criticalPeriod = computed.find(p => p.urgency === 'critical')
-        if (criticalPeriod && !alertSent && userId) {
-                fetch('/.netlify/functions/send-warranty-alert', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                                      user_id: userId,
-                                      days_remaining: getDaysRemaining(criticalPeriod.end),
-                                      period_label: criticalPeriod.label
-                          })
-                }).catch(() => {})
-                setAlertSent(true)
-        }
-  }, [warrantyStart, warrantyEnd, userId, alertSent])
+  const start = new Date(warrantyStart)
+  const end = warrantyEnd ? new Date(warrantyEnd) : new Date(start.getTime() + 365 * 86400000)
+  const totalMs = end.getTime() - start.getTime()
+  const elapsedMs = now.getTime() - start.getTime()
+  const progressPct = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100))
+  const daysElapsed = Math.floor(elapsedMs / 86400000)
+  const daysRemaining = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86400000))
+  const isExpired = now > end
+  const milestones = getMilestones(start)
 
-  if (!warrantyStart || !warrantyEnd) {
-        return (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
-                        <AlertTriangle size={18} className="text-yellow-600 shrink-0" />
-                        <div>
-                                  <p className="text-sm font-semibold text-yellow-800">Warranty dates not set</p>p>
-                                  <p className="text-xs text-yellow-600 mt-0.5">
-                                              <a href="/profile" className="underline hover:text-yellow-800">Add your warranty dates</a>a> to track your clock and get milestone alerts.
-                                  </p>p>
-                        </div>div>
-                </div>div>
-              )
-  }
-  
-    return (
-          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                        <Shield size={18} className="text-blue-600" />
-                        <h2 className="font-bold text-gray-900 text-sm">Warranty Clock</h2>h2>
-                </div>div>
-          
-            {/* Claim summary bar */}
-                <div className="grid grid-cols-3 gap-3 mb-5">
-                  {[
-            { label: 'Total Claims', value: totalClaimsCount, color: 'text-gray-900' },
-            { label: 'Open', value: openClaimsCount, color: openClaimsCount > 0 ? 'text-orange-600' : 'text-gray-500' },
-            { label: 'Resolved', value: resolvedClaimsCount, color: 'text-green-600' }
-                    ].map(item => (
-                                <div key={item.label} className="text-center p-3 bg-gray-50 rounded-lg">
-                                            <p className={`text-2xl font-bold ${item.color}`}>{item.value}</p>p>
-                                            <p className="text-xs text-gray-500 mt-0.5">{item.label}</p>p>
-                                </div>div>
-                              ))}
-                </div>div>
-          
-            {/* Warranty period countdowns */}
-                <div className="space-y-3">
-                  {periods.map((period) => {
-                      const days = getDaysRemaining(period.end)
-                                  const isExpired = days <= 0
-                                              const pct = Math.max(0, Math.min(100, (days / 365) * 100))
-                                                
-                                                          return (
-                                                                        <div key={period.label} className={`p-3 rounded-lg border ${
-                                                                                        period.urgency === 'critical' ? 'border-red-200 bg-red-50' :
-                                                                                        period.urgency === 'warning' ? 'border-orange-200 bg-orange-50' :
-                                                                                        'border-gray-200 bg-gray-50'
-                                                                        }`}>
-                                                                                      <div className="flex items-center justify-between mb-1.5">
-                                                                                                      <div className="flex items-center gap-2">
-                                                                                                        {isExpired ? (
-                                                                                              <CheckCircle size={14} className="text-gray-400" />
-                                                                                            ) : period.urgency === 'critical' ? (
-                                                                                              <Bell size={14} className="text-red-500 animate-pulse" />
-                                                                                            ) : (
-                                                                                              <Clock size={14} className={period.color} />
-                                                                                            )}
-                                                                                                                        <span className="text-xs font-semibold text-gray-700">{period.label}</span>span>
-                                                                                                        </div>div>
-                                                                                                      <span className={`text-sm font-bold ${isExpired ? 'text-gray-400' : period.color}`}>
-                                                                                                        {isExpired ? 'Expired' : `${days} days`}
-                                                                                                        </span>span>
-                                                                                        </div>div>
-                                                                        
-                                                                          {/* Progress bar */}
-                                                                          {!isExpired && (
-                                                                                          <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                                                                                            <div
-                                                                                                                                  className={`h-1.5 rounded-full transition-all ${
-                                                                                                                                                          period.urgency === 'critical' ? 'bg-red-500' :
-                                                                                                                                                          period.urgency === 'warning' ? 'bg-orange-400' : 'bg-green-500'
-                                                                                                                                    }`}
-                                                                                                                                  style={{ width: `${pct}%` }}
-                                                                                                                                />
-                                                                                            </div>div>
-                                                                                      )}
-                                                                        
-                                                                                      <p className="text-xs text-gray-500 mt-1">
-                                                                                                      Expires {period.end.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                                                                                        </p>p>
-                                                                        
-                                                                          {period.urgency === 'critical' && !isExpired && (
-                                                                                          <p className="text-xs text-red-600 font-medium mt-1 flex items-center gap-1">
-                                                                                                            <AlertTriangle size={11} /> File remaining claims before expiration
-                                                                                            </p>p>
-                                                                                      )}
-                                                                        </div>div>
-                                                                      )
-                  })}
-                </div>div>
-          </div>div>
-        )
-}</div>
+  const nextMilestone = milestones.find(m => m.date > now)
+  const daysToNext = nextMilestone
+    ? Math.ceil((nextMilestone.date.getTime() - now.getTime()) / 86400000)
+    : null
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+          <Shield size={18} className="text-blue-500" />
+          Warranty Clock
+        </h2>
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-gray-500">{totalClaims} total claims</span>
+          {openClaims > 0 && (
+            <span className="flex items-center gap-1 text-orange-500 font-medium">
+              <AlertTriangle size={14} /> {openClaims} open
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <div className="flex justify-between text-xs text-gray-500 mb-1">
+          <span>{start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          <span className={isExpired ? 'text-red-500 font-medium' : 'text-gray-500'}>
+            {isExpired ? 'Expired' : daysRemaining + ' days left'}
+          </span>
+          <span>{end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+        </div>
+        <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className={'h-full rounded-full transition-all ' + (isExpired ? 'bg-red-400' : progressPct > 75 ? 'bg-orange-400' : 'bg-blue-500')}
+            style={{ width: progressPct + '%' }}
+          />
+          {milestones.map(m => {
+            const pos = Math.min(100, ((m.date.getTime() - start.getTime()) / totalMs) * 100)
+            const isPast = m.date < now
+            return (
+              <div
+                key={m.label}
+                className={'absolute top-0 bottom-0 w-0.5 ' + (isPast ? 'bg-gray-400' : 'bg-white')}
+                style={{ left: pos + '%' }}
+                title={m.label}
+              />
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+        <span className="flex items-center gap-1">
+          <Clock size={12} /> Day {daysElapsed} of {Math.ceil(totalMs / 86400000)}
+        </span>
+        {nextMilestone && daysToNext !== null && (
+          <span className="text-blue-500 font-medium">
+            Next: {nextMilestone.label} in {daysToNext}d
+          </span>
+        )}
+        {isExpired && (
+          <span className="flex items-center gap-1 text-green-600 font-medium">
+            <CheckCircle size={12} /> Year 1 warranty period complete
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-5 gap-1">
+        {milestones.map(m => {
+          const isPast = m.date < now
+          const isNext = m === nextMilestone
+          return (
+            <div
+              key={m.label}
+              className={'text-center p-2 rounded-lg text-xs ' + (isPast ? 'bg-gray-50 text-gray-400' : isNext ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200' : 'bg-gray-50 text-gray-500')}
+            >
+              <div className="font-medium">{m.days < 365 ? m.days + 'd' : Math.round(m.days / 365) + 'yr'}</div>
+              <div className="text-xs mt-0.5 leading-tight">{m.label.split(' ').slice(0, 2).join(' ')}</div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
