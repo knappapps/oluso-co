@@ -289,7 +289,5 @@ return (
 }
 
 export default function OnboardingPage() {
-    return (
-        <Suspense><OnboardingInner />
-        )
-            }
+  return <Suspense><OnboardingInner /></Suspense>
+}
