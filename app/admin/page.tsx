@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { Users, FileText, Building2, MessageSquare, TrendingUp, AlertTriangle, CheckCircle, Clock, Download, RefreshCw, ChevronDown, ChevronUp, ShieldAlert } from 'lucide-react';
+import { Users, FileText, Building2, MessageSquare, TrendingUp, AlertTriangle, CheckCircle, Clock, Download, RefreshCw, ChevronDown, ChevronUp, ShieldAlert, Megaphone } from 'lucide-react';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,9 +16,10 @@ interface User { id: string; name: string; email: string; builder_name: string; 
 interface Claim { id: string; title: string; category: string; severity: string; status: string; created_at: string; resolved_at: string | null; first_response_at: string | null; user_id: string; builder_id: string; email_thread_address: string; users?: { name: string; email: string }; builders?: { name: string }; }
 interface Builder { id: string; name: string; }
 interface Stats { totalUsers: number; totalClaims: number; openClaims: number; resolvedClaims: number; criticalClaims: number; totalMessages: number; avgResponseDays: number | null; }
+interface Ad { id: string; sponsor_name: string; title: string; description: string; cta_text: string; link_url: string; bg_color: string; text_color: string; active: boolean; display_order: number; created_at: string; }
 
 const SEVERITY_COLOR: Record<string, string> = { critical: 'bg-red-100 text-red-700', high: 'bg-orange-100 text-orange-700', medium: 'bg-yellow-100 text-yellow-700', low: 'bg-blue-100 text-blue-700' };
-const STATUS_COLOR: Record<string, string> = { open: 'bg-blue-100 text-blue-700', in_progress: 'bg-yellow-100 text-yellow-700', awaiting_builder: 'bg-orange-100 text-orange-700', resolved: 'bg-green-100 text-green-700', escalated: 'bg-red-100 text-red-700', closed: 'bg-gray-100 text-gray-600' };
+const STATUS_COLOR: Record<string, string> = { open: 'bg-blue-100 text-blue-700', in_progress: 'bg-yellow-100 text-yellow-800', awaiting_builder: 'bg-orange-100 text-orange-700', resolved: 'bg-green-100 text-green-700', escalated: 'bg-red-100 text-red-700', closed: 'bg-gray-100 text-gray-600' };
 
 function exportCSV(data: object[], filename: string) {
   if (!data.length) return;
@@ -44,17 +45,17 @@ export default function AdminPage() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [tab, setTab] = useState<'overview' | 'users' | 'claims' | 'builders' | 'messages'>('overview');
+  const [tab, setTab] = useState<'overview' | 'users' | 'claims' | 'builders' | 'messages' | 'ads'>('overview');
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [claims, setClaims] = useState<Claim[]>([]);
   const [builders, setBuilders] = useState<Builder[]>([]);
   const [messages, setMessages] = useState<{ id: string; claim_id: string; direction: string; from_email: string; subject: string; sent_at: string }[]>([]);
+  const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [claimFilter, setClaimFilter] = useState('all');
   const [expandedClaim, setExpandedClaim] = useState<string | null>(null);
 
-  // ── Admin guard ──────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { router.replace('/login'); return; }
@@ -63,6 +64,11 @@ export default function AdminPage() {
       setAuthChecked(true);
     });
   }, [router]);
+
+  async function loadAds() {
+    const { data } = await supabase.from('ads').select('*').order('display_order');
+    setAds((data as Ad[]) || []);
+  }
 
   async function loadAll() {
     setLoading(true);
@@ -80,6 +86,7 @@ export default function AdminPage() {
     const resolved = c.filter(cl => cl.resolved_at && cl.first_response_at);
     const totalResponseDays = resolved.reduce((sum, cl) => sum + (new Date(cl.first_response_at!).getTime() - new Date(cl.created_at).getTime()) / 86400000, 0);
     setStats({ totalUsers: u.length, totalClaims: c.length, openClaims: c.filter(cl => cl.status === 'open').length, resolvedClaims: c.filter(cl => cl.status === 'resolved' || cl.status === 'closed').length, criticalClaims: c.filter(cl => cl.severity === 'critical').length, totalMessages: m.length, avgResponseDays: resolved.length ? Math.round((totalResponseDays / resolved.length) * 10) / 10 : null });
+    await loadAds();
     setLoading(false);
   }
 
@@ -100,27 +107,11 @@ export default function AdminPage() {
     { id: 'claims', label: `Claims (${claims.length})`, icon: FileText },
     { id: 'builders', label: 'Builders', icon: Building2 },
     { id: 'messages', label: `Messages (${messages.length})`, icon: MessageSquare },
+    { id: 'ads', label: `Ads (${ads.length})`, icon: Megaphone },
   ] as const;
 
-  // Show nothing while checking auth
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-400">Checking access...</p>
-      </div>
-    );
-  }
-
-  // Double-check — should never reach here due to redirect, but safety net
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
-        <ShieldAlert size={48} className="text-red-400" />
-        <h1 className="text-xl font-semibold text-gray-800">Access Denied</h1>
-        <p className="text-gray-500">This page is restricted to administrators.</p>
-      </div>
-    );
-  }
+  if (!authChecked) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><p className="text-gray-400">Checking access...</p></div>;
+  if (!isAdmin) return <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4"><ShieldAlert size={48} className="text-red-400" /><h1 className="text-xl font-semibold text-gray-800">Access Denied</h1><p className="text-gray-500">This page is restricted to administrators.</p></div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -135,7 +126,7 @@ export default function AdminPage() {
           </button>
         </div>
 
-        <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit">
+        <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit flex-wrap">
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id as typeof tab)}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === t.id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
@@ -156,13 +147,6 @@ export default function AdminPage() {
               <StatCard icon={AlertTriangle} label="Critical" value={stats.criticalClaims} color="bg-red-100 text-red-600" />
               <StatCard icon={MessageSquare} label="Messages" value={stats.totalMessages} color="bg-purple-100 text-purple-600" />
             </div>
-            {stats.avgResponseDays !== null && (
-              <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <p className="text-sm text-gray-500 mb-1">Avg. Builder First Response</p>
-                <p className="text-3xl font-bold text-orange-600">{stats.avgResponseDays} days</p>
-                <p className="text-xs text-gray-400 mt-1">Based on {claims.filter(c => c.first_response_at).length} claims with recorded responses</p>
-              </div>
-            )}
             <div className="bg-white rounded-xl border border-gray-200">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">Recent Claims</h3>
@@ -302,20 +286,6 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
-            <div className="bg-white rounded-xl border border-gray-200">
-              <div className="px-5 py-4 border-b border-gray-100"><h3 className="font-semibold text-gray-800">All Tracked Builders ({builders.length})</h3></div>
-              <div className="divide-y divide-gray-50">
-                {builders.map(b => {
-                  const count = claims.filter(c => c.builder_id === b.id).length;
-                  return (
-                    <div key={b.id} className="px-5 py-3 flex items-center justify-between text-sm">
-                      <span className="text-gray-800">{b.name}</span>
-                      <span className="text-gray-400">{count} {count === 1 ? 'claim' : 'claims'}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </div>
         )}
 
@@ -343,6 +313,106 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+
+        {!loading && tab === 'ads' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2"><Megaphone size={16} className="text-blue-500" /> Add New Ad</h3>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const f = e.currentTarget as HTMLFormElement;
+                const fd = new FormData(f);
+                const { error } = await supabase.from('ads').insert({
+                  sponsor_name: fd.get('sponsor_name') as string,
+                  title: fd.get('title') as string,
+                  description: fd.get('description') as string,
+                  cta_text: fd.get('cta_text') as string,
+                  link_url: fd.get('link_url') as string,
+                  bg_color: fd.get('bg_color') as string,
+                  text_color: fd.get('text_color') as string,
+                  display_order: parseInt(fd.get('display_order') as string) || 0,
+                  active: true,
+                });
+                if (!error) { f.reset(); loadAds(); }
+                else alert('Error: ' + error.message);
+              }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-gray-500 font-medium">Sponsor Name</label>
+                  <input name="sponsor_name" required placeholder="e.g. Home Depot" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /<
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-gray-500 font-medium">Ad Title</label>
+                  <input name="title" required placeholder="Short catchy headline" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /<
+                </div>
+                <div className="flex flex-col gap-1 md:col-span-2">
+                  <label className="text-xs text-gray-500 font-medium">Description</label>
+                  <input name="description" required placeholder="One-line description for the ad" className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-full" /<
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-gray-500 font-medium">CTA Button Text</label>
+                  <input name="cta_text" required defaultValue="Shop now" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /<
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-gray-500 font-medium">Link URL</label>
+                  <input name="link_url" required type="url" placeholder="https://..." className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /<
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-gray-500 font-medium">Background Color (hex)</label>
+                  <input name="bg_color" required defaultValue="#FFF3E0" className="border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono" /<
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-gray-500 font-medium">Text/Button Color (hex)</label>
+                  <input name="text_color" required defaultValue="#BF360C" className="border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono" /<
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-gray-500 font-medium">Display Order</label>
+                  <input name="display_order" type="number" defaultValue="0" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /<
+                </div>
+                <div className="md:col-span-2">
+                  <button type="submit" className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Add Ad</button>
+                </div>
+              </form>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h3 className="font-semibold text-gray-800">All Ads — {ads.filter(a => a.active).length} active, {ads.length} total</h3>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {ads.map(ad => (
+                  <div key={ad.id} className="px-5 py-4">
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: ad.bg_color, color: ad.text_color }}>{ad.sponsor_name}</span>
+                          <span className={ad.active ? 'text-xs text-green-600 font-medium' : 'text-xs text-gray-400'}>{ad.active ? '● Active' : '○ Paused'}</span>
+                          <span className="text-xs text-gray-400">Order {ad.display_order}</span>
+                        </div>
+                        <p className="font-medium text-gray-800 text-sm">{ad.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{ad.description}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-400">CTA: "{ad.cta_text}"</span>
+                          <a href={ad.link_url} target="_blank" rel="noopener" className="text-xs text-blue-500 hover:underline">{ad.link_url}</a>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={async () => { await supabase.from('ads').update({ active: !ad.active }).eq('id', ad.id); loadAds(); }}
+                          className={ad.active ? 'px-3 py-1 text-xs rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 font-medium' : 'px-3 py-1 text-xs rounded-lg bg-green-100 text-green-700 hover:bg-green-200 font-medium'}
+                        >{ad.active ? 'Pause' : 'Activate'}</button>
+                        <button
+                          onClick={async () => { if (!confirm('Delete this ad?')) return; await supabase.from('ads').delete().eq('id', ad.id); loadAds(); }}
+                          className="px-3 py-1 text-xs rounded-lg bg-red-100 text-red-700 hover:bg-red-200 font-medium"
+                        >Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {!ads.length && <p className="text-center py-8 text-gray-400 text-sm">No ads yet. Add one above.</p>}
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
