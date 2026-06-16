@@ -1,8 +1,7 @@
-'use client'
-
 import AuthGuard from '@/components/AuthGuard'
 import Header from '@/components/Header'
 import { ExternalLink, Download, Phone, Scale } from 'lucide-react'
+import type { Metadata } from 'next'
 
 const resources = [
   {
@@ -24,6 +23,18 @@ const resources = [
   },
 ]
 
+export const metadata: Metadata = {
+  title: 'New Home Warranty Resources | Oluso',
+  description: 'Resources for Utah new homeowners — Utah warranty law, consumer protection contacts, legal help, and tools to document and escalate builder warranty claims.',
+  openGraph: {
+    title: 'New Home Warranty Resources | Oluso',
+    description: 'Warranty resources and guides for Utah new homeowners.',
+    url: 'https://oluso.co/resources',
+    siteName: 'Oluso',
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image', title: 'New Home Warranty Resources | Oluso' },
+}
 export default function ResourcesPage() {
   return (
     <AuthGuard>
