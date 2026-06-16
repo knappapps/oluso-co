@@ -150,6 +150,8 @@ const [replyText, setReplyText] = useState('')
 const [sending, setSending] = useState(false)
 const [uploading, setUploading] = useState(false)
 const [referralCount, setReferralCount] = useState(0)
+  const [activeAd, setActiveAd] = useState<{id:string;sponsor_name:string;title:string;description:string;cta_text:string;link_url:string;bg_color:string;text_color:string} | null>(null)
+  const [userPlan, setUserPlan] = useState<string>('free')
 const [userProfile, setUserProfile] = useState<{
 id: string
 builder_name?: string
@@ -181,7 +183,7 @@ const { data: { session } } = await supabase.auth.getSession()
 if (!session) return
 const { data: profile } = await supabase
   .from('users')
-  .select('id, builder_name, community_name, warranty_start, warranty_end, referral_code')
+  .select('id, builder_name, community_name, warranty_start, warranty_end, referral_code', plan)
   .eq('auth_id', session.user.id)
   .single()
 if (profile) {
@@ -205,7 +207,10 @@ if (profile) {
     .order('created_at', { ascending: false })
   setClaims(claimsData || [])
 }
-setLoading(false)
+    const { data: adsData } = await supabase.from('ads').select('*').eq('active', true).order('display_order').limit(1)
+    if (adsData && adsData.length > 0) setActiveAd(adsData[0] as typeof activeAd)
+    if (profile && (profile as typeof profile & {plan?: string}).plan) setUserPlan((profile as typeof profile & {plan?: string}).plan || 'free')
+    setLoading(false)
 }
 load()
 }, [])
@@ -490,6 +495,28 @@ return (
         </div>
         <div className="flex gap-3 mt-4">
           <button onClick={createClaim} disabled={!newClaim.title}
+      {/* Ad Banner — shown to free users */}
+      {userPlan !== 'pro' && activeAd && (
+        <a
+          href={activeAd.link_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block rounded-xl border px-5 py-4 mb-4 transition-opacity hover:opacity-90"
+          style={{ background: activeAd.bg_color, borderColor: activeAd.bg_color }}
+        >
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex-1">
+              <p className="text-xs font-medium mb-0.5 opacity-60" style={{ color: activeAd.text_color }}>Sponsored · {activeAd.sponsor_name}</p>
+              <p className="font-semibold text-sm" style={{ color: activeAd.text_color }}>{activeAd.title}</p>
+              <p className="text-xs mt-0.5 opacity-80" style={{ color: activeAd.text_color }}>{activeAd.description}</p>
+            </div>
+            <span
+              className="shrink-0 text-xs font-semibold px-4 py-1.5 rounded-full"
+              style={{ background: activeAd.text_color, color: activeAd.bg_color }}
+            >{activeAd.cta_text} →</span>
+          </div>
+        </a>
+      )}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
             Create Claim
           </button>
