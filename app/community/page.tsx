@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { Users, MapPin, Clock, CheckCircle, AlertCircle, Building2, TrendingUp } from 'lucide-react'
+import type { Metadata } from 'next'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,10 +10,28 @@ const supabaseAdmin = createClient(
 
 export const revalidate = 1800
 
+export const metadata: Metadata = {
+  title: 'Community Warranty Stories | Oluso',
+  description: 'Real, anonymized warranty experiences from Utah homeowners. See how builders handle claims and compare builder accountability scores.',
+  openGraph: {
+    title: 'Community Warranty Stories | Oluso',
+    description: 'Real warranty experiences from Utah homeowners. No names, just facts.',
+    url: 'https://oluso.co/community',
+    siteName: 'Oluso',
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image', title: 'Community Warranty Stories | Oluso' },
+}
+
+
+function nameToSlug(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
 export default async function CommunityPage() {
   const { data: rawStories } = await supabaseAdmin
     .from('claims')
-    .select('id, category, severity, status, created_at, days_to_first_response, defect_location, warranty_year, users!inner(city, state, builder_name), builders(name)')
+    .select('id, category, severity, status, created_at, days_to_first_response, defect_location, warranty_year, users!inner(city, state, builder_name, community_name), builders(name)')
     .eq('public_story', true)
     .in('status', ['resolved', 'closed', 'in_progress', 'awaiting_builder'])
     .order('created_at', { ascending: false })
@@ -162,6 +181,14 @@ export default async function CommunityPage() {
                     <div className="mt-3 pt-3 border-t border-gray-50 text-xs text-gray-400">
                       {new Date(story.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                     </div>
+                      {(user?.community_name || user?.city) && (
+                        <Link
+                          href={`/community/${nameToSlug(user.community_name || user.city)}`}
+                          className="mt-3 pt-2 flex items-center justify-end text-xs text-blue-500 hover:text-blue-700 font-medium"
+                        >
+                          View neighborhood →
+                        </Link>
+                      )}
                   </div>
                 )
               })}
