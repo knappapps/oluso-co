@@ -110,8 +110,22 @@ export default function AdminPage() {
     { id: 'ads', label: `Ads (${ads.length})`, icon: Megaphone },
   ] as const;
 
-  if (!authChecked) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><p className="text-gray-400">Checking access...</p></div>;
-  if (!isAdmin) return <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4"><ShieldAlert size={48} className="text-red-400" /><h1 className="text-xl font-semibold text-gray-800">Access Denied</h1><p className="text-gray-500">This page is restricted to administrators.</p></div>;
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-400">Checking access...</p>
+      </div>
+    )
+  }
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
+        <ShieldAlert size={48} className="text-red-400" />
+        <h1 className="text-xl font-semibold text-gray-800">Access Denied</h1>
+        <p className="text-gray-500">This page is restricted to administrators.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
