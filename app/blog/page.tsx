@@ -1,8 +1,7 @@
-'use client'
-
 import Header from '@/components/Header'
 import Link from 'next/link'
 import { Calendar, ArrowRight, BookOpen } from 'lucide-react'
+import type { Metadata } from 'next'
 
 const posts = [
   {
@@ -35,6 +34,18 @@ const posts = [
   }
 ]
 
+export const metadata: Metadata = {
+  title: 'Warranty Resources & Guides | Oluso Blog',
+  description: 'Builder warranty guides, documentation tips, and claim strategies for Utah new homeowners. Learn how to protect your investment.',
+  openGraph: {
+    title: 'Warranty Resources & Guides | Oluso Blog',
+    description: 'Guides and strategies for navigating new home builder warranty claims.',
+    url: 'https://oluso.co/blog',
+    siteName: 'Oluso',
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image', title: 'Warranty Resources & Guides | Oluso Blog' },
+}
 export default function BlogPage() {
   return (
     <div className="min-h-screen bg-gray-50">
