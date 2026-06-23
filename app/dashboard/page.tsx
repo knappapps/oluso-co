@@ -507,7 +507,7 @@ return (
     )}
       {/* Ad Banner — shown to free users */}
       {userPlan !== 'pro' && activeAd && (
-        
+                  <a
           href={activeAd.link_url}
           target="_blank"
           rel="noopener noreferrer"
