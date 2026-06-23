@@ -494,10 +494,20 @@ return (
           </div>
         </div>
         <div className="flex gap-3 mt-4">
-          <button onClick={createClaim} disabled={!newClaim.title}
+         <button onClick={createClaim} disabled={!newClaim.title}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+            Create Claim
+          </button>
+          <button onClick={() => { setShowNew(false); setPendingFiles([]) }}
+            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+            Cancel
+          </button>
+        </div>
+      </div>
+    )}
       {/* Ad Banner — shown to free users */}
       {userPlan !== 'pro' && activeAd && (
-        <a
+        
           href={activeAd.link_url}
           target="_blank"
           rel="noopener noreferrer"
@@ -517,18 +527,7 @@ return (
           </div>
         </a>
       )}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
-            Create Claim
-          </button>
-          <button onClick={() => { setShowNew(false); setPendingFiles([]) }}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-            Cancel
-          </button>
-        </div>
-      </div>
-    )}
     {loading ? (
-      <div className="text-center py-12 text-gray-400 flex items-center justify-center gap-2">
         <Loader2 size={20} className="animate-spin" /> Loading claims...
       </div>
     ) : claims.length === 0 ? (
