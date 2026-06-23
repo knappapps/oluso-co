@@ -183,7 +183,7 @@ const { data: { session } } = await supabase.auth.getSession()
 if (!session) return
 const { data: profile } = await supabase
   .from('users')
-  .select('id, builder_name, community_name, warranty_start, warranty_end, referral_code', plan)
+  .select('id, builder_name, community_name, warranty_start, warranty_end, referral_code, plan')
   .eq('auth_id', session.user.id)
   .single()
 if (profile) {
