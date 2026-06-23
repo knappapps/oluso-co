@@ -528,10 +528,10 @@ return (
         </a>
       )}
     {loading ? (
+      <div className="text-center py-12 text-gray-400 flex items-center justify-center gap-2">
         <Loader2 size={20} className="animate-spin" /> Loading claims...
       </div>
     ) : claims.length === 0 ? (
-      <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
         <AlertTriangle size={48} className="mx-auto text-gray-300 mb-4" />
         <p className="text-gray-500 font-medium">No claims yet</p>
         <p className="text-gray-400 text-sm mt-1">Click "New Claim" to document your first warranty issue</p>
