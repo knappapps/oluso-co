@@ -508,25 +508,28 @@ return (
     )}
       {/* Ad Banner — shown to free users */}
       {userPlan !== 'pro' && activeAd && (
-                  <a
-          href={activeAd.link_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block rounded-xl border px-5 py-4 mb-4 transition-opacity hover:opacity-90"
-          style={{ background: activeAd.bg_color, borderColor: activeAd.bg_color }}
-        >
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex-1">
-              <p className="text-xs font-medium mb-0.5 opacity-60" style={{ color: activeAd.text_color }}>Sponsored · {activeAd.sponsor_name}</p>
-              <p className="font-semibold text-sm" style={{ color: activeAd.text_color }}>{activeAd.title}</p>
-              <p className="text-xs mt-0.5 opacity-80" style={{ color: activeAd.text_color }}>{activeAd.description}</p>
+        (activeAd as any).embed_html ? (
+          <div className="mb-4 overflow-auto" dangerouslySetInnerHTML={{ __html: (activeAd as any).embed_html }} />
+        ) : (
+          <a
+            href={activeAd.link_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-xl border px-5 py-4 mb-4 transition-opacity hover:opacity-90"
+            style={{ background: activeAd.bg_color, borderColor: activeAd.bg_color }}
+          >
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex-1">
+                <p className="text-xs font-medium mb-0.5 opacity-60" style={{ color: activeAd.text_color }}>Sponsored · {activeAd.sponsor_name}</p>
+                <p className="font-semibold text-sm" style={{ color: activeAd.text_color }}>{activeAd.title}</p>
+                <p className="text-xs mt-0.5 opacity-80" style={{ color: activeAd.text_color }}>{activeAd.description}</p>
+              </div>
+              <span className="shrink-0 text-xs font-semibold px-4 py-1.5 rounded-full"
+                style={{ background: activeAd.text_color, color: activeAd.bg_color }}
+              >{activeAd.cta_text} →</span>
             </div>
-            <span
-              className="shrink-0 text-xs font-semibold px-4 py-1.5 rounded-full"
-              style={{ background: activeAd.text_color, color: activeAd.bg_color }}
-            >{activeAd.cta_text} →</span>
-          </div>
-        </a>
+          </a>
+        )
       )}
     {loading ? (
       <div className="text-center py-12 text-gray-400 flex items-center justify-center gap-2">
