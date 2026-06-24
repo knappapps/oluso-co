@@ -22,10 +22,11 @@ export default function LoginPage() {
       const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
       if (authError) { setError(authError.message); return }
       if (data.session) {
-        // Check if onboarding complete
+        // Only send to onboarding if this is a brand-new signup (onboarding_complete === false).
+        // Existing users whose row is missing or whose flag is null go straight to dashboard.
         const { data: profile } = await supabase
           .from('users').select('onboarding_complete').eq('auth_id', data.session.user.id).single()
-        if (!profile || !profile.onboarding_complete) {
+        if (profile?.onboarding_complete === false) {
           router.push('/onboarding')
         } else {
           router.push('/dashboard')
