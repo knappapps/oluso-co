@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import AuthGuard from '@/components/AuthGuard'
 import Header from '@/components/Header'
 import WarrantyClock from '@/components/WarrantyClock'
@@ -177,6 +178,17 @@ warranty_year: '1',
 public_story: false
 })
 const [pendingFiles, setPendingFiles] = useState<File[]>([])
+const [showUpgradeBanner, setShowUpgradeBanner] = useState(false)
+const router = useRouter()
+
+useEffect(() => {
+const params = new URLSearchParams(window.location.search)
+if (params.get('upgrade') === 'success') {
+  setShowUpgradeBanner(true)
+  router.replace('/dashboard')
+  setTimeout(() => setShowUpgradeBanner(false), 8000)
+}
+}, [router])
 
 useEffect(() => {
 async function load() {
@@ -324,6 +336,15 @@ return (
 <Header />
 <main className="min-h-screen bg-gray-50 pt-16">
   <div className="max-w-5xl mx-auto px-4 py-8">
+    {showUpgradeBanner && (
+      <div className="mb-6 bg-green-50 border border-green-200 rounded-xl px-5 py-4 flex items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <span className="text-green-600 text-lg font-bold">🎉</span>
+          <p className="text-green-800 font-semibold text-sm">You&apos;re now on Pro! Ads have been removed.</p>
+        </div>
+        <button onClick={() => setShowUpgradeBanner(false)} className="text-green-500 hover:text-green-700 text-xs font-medium shrink-0">Dismiss</button>
+      </div>
+    )}
     <div className="flex items-center justify-between mb-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">My Claims</h1>
