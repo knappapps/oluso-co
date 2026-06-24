@@ -249,7 +249,7 @@ function OnboardingInner() {
               <h2 className="text-xl font-bold text-gray-900 mb-2">You&apos;re all set!</h2>
               <p className="text-gray-500 text-sm mb-2">Your account is ready. You can now file claims, track builder responses, and build your documentation trail.</p>
               <div className="bg-gray-50 rounded-xl p-4 mt-4 text-left text-sm space-y-2">
-                <div className="flex justify-between"><span className="text-gray-500">Home</span><span className="font-medium text-gray-800">{form.address}, {form.city}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Home</span><span className="font-medium text-gray-800">{[form.address, form.city, form.state].filter(Boolean).join(', ') || 'Not set'}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Builder</span><span className="font-medium text-gray-800">{form.builder_name || 'Not set'}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Community</span><span className="font-medium text-gray-800">{form.community_name || 'Not set'}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Warranty</span><span className="font-medium text-gray-800">{form.warranty_start ? form.warranty_start + ' → ' + (form.warranty_end || 'TBD') : 'Not set'}</span></div>
