@@ -217,7 +217,7 @@ export default function AdminPage() {
         .sort((a, b) => b.count - a.count)
 
       // Signups by week (last 8 weeks)
-      function weekKey(d: string) {
+      const weekKey = (d: string) => {
         const date = new Date(d)
         const day = date.getDay()
         const diff = date.getDate() - day
