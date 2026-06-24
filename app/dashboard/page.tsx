@@ -10,7 +10,7 @@ import {
 Plus, AlertTriangle, Clock, CheckCircle,
 MessageSquare, Send, ChevronDown, ChevronUp,
 Mail, Calendar, Paperclip, Upload, X, Image, FileText, Loader2, Shield,
-Share2, Copy, Check, Users
+Share2, Copy, Check, User
 } from 'lucide-react'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -150,7 +150,7 @@ const [replyText, setReplyText] = useState('')
 const [sending, setSending] = useState(false)
 const [uploading, setUploading] = useState(false)
 const [referralCount, setReferralCount] = useState(0)
-  const [activeAd, setActiveAd] = profile as typeof profileuseState<{id:string;sponsor_name:string;title:string;description:string;cta_text:string;link_url:string;bg_color:string;text_color:string} | null>(null)
+    const [activeAd, setActiveAd] = useState<{id:string;sponsor_name:string;title:string;description:string;cta_text:string;link_url:string;bg_color:string;text_color:string} | null>(null)
   const [userPlan, setUserPlan] = useState<string>('free')
 const [userProfile, setUserProfile] = useState<{
 id: string
