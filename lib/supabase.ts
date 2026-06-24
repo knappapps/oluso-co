@@ -21,6 +21,7 @@ export interface User {
     warranty_end: string | null
     warranty_year: number | null
     plan: 'free' | 'basic' | 'pro'
+    role: 'admin' | 'user' | null
     onboarding_complete: boolean
     created_at: string
     notification_prefs: Record<string, boolean> | null
