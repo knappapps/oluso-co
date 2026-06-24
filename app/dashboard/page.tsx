@@ -103,7 +103,7 @@ return (
       </p>
       {referralCount != null && referralCount > 0 && (
         <div className="flex items-center gap-1.5 text-blue-100 text-xs mb-3">
-          <Users size={12} />
+                    <User size={12} />
           <span>{referralCount} neighbor{referralCount === 1 ? '' : 's'} joined with your link</span>
         </div>
       )}
