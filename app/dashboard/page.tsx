@@ -150,7 +150,7 @@ const [replyText, setReplyText] = useState('')
 const [sending, setSending] = useState(false)
 const [uploading, setUploading] = useState(false)
 const [referralCount, setReferralCount] = useState(0)
-  const [activeAd, setActiveAd] = useState<{id:string;sponsor_name:string;title:string;description:string;cta_text:string;link_url:string;bg_color:string;text_color:string} | null>(null)
+  const [activeAd, setActiveAd] = profile as typeof profileuseState<{id:string;sponsor_name:string;title:string;description:string;cta_text:string;link_url:string;bg_color:string;text_color:string} | null>(null)
   const [userPlan, setUserPlan] = useState<string>('free')
 const [userProfile, setUserProfile] = useState<{
 id: string
@@ -159,6 +159,7 @@ builder_email?: string
 warranty_start?: string
 warranty_end?: string
 referral_code?: string
+    plan?: string
 } | null>(null)
 const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -209,7 +210,7 @@ if (profile) {
 }
     const { data: adsData } = await supabase.from('ads').select('*').eq('active', true).order('display_order').limit(1)
     if (adsData && adsData.length > 0) setActiveAd(adsData[0] as typeof activeAd)
-    if (profile && (profile as typeof profile & {plan?: string}).plan) setUserPlan((profile as typeof profile & {plan?: string}).plan || 'free')
+        if (profile?.plan) setUserPlan(profile.plan)
     setLoading(false)
 }
 load()
@@ -233,7 +234,7 @@ if (data.claim) {
   const claim = data.claim
   if (pendingFiles.length > 0) await uploadFiles(pendingFiles, claim.id)
   setClaims(prev => [claim, ...prev])
-  setNewClaim({ title: '', description: '', category: 'other', severity: 'medium', builder_email: '', builder_name: userProfile ? (userProfile as any).builder_name || '' : '', defect_location: '', defect_sub_category: '', estimated_repair_cost: '', warranty_year: '1', public_story: false })
+        setNewClaim({ title: '', description: '', category: 'other', severity: 'medium', builder_email: '', builder_name: userProfile?.builder_name ?? '', defect_location: '', defect_sub_category: '', estimated_repair_cost: '', warranty_year: '1', public_story: false })
   setPendingFiles([])
   setShowNew(false)
   setExpanded(claim.id)
