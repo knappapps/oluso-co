@@ -1,13 +1,16 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Home, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -23,13 +26,13 @@ export default function LoginPage() {
       if (authError) { setError(authError.message); return }
       if (data.session) {
         // Only send to onboarding if this is a brand-new signup (onboarding_complete === false).
-        // Existing users whose row is missing or whose flag is null go straight to dashboard.
+        // Existing users whose row is missing or whose flag is null go straight to redirectTo.
         const { data: profile } = await supabase
           .from('users').select('onboarding_complete').eq('auth_id', data.session.user.id).single()
         if (profile?.onboarding_complete === false) {
           router.push('/onboarding')
         } else {
-          router.push('/dashboard')
+          router.push(redirectTo === '/onboarding' ? '/dashboard' : redirectTo)
         }
       }
     } catch (err) {
@@ -95,7 +98,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-blue-600 font-medium hover:underline">Create one free</Link>
           </p>
         </div>
