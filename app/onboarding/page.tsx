@@ -33,6 +33,7 @@ function OnboardingInner() {
   const searchParams = useSearchParams()
   const [step, setStep] = useState(0)
   const [saving, setSaving] = useState(false)
+  const [checking, setChecking] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [referralCode, setReferralCode] = useState<string>('')
   const [form, setForm] = useState({
@@ -63,6 +64,7 @@ function OnboardingInner() {
       }
 
       setUserId(session.user.id)
+      setChecking(false)
     })
   }, [router, searchParams])
 
@@ -112,6 +114,8 @@ function OnboardingInner() {
       className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
   )
+
+  if (checking) return null
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center px-4 py-12">
