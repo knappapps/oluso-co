@@ -1,16 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
-import { ShieldAlert, Megaphone, Code, LayoutTemplate } from 'lucide-react'
+import { ShieldAlert, Megaphone, Code, LayoutTemplate, Users, Search, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
-
-const ADMIN_EMAIL = 'rknapp@gmail.com'
 
 interface Ad {
   id: string
@@ -24,6 +22,20 @@ interface Ad {
   active: boolean
   display_order: number
   embed_html?: string
+}
+
+interface AdminUser {
+  id: string
+  email: string
+  name: string | null
+  builder_name: string | null
+  community_name: string | null
+  plan: string
+  role: string | null
+  onboarding_complete: boolean
+  created_at: string
+  warranty_start: string | null
+  claim_count?: number
 }
 
 function parseEmbedHtml(html: string): { sponsor_name: string; link_url: string; title: string } {
@@ -50,11 +62,24 @@ function parseEmbedHtml(html: string): { sponsor_name: string; link_url: string;
   return result
 }
 
+const PLAN_COLORS: Record<string, string> = {
+  free: 'bg-gray-100 text-gray-600',
+  basic: 'bg-blue-100 text-blue-700',
+  pro: 'bg-purple-100 text-purple-700',
+}
+
+const ROLE_COLORS: Record<string, string> = {
+  admin: 'bg-red-100 text-red-700',
+  user: 'bg-gray-100 text-gray-500',
+}
+
 export default function AdminPage() {
   const router = useRouter()
   const [authChecked, setAuthChecked] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [tab, setTab] = useState('ads')
+  const [tab, setTab] = useState('users')
+
+  // Ads state
   const [ads, setAds] = useState<Ad[]>([])
   const [embedMode, setEmbedMode] = useState(false)
   const [embedHtml, setEmbedHtml] = useState('')
@@ -62,21 +87,89 @@ export default function AdminPage() {
   const [embedPreview, setEmbedPreview] = useState(false)
   const [formKey, setFormKey] = useState(0)
 
+  // Users state
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [usersLoading, setUsersLoading] = useState(false)
+  const [userSearch, setUserSearch] = useState('')
+  const [planFilter, setPlanFilter] = useState('all')
+  const [expandedUser, setExpandedUser] = useState<string | null>(null)
+  const [updatingUser, setUpdatingUser] = useState<string | null>(null)
+  const [userStats, setUserStats] = useState({ total: 0, free: 0, basic: 0, pro: 0, admins: 0 })
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { router.replace('/login'); return }
-      if (session.user.email !== ADMIN_EMAIL) { router.replace('/dashboard'); return }
+      // Check role from users table
+      const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('auth_id', session.user.id)
+        .single()
+      if (!profile || profile.role !== 'admin') {
+        router.replace('/dashboard')
+        return
+      }
       setIsAdmin(true)
       setAuthChecked(true)
     })
   }, [router])
 
-  async function loadAds() {
+  const loadAds = useCallback(async () => {
     const { data } = await supabase.from('ads').select('*').order('display_order')
     setAds((data as Ad[]) || [])
+  }, [])
+
+  const loadUsers = useCallback(async () => {
+    setUsersLoading(true)
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('id, email, name, builder_name, community_name, plan, role, onboarding_complete, created_at, warranty_start')
+        .order('created_at', { ascending: false })
+      const userList = (data as AdminUser[]) || []
+
+      // Load claim counts for all users
+      const { data: claimData } = await supabase
+        .from('claims')
+        .select('user_id')
+      const claimCounts: Record<string, number> = {}
+      for (const c of (claimData || [])) {
+        claimCounts[c.user_id] = (claimCounts[c.user_id] || 0) + 1
+      }
+      const enriched = userList.map(u => ({ ...u, claim_count: claimCounts[u.id] || 0 }))
+      setUsers(enriched)
+      setUserStats({
+        total: enriched.length,
+        free: enriched.filter(u => u.plan === 'free').length,
+        basic: enriched.filter(u => u.plan === 'basic').length,
+        pro: enriched.filter(u => u.plan === 'pro').length,
+        admins: enriched.filter(u => u.role === 'admin').length,
+      })
+    } finally {
+      setUsersLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadAds()
+      loadUsers()
+    }
+  }, [isAdmin, loadAds, loadUsers])
+
+  async function updateUserPlan(userId: string, plan: string) {
+    setUpdatingUser(userId)
+    await supabase.from('users').update({ plan }).eq('id', userId)
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan } : u))
+    setUpdatingUser(null)
   }
 
-  useEffect(() => { if (isAdmin) loadAds() }, [isAdmin])
+  async function updateUserRole(userId: string, role: string) {
+    setUpdatingUser(userId)
+    await supabase.from('users').update({ role }).eq('id', userId)
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u))
+    setUpdatingUser(null)
+  }
 
   function handleEmbedPaste(html: string) {
     setEmbedHtml(html)
@@ -112,6 +205,15 @@ export default function AdminPage() {
     } else alert('Error: ' + error.message)
   }
 
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = !userSearch ||
+      u.email?.toLowerCase().includes(userSearch.toLowerCase()) ||
+      u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
+      u.builder_name?.toLowerCase().includes(userSearch.toLowerCase())
+    const matchesPlan = planFilter === 'all' || u.plan === planFilter
+    return matchesSearch && matchesPlan
+  })
+
   if (!authChecked) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -132,22 +234,156 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-        <p className="text-gray-500 text-sm mb-6">Manage your ads here.</p>
+        <p className="text-gray-500 text-sm mb-6">Manage users, ads, and platform settings.</p>
 
+        {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit">
-          {['Ads'].map(t => (
-            <button key={t} onClick={() => setTab(t.toLowerCase())}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium ${tab === t.toLowerCase() ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-              <Megaphone size={14} />{t}
+          {[
+            { key: 'users', label: 'Users', icon: <Users size={14} /> },
+            { key: 'ads', label: 'Ads', icon: <Megaphone size={14} /> },
+          ].map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium ${tab === t.key ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+              {t.icon}{t.label}
             </button>
           ))}
         </div>
 
+        {/* ── USERS TAB ── */}
+        {tab === 'users' && (
+          <div className="space-y-5">
+
+            {/* Stats bar */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {[
+                { label: 'Total Users', value: userStats.total, color: 'text-gray-800' },
+                { label: 'Free', value: userStats.free, color: 'text-gray-500' },
+                { label: 'Basic', value: userStats.basic, color: 'text-blue-600' },
+                { label: 'Pro', value: userStats.pro, color: 'text-purple-600' },
+                { label: 'Admins', value: userStats.admins, color: 'text-red-600' },
+              ].map(s => (
+                <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-4">
+                  <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
+                  <div className="text-xs text-gray-400 mt-0.5">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Search + filter bar */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+              <div className="relative flex-1 max-w-sm">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by email, name, or builder..."
+                  value={userSearch}
+                  onChange={e => setUserSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <select value={planFilter} onChange={e => setPlanFilter(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="all">All plans</option>
+                  <option value="free">Free</option>
+                  <option value="basic">Basic</option>
+                  <option value="pro">Pro</option>
+                </select>
+                <button onClick={loadUsers} className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50">
+                  <RefreshCw size={13} /> Refresh
+                </button>
+              </div>
+            </div>
+
+            {/* Users list */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">{filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}</span>
+              </div>
+              {usersLoading ? (
+                <div className="py-12 text-center text-gray-400 text-sm">Loading users...</div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="py-12 text-center text-gray-400 text-sm">No users found.</div>
+              ) : (
+                <div className="divide-y divide-gray-50">
+                  {filteredUsers.map(user => (
+                    <div key={user.id}>
+                      {/* User row */}
+                      <div
+                        className="px-5 py-3 flex items-center justify-between gap-4 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => setExpandedUser(expandedUser === user.id ? null : user.id)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium text-gray-900 truncate">{user.email}</span>
+                            {user.name && <span className="text-xs text-gray-400">({user.name})</span>}
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PLAN_COLORS[user.plan] || 'bg-gray-100 text-gray-600'}`}>{user.plan}</span>
+                            {user.role === 'admin' && (
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">admin</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-400 flex-wrap">
+                            {user.builder_name && <span>{user.builder_name}</span>}
+                            {user.community_name && <span>· {user.community_name}</span>}
+                            <span>· {user.claim_count} claim{user.claim_count !== 1 ? 's' : ''}</span>
+                            <span>· Joined {new Date(user.created_at).toLocaleDateString()}</span>
+                            {!user.onboarding_complete && <span className="text-orange-400">· Onboarding incomplete</span>}
+                          </div>
+                        </div>
+                        <div className="text-gray-400 shrink-0">
+                          {expandedUser === user.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </div>
+                      </div>
+
+                      {/* Expanded user panel */}
+                      {expandedUser === user.id && (
+                        <div className="px-5 py-4 bg-gray-50 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Plan</p>
+                            <div className="flex gap-2 flex-wrap">
+                              {['free', 'basic', 'pro'].map(p => (
+                                <button key={p} onClick={() => updateUserPlan(user.id, p)}
+                                  disabled={updatingUser === user.id}
+                                  className={`px-3 py-1.5 text-xs rounded-lg font-medium border transition-colors ${user.plan === p ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-600 hover:border-blue-300'}`}>
+                                  {p.charAt(0).toUpperCase() + p.slice(1)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Role</p>
+                            <div className="flex gap-2 flex-wrap">
+                              {['user', 'admin'].map(r => (
+                                <button key={r} onClick={() => updateUserRole(user.id, r)}
+                                  disabled={updatingUser === user.id}
+                                  className={`px-3 py-1.5 text-xs rounded-lg font-medium border transition-colors ${(user.role || 'user') === r ? 'border-red-400 bg-red-50 text-red-700' : 'border-gray-200 bg-white text-gray-600 hover:border-red-300'}`}>
+                                  {r.charAt(0).toUpperCase() + r.slice(1)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="md:col-span-2">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Details</p>
+                            <div className="text-xs text-gray-500 space-y-0.5">
+                              <p>ID: <span className="font-mono text-gray-400">{user.id}</span></p>
+                              {user.warranty_start && <p>Warranty started: {new Date(user.warranty_start).toLocaleDateString()}</p>}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── ADS TAB ── */}
         {tab === 'ads' && (
           <div className="space-y-6">
-
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-semibold text-gray-800 flex items-center gap-2">
@@ -232,7 +468,6 @@ export default function AdminPage() {
                       placeholder={'Paste your affiliate HTML here, e.g.:\n<a href="https://www.homedepot.com/..."><img src="..." alt="Home Depot" /></a>'}
                       className="border border-gray-200 rounded-lg px-3 py-2 text-xs font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
-
                   {embedPreview && (
                     <div className="space-y-3">
                       <div className="border border-blue-100 bg-blue-50 rounded-lg p-3">
@@ -240,13 +475,11 @@ export default function AdminPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div className="flex flex-col gap-1">
                             <label className="text-xs text-gray-500 font-medium">Sponsor Name</label>
-                            <input name="sponsor_name" defaultValue={parsedFields.sponsor_name} placeholder="e.g. Home Depot"
-                              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white" />
+                            <input name="sponsor_name" defaultValue={parsedFields.sponsor_name} placeholder="e.g. Home Depot" className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white" />
                           </div>
                           <div className="flex flex-col gap-1">
                             <label className="text-xs text-gray-500 font-medium">Label / Title</label>
-                            <input name="title" defaultValue={parsedFields.title} placeholder="Short label for your records"
-                              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white" />
+                            <input name="title" defaultValue={parsedFields.title} placeholder="Short label for your records" className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white" />
                           </div>
                           <div className="flex flex-col gap-1">
                             <label className="text-xs text-gray-500 font-medium">Display Order</label>
@@ -255,29 +488,20 @@ export default function AdminPage() {
                           {parsedFields.link_url && (
                             <div className="flex flex-col gap-1">
                               <label className="text-xs text-gray-500 font-medium">Detected Link</label>
-                              <input readOnly value={parsedFields.link_url}
-                                className="border border-gray-200 rounded-lg px-3 py-2 text-xs font-mono bg-gray-50 text-gray-500" />
+                              <input readOnly value={parsedFields.link_url} className="border border-gray-200 rounded-lg px-3 py-2 text-xs font-mono bg-gray-50 text-gray-500" />
                             </div>
                           )}
                         </div>
                       </div>
                       <div>
                         <p className="text-xs font-medium text-gray-500 mb-1">Preview:</p>
-                        <div className="border border-gray-200 rounded-lg p-3 bg-white overflow-auto"
-                          dangerouslySetInnerHTML={{ __html: embedHtml }} />
+                        <div className="border border-gray-200 rounded-lg p-3 bg-white overflow-auto" dangerouslySetInnerHTML={{ __html: embedHtml }} />
                       </div>
                     </div>
                   )}
-
                   <div className="flex gap-3">
-                    <button type="submit" disabled={!embedHtml.trim()}
-                      className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-40">
-                      Save Embed Ad
-                    </button>
-                    <button type="button" onClick={() => { setEmbedHtml(''); setParsedFields({ sponsor_name: '', link_url: '', title: '' }); setEmbedPreview(false) }}
-                      className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">
-                      Clear
-                    </button>
+                    <button type="submit" disabled={!embedHtml.trim()} className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-40">Save Embed Ad</button>
+                    <button type="button" onClick={() => { setEmbedHtml(''); setParsedFields({ sponsor_name: '', link_url: '', title: '' }); setEmbedPreview(false) }} className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200">Clear</button>
                   </div>
                 </form>
               )}
@@ -309,8 +533,7 @@ export default function AdminPage() {
                         </div>
                         <p className="font-medium text-gray-800 text-sm">{ad.title}</p>
                         {ad.embed_html ? (
-                          <div className="mt-2 border border-gray-100 rounded-lg p-2 bg-gray-50 overflow-auto max-h-24"
-                            dangerouslySetInnerHTML={{ __html: ad.embed_html }} />
+                          <div className="mt-2 border border-gray-100 rounded-lg p-2 bg-gray-50 overflow-auto max-h-24" dangerouslySetInnerHTML={{ __html: ad.embed_html }} />
                         ) : (
                           <>
                             <p className="text-xs text-gray-500 mt-0.5">{ad.description}</p>
@@ -337,7 +560,6 @@ export default function AdminPage() {
                 {!ads.length && <p className="text-center py-8 text-gray-400 text-sm">No ads yet. Add one above.</p>}
               </div>
             </div>
-
           </div>
         )}
       </div>
