@@ -268,7 +268,263 @@ export interface BlogPost {
                                                                                                                                                         **Document first. Escalate with confidence.**
                                                                                                                                                             `.trim()
                                                                                                                                                               }
-                                                                                                                                                              ]
+                                                                                                                                                              
+                                                                                                                          ,
+                                                                                                                          {
+                                                                                                                                slug: 'preparing-for-your-30-day-walkthrough',
+                                                                                                                                title: 'How to Prepare for Your 30-Day New Home Walkthrough',
+                                                                                                                                excerpt: 'The 30-day walkthrough is your first formal chance to document defects with your builder present. Here is how to make the most of it.',
+                                                                                                                                date: 'May 31, 2026',
+                                                                                                                                category: 'Warranty Guide',
+                                                                                                                                readMinutes: 5,
+                                                                                                                                content: `
+## What Is the 30-Day Walkthrough?
+
+Most builders schedule a formal walkthrough with the homeowner within the first 30 days of closing. This is your opportunity to walk through the home together, identify visible defects, and create a written punch list that the builder is obligated to address.
+
+It is also, for many homeowners, the last time they have the builder's full attention for warranty issues.
+
+## What to Bring
+
+Come prepared. Bring a notepad, your phone for photos, a flashlight, and a printed copy of any defects you have already noticed since closing. Do not rely on memory.
+
+Walk every room systematically, starting from the top of the house and working down.
+
+**Exterior:** Walk the entire perimeter. Check caulking around windows and doors, grading and drainage away from the foundation, driveway and sidewalk cracks, siding alignment, and roof condition from ground level.
+
+**Garage:** Check the garage door operation, floor cracks, drywall finish, and electrical outlets.
+
+**Kitchen:** Run the faucet at full pressure and check under the sink. Test every outlet, especially GFCIs. Check cabinet alignment, drawer function, and countertop seams.
+
+**Bathrooms:** Test hot water pressure and temperature. Check under vanities for leaks. Inspect tile grout and caulking. Test exhaust fans.
+
+**Bedrooms and living areas:** Look for drywall nail pops, corner bead cracks, paint inconsistencies, and flooring gaps. Test every light switch and outlet.
+
+**HVAC:** Change the filter if it is dirty (document this), and verify the system reaches the set temperature in each zone.
+
+## Document Everything in Writing
+
+Do not accept verbal assurances. Everything the builder agrees to fix must be in writing. Most builders will have a walkthrough form — review it before you sign, and add any items they may have missed.
+
+If the builder resists noting something, take a photo and write it in your own notes. You have documentation regardless.
+
+## The Punch List Is Not the End
+
+Items on your walkthrough punch list should be completed within 30 to 60 days. If they are not, follow up in writing and create a new deadline. Each communication becomes part of your warranty record.
+
+Your 30-day walkthrough is the beginning of your documentation practice, not a one-time event.
+
+**Walk thoroughly. Document everything. Follow up in writing.**
+`.trim()
+                                                                                                                          },
+                                                                                                                          {
+                                                                                                                                slug: 'understanding-utah-new-home-warranty-act',
+                                                                                                                                title: 'The Utah New Home Warranty Act: What Every Buyer Needs to Know',
+                                                                                                                                excerpt: 'Utah state law provides specific warranty protections for new home buyers. Most homeowners do not know what the law requires or how to use it.',
+                                                                                                                                date: 'June 4, 2026',
+                                                                                                                                category: 'Warranty Guide',
+                                                                                                                                readMinutes: 6,
+                                                                                                                                content: `
+## What Is the Utah New Home Warranty Act?
+
+The Utah New Home Warranty Act (Utah Code 58-70a) establishes minimum warranty standards for newly constructed homes in the state. It defines what must be covered, for how long, and what builders are legally required to do when a homeowner reports a defect.
+
+Understanding this law is not just useful — it is essential. Builders know the law inside and out. Homeowners who do not know it are at a significant disadvantage.
+
+## What the Law Requires
+
+**One-Year Coverage:**
+The first year covers defects in workmanship and materials. This includes improper installation of any component of the home.
+
+**Two-Year Coverage:**
+For two years, the builder must warrant against defects in plumbing, electrical, heating, cooling, and ventilation systems.
+
+**Six-Year Coverage:**
+For six years, the builder must warrant against major structural defects — issues that affect load-bearing components and threaten the structural integrity of the home.
+
+This is longer than the federal standard many buyers assume applies. The six-year structural warranty is a meaningful protection for Utah homeowners.
+
+## How to Make a Claim Under the Act
+
+The Utah New Home Warranty Act requires that warranty claims be made in writing. Verbal reports do not satisfy the legal requirement.
+
+Your written notice must describe the alleged defect in reasonable detail and be delivered to the builder in a manner that provides proof of delivery — certified mail, email with read receipt, or a warranty portal that timestamps submissions.
+
+## What Happens If the Builder Does Not Respond?
+
+Under the Act, builders have a reasonable time to inspect and repair warranty defects. If a builder fails to respond or refuses to honor legitimate warranty claims, a homeowner may pursue remedies including repair costs and diminution in value.
+
+Before pursuing legal remedies, you must have a documented record of the defect and your attempts to notify the builder.
+
+## What the Act Does Not Cover
+
+The Utah New Home Warranty Act does not cover defects caused by the homeowner, normal wear and tear, damage from events outside the builder's control, or items covered by a separate manufacturer warranty.
+
+## Why Documentation Is Your Legal Instrument
+
+The difference between a successful warranty claim and a failed one often comes down to whether the homeowner can prove they reported the defect within the warranty period and gave the builder a reasonable opportunity to remedy it.
+
+Oluso's timestamped claim system is designed specifically to create the documentation record the Utah New Home Warranty Act requires.
+
+**Know your rights. Document your claims. The law is on your side.**
+`.trim()
+                                                                                                                          },
+                                                                                                                          {
+                                                                                                                                slug: 'common-mistakes-new-homeowners-make-with-warranty-claims',
+                                                                                                                                title: 'The 7 Most Common Warranty Claim Mistakes New Homeowners Make',
+                                                                                                                                excerpt: 'Most homeowners leave warranty coverage on the table. These are the mistakes that cost them their claims — and how to avoid every one.',
+                                                                                                                                date: 'June 11, 2026',
+                                                                                                                                category: 'Strategy',
+                                                                                                                                readMinutes: 5,
+                                                                                                                                content: `
+## Most Warranty Issues Go Unreported
+
+Most defects in new construction homes are never formally reported. Homeowners notice problems, assume they are normal, or simply do not know they can make a claim.
+
+The ones who do report are often too late, or make procedural mistakes that undercut their claims.
+
+Here are the seven most common mistakes — and what to do instead.
+
+## Mistake 1: Reporting Verbally Instead of in Writing
+
+A phone call to your builder's customer service line does not create a warranty claim. Only written, timestamped notice satisfies the legal requirement of most warranty contracts and state warranty laws.
+
+**Fix:** Submit every claim in writing. Email, certified mail, or a warranty tracking platform like Oluso all create the timestamped record you need.
+
+## Mistake 2: Waiting to See If It Gets Worse
+
+Many homeowners notice a crack, a stain, or a door that sticks and decide to monitor it before reporting. Months pass, the warranty period ends, and the defect is no longer covered.
+
+**Fix:** Report as soon as you notice a defect. You can note that it is minor or still developing. The date of first notice is what matters for warranty eligibility.
+
+## Mistake 3: Assuming the Builder's Portal Protects You
+
+Some builders have their own warranty management portals. These are controlled by the builder — submissions can be deleted, statuses changed, and timelines disputed.
+
+**Fix:** Keep your own independent record of every claim, even if you also use the builder's system.
+
+## Mistake 4: Not Following Up After Submission
+
+Submitting a claim and waiting is not a strategy. A claim that goes unacknowledged for three weeks has effectively been ignored.
+
+**Fix:** If you do not receive written acknowledgment within 5 business days, send a follow-up. Track every follow-up with its date and outcome.
+
+## Mistake 5: Accepting Partial Repairs
+
+A builder who fixes the visible symptom without addressing the root cause has not honored your warranty claim. Water staining patched over without finding the leak source will return.
+
+**Fix:** Before closing a claim, confirm that the underlying cause has been resolved, not just the surface manifestation.
+
+## Mistake 6: Missing the 11-Month Inspection Window
+
+The most comprehensive warranty coverage — workmanship and materials — expires at one year. An 11-month professional inspection finds issues you can still report under full first-year coverage.
+
+**Fix:** Schedule a third-party home inspection at month 11. It typically costs $300 to $500 and is the highest-ROI action most new homeowners can take.
+
+## Mistake 7: Going Adversarial Too Early
+
+Builders have legal teams, arbitration clauses, and patience. Homeowners who become adversarial before exhausting collaborative options often end up worse off.
+
+**Fix:** Be firm but professional in all written communications. Escalation is a tool for after good-faith attempts have failed — not a first response.
+
+**Document everything. Follow up consistently. Escalate strategically.**
+`.trim()
+                                                                                                                          },
+                                                                                                                          {
+                                                                                                                                slug: 'hvac-warranty-claims-new-construction',
+                                                                                                                                title: 'HVAC Warranty Claims in New Construction: What Is Covered and When',
+                                                                                                                                excerpt: 'HVAC issues are among the most expensive defects in new homes. Understanding what your warranty covers and for how long can save you thousands.',
+                                                                                                                                date: 'June 18, 2026',
+                                                                                                                                category: 'Documentation',
+                                                                                                                                readMinutes: 6,
+                                                                                                                                content: `
+## Why HVAC Claims Are Different
+
+HVAC issues occupy a special place in new home warranty law. Unlike cosmetic defects, which are typically covered only in the first year, HVAC system defects fall under the two-year mechanical systems warranty in most states — including Utah.
+
+This means a furnace that was improperly installed, ductwork that was incorrectly sized, or an AC unit that was never properly commissioned are builder warranty issues for up to two years after closing.
+
+## Builder Warranty vs. Manufacturer Warranty
+
+This distinction trips up many homeowners.
+
+**Builder warranty** covers defects in how the HVAC system was installed or commissioned — ductwork wired incorrectly, a system that cannot maintain temperature in a well-insulated home. These are installation defects the builder must address.
+
+**Manufacturer warranty** covers defects in the equipment itself — a compressor that fails, a heat exchanger with a factory defect. Equipment warranties are typically 5 to 10 years for major components and are handled through the manufacturer, not the builder.
+
+## Common HVAC Defects in New Construction
+
+**Undersized or oversized systems:** A system not matched to the home's heat load will run inefficiently, wear out faster, and fail to maintain comfortable temperatures.
+
+**Duct leakage:** Poorly sealed ductwork loses conditioned air inside wall cavities and attics. This is extremely common in new construction and is both a comfort problem and an energy cost problem.
+
+**Improper refrigerant charge:** An AC system not properly charged at installation will underperform from day one. A technician can verify refrigerant charge — low charge is a commissioning defect.
+
+**Drainage issues:** Condensate drains that are improperly pitched or incorrectly connected can cause water damage inside walls or ceilings.
+
+## How to Document an HVAC Claim
+
+Start with observable symptoms: rooms that cannot reach temperature, utility bills higher than neighbors in similar homes, unusual sounds, or visible condensation.
+
+Then get a third-party HVAC technician to inspect the system and provide a written assessment. Their report documenting the defect and its cause is far more compelling than personal observations alone.
+
+File your claim in writing with the date of first observation, the symptoms, and the technician's report attached.
+
+## Timing Your Claim
+
+Do not wait for your HVAC system to completely fail. If something seems wrong — utility bills higher than expected, rooms with consistent temperature complaints, unusual sounds — have it inspected before the two-year mechanical warranty expires.
+
+The cost of a diagnostic visit is trivial compared to an HVAC repair the builder should have covered.
+
+**Know your HVAC coverage. Get it inspected. Document before the clock runs out.**
+`.trim()
+                                                                                                                          },
+                                                                                                                          {
+                                                                                                                                slug: 'using-community-data-to-evaluate-builders',
+                                                                                                                                title: 'How to Use Community Warranty Data to Evaluate a Builder Before You Buy',
+                                                                                                                                excerpt: 'The warranty claims filed by existing homeowners in a subdivision tell you more about a builder than any sales brochure. Here is how to read them.',
+                                                                                                                                date: 'June 25, 2026',
+                                                                                                                                category: 'Data & Insights',
+                                                                                                                                readMinutes: 5,
+                                                                                                                                content: `
+## The Information Gap Before Closing
+
+When you are evaluating a new construction home, the builder controls almost all of the information you receive. The model home is immaculate. The sales team is polished. The brochures show awards and testimonials.
+
+What you do not see is how the builder has handled warranty claims for the homeowners who moved in before you.
+
+That information exists — in the lived experience of existing homeowners in that subdivision. Until recently, there was no structured way to access it. That is what community warranty data changes.
+
+## What Community Data Shows
+
+When homeowners in a subdivision share their warranty experiences, patterns emerge quickly.
+
+**Defect frequency by category:** Are foundation issues common in this subdivision? Do HVAC complaints cluster around a specific model? Is there a pattern of water intrusion in homes of a certain elevation?
+
+**Builder response behavior:** How quickly does this builder acknowledge claims? What percentage of claims get resolved within 30 days? How many claims required escalation?
+
+**Resolution quality:** Are repairs durable, or do the same defects recur? Do builders address root causes or just surface symptoms?
+
+**Claim timing patterns:** Are most claims clustered in months 10 to 12, suggesting homeowners are rushing to file before first-year coverage expires? That pattern indicates the builder has been slow to respond to earlier submissions.
+
+## How to Use This Data as a Buyer
+
+If you are considering a home in a subdivision with Oluso data, search the builder name and subdivision before signing. Look for high defect volume in structural or water categories, long average response times, unresolved critical claims, and patterns of escalation across multiple homeowners.
+
+## How to Use This Data as a Current Homeowner
+
+If you already own in the subdivision, community data helps in two ways. First, you can see whether defects you are experiencing are common to the area — which strengthens your case that the issue is a construction defect, not a maintenance issue. Second, you can learn from neighbors who have navigated similar claims.
+
+## Contributing to the Community
+
+Every claim you file and every experience you share makes the community data richer for the homeowners who come after you. A buyer who searches your subdivision two years from now may benefit from knowing how the builder handled the issue you documented today.
+
+Warranty transparency holds builders accountable and helps buyers make better decisions.
+
+**Research before you buy. Document as you live there. Share what you learn.**
+`.trim()
+                                                                                                                          }
+]
                                                                                                                                                               
                                                                                                                                                               export function getPostBySlug(slug: string): BlogPost | undefined {
                                                                                                                                                                 return blogPosts.find(p => p.slug === slug)
