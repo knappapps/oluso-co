@@ -30,11 +30,9 @@ function LoginForm() {
         const { data: profile } = await supabase
           .from('users').select('onboarding_complete').eq('auth_id', data.session.user.id).single()
         if (profile?.onboarding_complete === false) {
-          router.push('/onboarding')
-        router.refresh()
+          window.location.href = '/onboarding'
         } else {
-          router.push(redirectTo === '/onboarding' ? '/dashboard' : redirectTo)
-        router.refresh()
+          window.location.href = redirectTo === '/onboarding' ? '/dashboard' : redirectTo
         }
       }
     } catch (err) {
