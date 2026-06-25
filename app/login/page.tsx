@@ -31,8 +31,10 @@ function LoginForm() {
           .from('users').select('onboarding_complete').eq('auth_id', data.session.user.id).single()
         if (profile?.onboarding_complete === false) {
           router.push('/onboarding')
+        router.refresh()
         } else {
           router.push(redirectTo === '/onboarding' ? '/dashboard' : redirectTo)
+        router.refresh()
         }
       }
     } catch (err) {
