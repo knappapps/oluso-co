@@ -12,18 +12,19 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+    // onAuthStateChange fires synchronously with the current session on mount,
+    // so we use it as the single source of truth to avoid race conditions with
+    // getSession() when createBrowserClient is initializing from cookies.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION') {
+        setAuthenticated(!!session)
+        setChecking(false)
+      } else if (event === 'SIGNED_IN') {
         setAuthenticated(true)
-      } else {
+      } else if (event === 'SIGNED_OUT') {
         setAuthenticated(false)
+        router.push('/login')
       }
-      setChecking(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthenticated(!!session)
-      if (!session) router.push('/login')
     })
 
     return () => subscription.unsubscribe()
