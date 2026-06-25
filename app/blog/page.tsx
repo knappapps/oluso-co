@@ -32,6 +32,42 @@ const posts = [
     date: 'April 14, 2026',
     category: 'Strategy'
   }
+,
+  {
+    slug: 'preparing-for-your-30-day-walkthrough',
+    title: 'How to Prepare for Your 30-Day New Home Walkthrough',
+    excerpt: 'The 30-day walkthrough is your first formal chance to document defects with your builder present. Here is how to make the most of it.',
+    date: 'May 31, 2026',
+    category: 'Warranty Guide'
+  },
+  {
+    slug: 'understanding-utah-new-home-warranty-act',
+    title: 'The Utah New Home Warranty Act: What Every Buyer Needs to Know',
+    excerpt: 'Utah state law provides specific warranty protections for new home buyers. Most homeowners do not know what the law requires or how to use it.',
+    date: 'June 4, 2026',
+    category: 'Warranty Guide'
+  },
+  {
+    slug: 'common-mistakes-new-homeowners-make-with-warranty-claims',
+    title: 'The 7 Most Common Warranty Claim Mistakes New Homeowners Make',
+    excerpt: 'Most homeowners leave warranty coverage on the table. These are the mistakes that cost them their claims — and how to avoid every one.',
+    date: 'June 11, 2026',
+    category: 'Strategy'
+  },
+  {
+    slug: 'hvac-warranty-claims-new-construction',
+    title: 'HVAC Warranty Claims in New Construction: What Is Covered and When',
+    excerpt: 'HVAC issues are among the most expensive defects in new homes. Understanding what your warranty covers and for how long can save you thousands.',
+    date: 'June 18, 2026',
+    category: 'Documentation'
+  },
+  {
+    slug: 'using-community-data-to-evaluate-builders',
+    title: 'How to Use Community Warranty Data to Evaluate a Builder Before You Buy',
+    excerpt: 'The warranty claims filed by existing homeowners in a subdivision tell you more about a builder than any sales brochure. Here is how to read them.',
+    date: 'June 25, 2026',
+    category: 'Data & Insights'
+  }
 ]
 
 export const metadata: Metadata = {
