@@ -12,22 +12,42 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false)
 
   useEffect(() => {
-    // onAuthStateChange fires synchronously with the current session on mount,
-    // so we use it as the single source of truth to avoid race conditions with
-    // getSession() when createBrowserClient is initializing from cookies.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'INITIAL_SESSION') {
-        setAuthenticated(!!session)
-        setChecking(false)
-      } else if (event === 'SIGNED_IN') {
+    let mounted = true
+
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!mounted) return
+      if (session) {
         setAuthenticated(true)
-      } else if (event === 'SIGNED_OUT') {
+        setChecking(false)
+      } else {
+        // No session from cookies — wait briefly for auth state to resolve
+        // (createBrowserClient may need an extra tick after a fresh page load)
+        await new Promise(resolve => setTimeout(resolve, 200))
+        const { data: { session: s2 } } = await supabase.auth.getSession()
+        if (!mounted) return
+        setAuthenticated(!!s2)
+        setChecking(false)
+      }
+    }
+
+    init()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
+      if (event === 'SIGNED_OUT') {
         setAuthenticated(false)
+        setChecking(false)
         router.push('/login')
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setAuthenticated(true)
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [router])
 
   if (checking) {
