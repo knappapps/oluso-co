@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import Header from '@/components/Header'
 import { Building2, TrendingUp, Clock, CheckCircle, ChevronRight, Star } from 'lucide-react'
 import type { Metadata } from 'next'
 
@@ -48,17 +49,8 @@ export default async function BuildersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="border-b border-gray-100 bg-white px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl">
-          <Building2 size={22} /> Oluso
-        </Link>
-        <div className="flex items-center gap-3">
-          <Link href="/community" className="text-sm text-gray-600 hover:text-gray-800">Community</Link>
-          <Link href="/login" className="text-sm text-gray-600 hover:text-gray-800">Sign in</Link>
-          <Link href="/signup" className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 font-medium">Get started</Link>
-        </div>
-      </nav>
-      <main className="max-w-5xl mx-auto px-4 py-12">
+      <Header />
+      <main className="max-w-5xl mx-auto px-4 pt-24 pb-12">
         <div className="mb-10">
           <h1 className="text-3xl font-bold text-gray-900 mb-3">Builder Accountability Scores</h1>
           <p className="text-gray-500 max-w-2xl">How well do Utah home builders handle warranty claims? These scores are calculated from real homeowner data.</p>
@@ -68,7 +60,7 @@ export default async function BuildersPage() {
             <Building2 size={48} className="mx-auto text-gray-300 mb-4" />
             <p className="text-gray-500 font-medium">No builder data yet</p>
             <p className="text-gray-400 text-sm mt-1">Data will appear as homeowners file claims.</p>
-            <Link href="/signup" className="inline-block mt-4 bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700">Join and share</Link>
+            <Link href="/dashboard" className="inline-block mt-4 bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700">Join and share</Link>
           </div>
         ) : (
           <div className="space-y-4">
@@ -119,7 +111,7 @@ export default async function BuildersPage() {
           <TrendingUp size={36} className="mx-auto mb-3 opacity-80" />
           <h2 className="text-2xl font-bold mb-3">Help hold builders accountable</h2>
           <p className="text-blue-100 mb-6">Join homeowners filing and tracking warranty claims.</p>
-          <Link href="/signup" className="inline-block bg-white text-blue-600 px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-50">Create free account</Link>
+          <Link href="/dashboard" className="inline-block bg-white text-blue-600 px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-50">Go to Dashboard</Link>
         </div>
       </main>
     </div>
