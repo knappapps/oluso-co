@@ -2,13 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 import { ShieldAlert, Megaphone, Code, LayoutTemplate, Users, Search, ChevronDown, ChevronUp, RefreshCw, BarChart2, TrendingUp, Clock, CheckCircle, Database, LogIn, Check, Download, CheckSquare, X, Edit2, RotateCcw, Building2, SlidersHorizontal } from 'lucide-react'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 interface Ad {
   id: string; sponsor_name: string; title: string; description: string; cta_text: string; link_url: string; bg_color: string; text_color: string; active: boolean; display_order: number; embed_html?: string
