@@ -11,7 +11,7 @@ import {
 Plus, AlertTriangle, Clock, CheckCircle,
 MessageSquare, Send, ChevronDown, ChevronUp,
 Mail, Calendar, Paperclip, Upload, X, Image, FileText, Loader2, Shield,
-Share2, Copy, Check, User
+Share2, Copy, Check, User, AlertCircle
 } from 'lucide-react'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -654,29 +654,63 @@ return (
                   )}
                 </div>                <div className="p-4 bg-gray-50 border-b border-gray-100">
                   <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1">
-                    <MessageSquare size={12} /> Communication Thread
+                    <MessageSquare size={12} /> Claim Timeline
                   </h4>
-                  {!threads[claim.id] || threads[claim.id].length === 0 ? (
-                    <p className="text-sm text-gray-400 italic">No messages yet. Send the first email to your builder below.</p>
-                  ) : (
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                      {threads[claim.id].map(msg => (
-                        <div key={msg.id}
-                          className={'rounded-lg p-3 text-sm ' + (msg.direction === 'outbound' ? 'bg-blue-50 border border-blue-100 ml-4' : 'bg-white border border-gray-200 mr-4')}>
-                          <div className="flex items-center justify-between mb-1">
-                            <span className={'text-xs font-medium ' + (msg.direction === 'outbound' ? 'text-blue-600' : 'text-gray-600')}>
-                              {msg.direction === 'outbound' ? 'You to Builder' : 'Builder to You'}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                              {new Date(msg.sent_at).toLocaleDateString()} {new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-                          {msg.subject && <div className="font-medium text-gray-700 text-xs mb-1">{msg.subject}</div>}
-                          <div className="text-gray-600 whitespace-pre-wrap text-xs">{msg.body}</div>
+                  <div className="relative">
+                    {/* Build timeline events */}
+                    {(() => {
+                      const events: { type: string; date: string; label: string; sub?: string; color: string }[] = []
+                      events.push({ type: 'filed', date: claim.created_at, label: 'Claim Filed', sub: claim.title, color: 'bg-blue-500' })
+                      const msgs = threads[claim.id] || []
+                      msgs.forEach(msg => {
+                        events.push({
+                          type: 'message',
+                          date: msg.sent_at,
+                          label: msg.direction === 'outbound' ? 'You sent a message' : 'Builder replied',
+                          sub: msg.body?.slice(0, 100) + (msg.body?.length > 100 ? '...' : ''),
+                          color: msg.direction === 'outbound' ? 'bg-blue-400' : 'bg-green-500',
+                        })
+                      })
+                      if ((claim as any).first_response_at) {
+                        events.push({ type: 'responded', date: (claim as any).first_response_at, label: 'Builder First Response', color: 'bg-green-500' })
+                      }
+                      if ((claim as any).resolved_at) {
+                        events.push({ type: 'resolved', date: (claim as any).resolved_at, label: 'Claim Resolved', color: 'bg-emerald-500' })
+                      }
+                      if (['resolved','closed'].includes(claim.status) && !(claim as any).resolved_at) {
+                        events.push({ type: 'resolved', date: claim.updated_at || claim.created_at, label: claim.status === 'closed' ? 'Claim Closed' : 'Claim Resolved', color: 'bg-emerald-500' })
+                      }
+                      events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                      return (
+                        <div className="space-y-0">
+                          {events.map((ev, i) => (
+                            <div key={i} className="flex gap-3">
+                              <div className="flex flex-col items-center">
+                                <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${ev.color}`} />
+                                {i < events.length - 1 && <div className="w-px flex-1 bg-gray-200 my-0.5" style={{ minHeight: '20px' }} />}
+                              </div>
+                              <div className={`pb-3 flex-1 ${i === events.length - 1 ? '' : ''}`}>
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className={`text-xs font-semibold ${ev.type === 'filed' ? 'text-blue-700' : ev.type === 'resolved' ? 'text-emerald-700' : ev.color.includes('green') ? 'text-green-700' : 'text-blue-600'}`}>
+                                    {ev.label}
+                                  </span>
+                                  <span className="text-[10px] text-gray-400 shrink-0">
+                                    {new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} {new Date(ev.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                                {ev.sub && (
+                                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{ev.sub}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                          {events.length === 0 && (
+                            <p className="text-sm text-gray-400 italic">No activity yet.</p>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      )
+                    })()}
+                  </div>
                 </div>
                 <div className="p-4 border-t border-gray-100">
                   {!(claim as any).builder_email ? (
