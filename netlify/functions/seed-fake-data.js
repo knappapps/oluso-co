@@ -194,12 +194,13 @@ function generateClaims(userIds, builderMap, targetCount) {
     const resolvedAt  = isResolved ? addDays(createdAt, randomInt(14, 90)) : null
     const title       = CLAIM_TITLES[randomInt(0, CLAIM_TITLES.length - 1)]
 
+    // Only include columns that exist in the claims table schema
+    // (confirmed from create-claim.js: no builder_name column in claims)
     claims.push({
       user_id:                userId,
       builder_id:             builderId,
-      builder_name:           builderName,
       title:                  title,
-      description:            'Seed data: ' + title + ' at a home built by ' + builderName + ' in ' + pick(CITIES) + ', UT.',
+      description:            'Seed data: ' + title + ' reported by a homeowner with ' + builderName + ' in ' + pick(CITIES) + ', UT.',
       category:               category,
       severity:               severity,
       status:                 status,
@@ -284,6 +285,7 @@ exports.handler = async function(event) {
     // Insert ~150 claims in batches of 50
     const claims = generateClaims(userIds, builderMap, 150)
     let claimsInserted = 0
+    const claimErrors = []
     const BATCH = 50
     for (let i = 0; i < claims.length; i += BATCH) {
       const batch = claims.slice(i, i + BATCH)
@@ -293,12 +295,13 @@ exports.handler = async function(event) {
         .select('id')
       if (batchErr) {
         console.error('claims batch error at offset ' + i + ':', batchErr.message)
+        claimErrors.push('offset ' + i + ': ' + batchErr.message)
       } else {
         claimsInserted += (batchResult || []).length
       }
     }
 
-    // Refresh builder_scores materialized view
+    // Refresh builder_scores materialized view via rpc
     const { error: refreshErr } = await supabase.rpc('refresh_builder_scores')
     if (refreshErr) {
       console.error('refresh_builder_scores error (non-fatal):', refreshErr.message)
@@ -310,6 +313,7 @@ exports.handler = async function(event) {
         users_inserted:  userIds.length,
         claims_inserted: claimsInserted,
         skipped:         0,
+        claim_errors:    claimErrors,
         refresh_status:  refreshErr ? ('FAILED: ' + refreshErr.message) : 'OK',
       }),
     }
