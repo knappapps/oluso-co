@@ -79,7 +79,7 @@ exports.handler = async function(event) {
 
   // Send via Resend
   const { error: emailError } = await resend.emails.send({
-    from: 'Oluso <no-reply@oluso.co>',
+    from: 'Oluso <no-reply@mail.oluso.co>',
     to: [email],
     subject: 'Reset your Oluso password',
     html: `
