@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Home, Menu, X, LogOut, User, LayoutDashboard, BookOpen, Users, HelpCircle, Building2, Bell } from 'lucide-react'
+import { Home, Menu, X, LogOut, User, LayoutDashboard, BookOpen, Users, HelpCircle, Building2, Bell, ShieldAlert } from 'lucide-react'
 
 interface Notification {
   id: string
@@ -20,6 +20,7 @@ export default function Header() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [user, setUser] = useState<{ email: string; name?: string; authId?: string } | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [bellOpen, setBellOpen] = useState(false)
   const bellRef = useRef<HTMLDivElement>(null)
@@ -29,14 +30,17 @@ export default function Header() {
       if (session?.user) {
         setUser({ email: session.user.email || '', name: session.user.user_metadata?.name, authId: session.user.id })
         loadNotifications(session.user.id)
+        checkAdminRole(session.user.id)
       }
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       if (session?.user) {
         setUser({ email: session.user.email || '', name: session.user.user_metadata?.name, authId: session.user.id })
         loadNotifications(session.user.id)
+        checkAdminRole(session.user.id)
       } else {
         setUser(null)
+        setIsAdmin(false)
         setNotifications([])
       }
     })
@@ -53,6 +57,15 @@ export default function Header() {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
+
+  async function checkAdminRole(authId: string) {
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('auth_id', authId)
+      .single()
+    setIsAdmin(profile?.role === 'admin')
+  }
 
   async function loadNotifications(authId: string) {
     const { data: profile } = await supabase
@@ -112,6 +125,12 @@ export default function Header() {
               <Icon size={15} /> {label}
             </Link>
           ))}
+          {isAdmin && (
+            <Link href="/admin"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/admin' || pathname.startsWith('/admin/') ? 'bg-red-50 text-red-600' : 'text-red-500 hover:bg-red-50'}`}>
+              <ShieldAlert size={15} /> Admin
+            </Link>
+          )}
         </nav>
         <div className="hidden md:flex items-center gap-2">
           {user ? (
@@ -197,6 +216,12 @@ export default function Header() {
               <Icon size={16} /> {label}
             </Link>
           ))}
+          {isAdmin && (
+            <Link href="/admin" onClick={() => setOpen(false)}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${pathname === '/admin' || pathname.startsWith('/admin/') ? 'bg-red-50 text-red-600' : 'text-red-500 hover:bg-red-50'}`}>
+              <ShieldAlert size={16} /> Admin
+            </Link>
+          )}
           <div className="border-t border-gray-100 pt-3 mt-3">
             {user ? (
               <>
