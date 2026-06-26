@@ -749,7 +749,7 @@ export default function AdminPage() {
                             <th className="px-3 py-2 text-gray-400 font-medium w-8">
                               <input type="checkbox"
                                 checked={u2.claims.every((c: any) => selectedClaims.has(c.id))}
-                                onChange={e => { u2.claims.forEach((c: any) => { if (e.target.checked) setSelectedClaims(prev => new Set([...prev, c.id])); else setSelectedClaims(prev => { const n = new Set(prev); n.delete(c.id); return n }) }) }}
+                                onChange={e => { u2.claims.forEach((c: any) => { if (e.target.checked) { setSelectedClaims(prev => { const n = new Set(prev); n.add(c.id); return n }) } else { setSelectedClaims(prev => { const n = new Set(prev); n.delete(c.id); return n }) } }) }}
                                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                               />
                             </th>
