@@ -667,7 +667,7 @@ return (
                           type: 'message',
                           date: msg.sent_at,
                           label: msg.direction === 'outbound' ? 'You sent a message' : 'Builder replied',
-                          sub: msg.body?.slice(0, 100) + (msg.body?.length > 100 ? '...' : ''),
+                          sub: (msg.body || '').slice(0, 100) + ((msg.body || '').length > 100 ? '...' : ''),
                           color: msg.direction === 'outbound' ? 'bg-blue-400' : 'bg-green-500',
                         })
                       })
