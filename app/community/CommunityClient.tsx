@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Users, MapPin, Clock, CheckCircle, AlertCircle, Building2, TrendingUp, Search, X } from 'lucide-react'
+import { Users, MapPin, Clock, CheckCircle, AlertCircle, Building2, TrendingUp, Search, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import Header from '@/components/Header'
 
 const CATEGORIES = ['structural', 'water', 'electrical', 'hvac', 'plumbing', 'cosmetic', 'landscaping', 'other']
@@ -31,14 +32,20 @@ interface Props {
   rawStories: any[]
   statsRow: any[]
   builderScores: any[]
+  totalCount: number
+  currentPage: number
+  pageSize: number
 }
 
-export default function CommunityClient({ rawStories, statsRow, builderScores }: Props) {
+export default function CommunityClient({ rawStories, statsRow, builderScores, totalCount, currentPage, pageSize }: Props) {
+  const router = useRouter()
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [severityFilter, setSeverityFilter] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'response'>('newest')
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
   const stats = statsRow || []
   const totalClaims = stats.length
@@ -85,6 +92,11 @@ export default function CommunityClient({ rawStories, statsRow, builderScores }:
     setSeverityFilter(null)
     setStatusFilter(null)
     setSortBy('newest')
+  }
+
+  function goToPage(p: number) {
+    if (p < 1 || p > totalPages) return
+    router.push('/community?page=' + p)
   }
 
   return (
@@ -218,7 +230,7 @@ export default function CommunityClient({ rawStories, statsRow, builderScores }:
           {hasActiveFilters && (
             <div className="flex items-center justify-between pt-1 border-t border-gray-100">
               <span className="text-xs text-gray-500">
-                Showing <span className="font-semibold text-gray-800">{filtered.length}</span> of {rawStories.length} stories
+                Showing <span className="font-semibold text-gray-800">{filtered.length}</span> of {rawStories.length} stories on this page
               </span>
               <button onClick={clearFilters} className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
                 <X size={12} /> Clear all filters
@@ -228,9 +240,14 @@ export default function CommunityClient({ rawStories, statsRow, builderScores }:
         </div>
 
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-6">
-            {hasActiveFilters ? `Filtered Stories (${filtered.length})` : 'Recent Stories'}
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              {hasActiveFilters ? `Filtered Stories (${filtered.length})` : 'Recent Stories'}
+            </h2>
+            {totalPages > 1 && !hasActiveFilters && (
+              <span className="text-sm text-gray-500">Page {currentPage} of {totalPages}</span>
+            )}
+          </div>
           {filtered.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
               <AlertCircle size={48} className="mx-auto text-gray-300 mb-4" />
@@ -303,6 +320,29 @@ export default function CommunityClient({ rawStories, statsRow, builderScores }:
             </div>
           )}
         </div>
+
+        {/* Pagination controls — only shown when no active filters */}
+        {!hasActiveFilters && totalPages > 1 && (
+          <div className="mt-10 flex items-center justify-center gap-3">
+            <button
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage <= 1}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft size={15} /> Prev
+            </button>
+            <span className="text-sm text-gray-600 px-2">
+              Page <span className="font-semibold text-gray-900">{currentPage}</span> of <span className="font-semibold text-gray-900">{totalPages}</span>
+            </span>
+            <button
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Next <ChevronRight size={15} />
+            </button>
+          </div>
+        )}
 
         <div className="mt-16 bg-blue-600 rounded-2xl p-8 text-center text-white">
           <h2 className="text-2xl font-bold mb-3">Have a warranty story?</h2>
