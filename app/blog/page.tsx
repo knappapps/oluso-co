@@ -98,17 +98,19 @@ export default function BlogPage() {
 
           <div className="space-y-6">
             {posts.map(post => (
-              <article key={post.slug} className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+              <Link key={post.slug} href={`/blog/${post.slug}`} className="block">
+              <article className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded-full">{post.category}</span>
                   <span className="text-xs text-gray-400 flex items-center gap-1"><Calendar size={12} /> {post.date}</span>
                 </div>
                 <h2 className="text-lg font-bold text-gray-900 mb-2">{post.title}</h2>
                 <p className="text-gray-500 text-sm mb-4 leading-relaxed">{post.excerpt}</p>
-                <button className="flex items-center gap-1 text-sm text-blue-600 font-medium hover:text-blue-700 transition-colors">
+                <span className="flex items-center gap-1 text-sm text-blue-600 font-medium group-hover:text-blue-700 transition-colors">
                   Read more <ArrowRight size={14} />
-                </button>
+                </span>
               </article>
+            </Link>
             ))}
           </div>
         </div>
