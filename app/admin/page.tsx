@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
-import { ShieldAlert, Megaphone, Code, LayoutTemplate, Users, Search, ChevronDown, ChevronUp, RefreshCw, BarChart2, TrendingUp, Clock, CheckCircle, Database, LogIn, Check } from 'lucide-react'
+import { ShieldAlert, Megaphone, Code, LayoutTemplate, Users, Search, ChevronDown, ChevronUp, RefreshCw, BarChart2, TrendingUp, Clock, CheckCircle, Database, LogIn, Check, Download, Square, CheckSquare } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -88,6 +88,53 @@ const ROLE_COLORS: Record<string, string> = {
   user: 'bg-gray-100 text-gray-500',
 }
 
+// ── SVG Bar Chart ────────────────────────────────────────────────────────────
+function SvgBarChart({ data, color = '#3b82f6', height = 120 }: { data: { label: string; value: number }[]; color?: string; height?: number }) {
+  if (!data.length) return <p className="text-xs text-gray-400 text-center py-6">Not enough data yet</p>
+  const maxVal = Math.max(...data.map(d => d.value), 1)
+  const barW = Math.max(20, Math.floor(480 / data.length) - 6)
+  const chartH = height - 32
+  return (
+    <svg viewBox={`0 0 ${data.length * (barW + 6)} ${height}`} className="w-full" style={{ height }}>
+      {data.map((d, i) => {
+        const barH = Math.max(2, Math.round((d.value / maxVal) * chartH))
+        const x = i * (barW + 6)
+        const y = chartH - barH
+        return (
+          <g key={d.label}>
+            <rect x={x} y={y} width={barW} height={barH} fill={color} rx={3} opacity={0.85} />
+            <text x={x + barW / 2} y={y - 4} textAnchor="middle" fontSize={10} fill="#6b7280">{d.value > 0 ? d.value : ''}</text>
+            <text x={x + barW / 2} y={height - 2} textAnchor="middle" fontSize={9} fill="#9ca3af">{d.label}</text>
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
+// ── CSV Export ───────────────────────────────────────────────────────────────
+function exportRollupCsv(rollupData: any[]) {
+  const rows: string[][] = []
+  rows.push(['User Name','Email','Plan','Role','City','Builder','Community','Onboarding','Joined','Claim Title','Category','Severity','Status','Location','Filed','1st Resp (days)','Resolved (days)','Public Story'])
+  for (const u of rollupData) {
+    if (u.claims.length === 0) {
+      rows.push([u.name || '', u.email, u.plan, u.role || 'user', u.city || '', u.builder_name || '', u.community_name || '', u.onboarding_complete ? 'yes' : 'no', u.created_at?.slice(0,10), '', '', '', '', '', '', '', '', ''])
+    } else {
+      for (const c of u.claims) {
+        rows.push([u.name || '', u.email, u.plan, u.role || 'user', u.city || '', u.builder_name || '', u.community_name || '', u.onboarding_complete ? 'yes' : 'no', u.created_at?.slice(0,10), c.title || '', c.category || '', c.severity || '', c.status || '', c.defect_location || '', c.created_at?.slice(0,10), c.days_to_first_response != null ? String(Math.round(c.days_to_first_response)) : '', c.days_to_resolution != null ? String(Math.round(c.days_to_resolution)) : '', c.public_story ? 'yes' : 'no'])
+      }
+    }
+  }
+  const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `oluso-data-${new Date().toISOString().slice(0,10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function AdminPage() {
   const router = useRouter()
   const [authChecked, setAuthChecked] = useState(false)
@@ -116,8 +163,13 @@ export default function AdminPage() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
   const [loginAsLoading, setLoginAsLoading] = useState<string | null>(null)
   const [copiedLink, setCopiedLink] = useState<string | null>(null)
+
+  // Data tab state
   const [rollupData, setRollupData] = useState<any[]>([])
   const [rollupLoading, setRollupLoading] = useState(false)
+  const [selectedClaims, setSelectedClaims] = useState<Set<string>>(new Set())
+  const [bulkStatus, setBulkStatus] = useState('')
+  const [bulkUpdating, setBulkUpdating] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -173,7 +225,6 @@ export default function AdminPage() {
     try {
       const now = new Date()
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
-
       const [
         { data: allUsers },
         { data: newUsers },
@@ -192,57 +243,28 @@ export default function AdminPage() {
         supabase.from('users').select('id').not('referred_by', 'is', null),
       ])
 
-      // Avg days to resolution
       const resolutionDays = (resolvedClaims || [])
-        .map((c: any) => c.resolved_at && c.created_at
-          ? Math.floor((new Date(c.resolved_at).getTime() - new Date(c.created_at).getTime()) / 86400000)
-          : null)
+        .map((c: any) => c.resolved_at && c.created_at ? Math.floor((new Date(c.resolved_at).getTime() - new Date(c.created_at).getTime()) / 86400000) : null)
         .filter((d: any) => d !== null) as number[]
-      const avgDaysToResolution = resolutionDays.length
-        ? Math.round(resolutionDays.reduce((a, b) => a + b, 0) / resolutionDays.length)
-        : 0
+      const avgDaysToResolution = resolutionDays.length ? Math.round(resolutionDays.reduce((a, b) => a + b, 0) / resolutionDays.length) : 0
 
-      // Avg days to first response
-      const respDays = (allClaims || [])
-        .map((c: any) => c.days_to_first_response)
-        .filter((d: any) => d !== null && d !== undefined) as number[]
-      const avgDaysToFirstResponse = respDays.length
-        ? Math.round(respDays.reduce((a, b) => a + b, 0) / respDays.length * 10) / 10
-        : 0
+      const respDays = (allClaims || []).map((c: any) => c.days_to_first_response).filter((d: any) => d !== null && d !== undefined) as number[]
+      const avgDaysToFirstResponse = respDays.length ? Math.round(respDays.reduce((a, b) => a + b, 0) / respDays.length * 10) / 10 : 0
 
-      // Claims by category
       const catMap: Record<string, number> = {}
-      for (const c of (allClaims || [])) {
-        const cat = (c as any).category || 'other'
-        catMap[cat] = (catMap[cat] || 0) + 1
-      }
-      const claimsByCategory = Object.entries(catMap)
-        .map(([category, count]) => ({ category, count }))
-        .sort((a, b) => b.count - a.count)
+      for (const c of (allClaims || [])) { const cat = (c as any).category || 'other'; catMap[cat] = (catMap[cat] || 0) + 1 }
+      const claimsByCategory = Object.entries(catMap).map(([category, count]) => ({ category, count })).sort((a, b) => b.count - a.count)
 
-      // Signups by week (last 8 weeks)
       const weekKey = (d: string) => {
-        const date = new Date(d)
-        const day = date.getDay()
-        const diff = date.getDate() - day
+        const date = new Date(d); const day = date.getDay(); const diff = date.getDate() - day
         const monday = new Date(date.setDate(diff))
         return monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       }
       const signupWeeks: Record<string, number> = {}
       const claimWeeks: Record<string, number> = {}
       const eightWeeksAgo = new Date(now.getTime() - 56 * 24 * 60 * 60 * 1000).toISOString()
-      for (const u of (allUsers || [])) {
-        if (u.created_at >= eightWeeksAgo) {
-          const w = weekKey(u.created_at)
-          signupWeeks[w] = (signupWeeks[w] || 0) + 1
-        }
-      }
-      for (const c of (allClaims || [])) {
-        if ((c as any).created_at >= eightWeeksAgo) {
-          const w = weekKey((c as any).created_at)
-          claimWeeks[w] = (claimWeeks[w] || 0) + 1
-        }
-      }
+      for (const u of (allUsers || [])) { if (u.created_at >= eightWeeksAgo) { const w = weekKey(u.created_at); signupWeeks[w] = (signupWeeks[w] || 0) + 1 } }
+      for (const c of (allClaims || [])) { if ((c as any).created_at >= eightWeeksAgo) { const w = weekKey((c as any).created_at); claimWeeks[w] = (claimWeeks[w] || 0) + 1 } }
 
       setAnalytics({
         totalUsers: (allUsers || []).length,
@@ -256,82 +278,39 @@ export default function AdminPage() {
         claimsByCategory,
         signupsByWeek: Object.entries(signupWeeks).map(([week, count]) => ({ week, count })),
         claimsByWeek: Object.entries(claimWeeks).map(([week, count]) => ({ week, count })),
-        topBuilders: (builderScores || []).map((b: any) => ({
-          name: b.name,
-          claims: b.total_claims,
-          resolved: Math.round((b.resolve_rate_pct || 0) * b.total_claims / 100),
-          avg_response: b.avg_days_to_first_response,
-        })),
+        topBuilders: (builderScores || []).map((b: any) => ({ name: b.name, claims: b.total_claims, resolved: Math.round((b.resolve_rate_pct || 0) * b.total_claims / 100), avg_response: b.avg_days_to_first_response })),
       })
-    } finally {
-      setAnalyticsLoading(false)
-    }
+    } finally { setAnalyticsLoading(false) }
   }, [])
 
-  useEffect(() => {
-    if (isAdmin) {
-      loadAds()
-      loadUsers()
-    }
-  }, [isAdmin, loadAds, loadUsers])
+  useEffect(() => { if (isAdmin) { loadAds(); loadUsers() } }, [isAdmin, loadAds, loadUsers])
+  useEffect(() => { if (isAdmin && tab === 'analytics' && !analytics) { loadAnalytics() } }, [isAdmin, tab, analytics, loadAnalytics])
 
-  useEffect(() => {
-    if (isAdmin && tab === 'analytics' && !analytics) {
-      loadAnalytics()
-    }
-  }, [isAdmin, tab, analytics, loadAnalytics])
-
-  async function loginAsUser(user: AdminUser) {
+  async function loginAsUser(user: any) {
     setLoginAsLoading(user.id)
     try {
-      const res = await fetch('/api/admin/login-as', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email }),
-      })
+      const res = await fetch('/api/admin/login-as', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email }) })
       const json = await res.json()
       if (json.url) {
         await navigator.clipboard.writeText(json.url)
         setCopiedLink(user.id)
         setTimeout(() => setCopiedLink(null), 3000)
-      } else {
-        alert('Could not generate link: ' + (json.error || 'Unknown error'))
-      }
-    } catch (e) {
-      alert('Error: ' + String(e))
-    } finally {
-      setLoginAsLoading(null)
-    }
+      } else { alert('Could not generate link: ' + (json.error || 'Unknown error')) }
+    } catch (e) { alert('Error: ' + String(e)) } finally { setLoginAsLoading(null) }
   }
 
   const loadRollup = useCallback(async () => {
     setRollupLoading(true)
     try {
-      const { data: usersRaw } = await supabase
-        .from('users')
-        .select('id, name, email, city, plan, role, onboarding_complete, builder_name, community_name, created_at, warranty_start')
-        .order('created_at', { ascending: false })
-      const { data: claimsRaw } = await supabase
-        .from('claims')
-        .select('id, user_id, title, status, category, severity, created_at, defect_location, days_to_first_response, days_to_resolution, public_story')
-        .order('created_at', { ascending: false })
+      const { data: usersRaw } = await supabase.from('users').select('id, name, email, city, plan, role, onboarding_complete, builder_name, community_name, created_at, warranty_start').order('created_at', { ascending: false })
+      const { data: claimsRaw } = await supabase.from('claims').select('id, user_id, title, status, category, severity, created_at, defect_location, days_to_first_response, days_to_resolution, public_story').order('created_at', { ascending: false })
       const byUser: Record<string, any[]> = {}
-      for (const c of (claimsRaw || [])) {
-        if (!byUser[c.user_id]) byUser[c.user_id] = []
-        byUser[c.user_id].push(c)
-      }
+      for (const c of (claimsRaw || [])) { if (!byUser[c.user_id]) byUser[c.user_id] = []; byUser[c.user_id].push(c) }
       setRollupData((usersRaw || []).map((u: any) => ({ ...u, claims: byUser[u.id] || [] })))
-    } finally {
-      setRollupLoading(false)
-    }
+    } finally { setRollupLoading(false) }
   }, [])
 
-  useEffect(() => {
-    if (isAdmin && tab === 'data') {
-      loadRollup()
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin, tab])
+  useEffect(() => { if (isAdmin && tab === 'data') { loadRollup() } }, [isAdmin, tab, loadRollup])
 
   async function updateUserPlan(userId: string, plan: string) {
     setUpdatingUser(userId)
@@ -349,64 +328,47 @@ export default function AdminPage() {
 
   function handleEmbedPaste(html: string) {
     setEmbedHtml(html)
-    if (html.trim()) {
-      setParsedFields(parseEmbedHtml(html))
-      setEmbedPreview(true)
-    } else {
-      setEmbedPreview(false)
-    }
+    if (html.trim()) { setParsedFields(parseEmbedHtml(html)); setEmbedPreview(true) } else { setEmbedPreview(false) }
   }
 
   async function submitEmbedAd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
-    const { error } = await supabase.from('ads').insert({
-      sponsor_name: (fd.get('sponsor_name') as string) || parsedFields.sponsor_name || 'Sponsored',
-      title: (fd.get('title') as string) || parsedFields.title || 'Sponsored',
-      description: '',
-      cta_text: '',
-      link_url: parsedFields.link_url || '',
-      bg_color: '#ffffff',
-      text_color: '#000000',
-      display_order: parseInt(fd.get('display_order') as string) || 0,
-      active: true,
-      embed_html: embedHtml,
-    })
-    if (!error) {
-      setEmbedHtml('')
-      setParsedFields({ sponsor_name: '', link_url: '', title: '' })
-      setEmbedPreview(false)
-      setFormKey(k => k + 1)
-      loadAds()
-    } else alert('Error: ' + error.message)
+    const { error } = await supabase.from('ads').insert({ sponsor_name: (fd.get('sponsor_name') as string) || parsedFields.sponsor_name || 'Sponsored', title: (fd.get('title') as string) || parsedFields.title || 'Sponsored', description: '', cta_text: '', link_url: parsedFields.link_url || '', bg_color: '#ffffff', text_color: '#000000', display_order: parseInt(fd.get('display_order') as string) || 0, active: true, embed_html: embedHtml })
+    if (!error) { setEmbedHtml(''); setParsedFields({ sponsor_name: '', link_url: '', title: '' }); setEmbedPreview(false); setFormKey(k => k + 1); loadAds() } else alert('Error: ' + error.message)
+  }
+
+  function toggleClaimSelection(claimId: string) {
+    setSelectedClaims(prev => { const next = new Set(prev); if (next.has(claimId)) next.delete(claimId); else next.add(claimId); return next })
+  }
+
+  function selectAllClaims() {
+    const allIds = rollupData.flatMap(u => u.claims.map((c: any) => c.id))
+    setSelectedClaims(new Set(allIds))
+  }
+
+  function clearSelection() { setSelectedClaims(new Set()) }
+
+  async function applyBulkStatus() {
+    if (!bulkStatus || selectedClaims.size === 0) return
+    setBulkUpdating(true)
+    try {
+      const ids = Array.from(selectedClaims)
+      await supabase.from('claims').update({ status: bulkStatus }).in('id', ids)
+      setRollupData(prev => prev.map(u => ({ ...u, claims: u.claims.map((c: any) => selectedClaims.has(c.id) ? { ...c, status: bulkStatus } : c) })))
+      setSelectedClaims(new Set())
+      setBulkStatus('')
+    } finally { setBulkUpdating(false) }
   }
 
   const filteredUsers = users.filter(u => {
-    const matchesSearch = !userSearch ||
-      u.email?.toLowerCase().includes(userSearch.toLowerCase()) ||
-      u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
-      u.builder_name?.toLowerCase().includes(userSearch.toLowerCase())
+    const matchesSearch = !userSearch || u.email?.toLowerCase().includes(userSearch.toLowerCase()) || u.name?.toLowerCase().includes(userSearch.toLowerCase()) || u.builder_name?.toLowerCase().includes(userSearch.toLowerCase())
     const matchesPlan = planFilter === 'all' || u.plan === planFilter
     return matchesSearch && matchesPlan
   })
 
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-400">Checking access...</p>
-      </div>
-    )
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
-        <ShieldAlert size={48} className="text-red-400" />
-        <h1 className="text-xl font-semibold text-gray-800">Access Denied</h1>
-        <p className="text-gray-500">This page is restricted to administrators.</p>
-      </div>
-    )
-  }
+  if (!authChecked) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><p className="text-gray-400">Checking access...</p></div>
+  if (!isAdmin) return <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4"><ShieldAlert size={48} className="text-red-400" /><h1 className="text-xl font-semibold text-gray-800">Access Denied</h1><p className="text-gray-500">This page is restricted to administrators.</p></div>
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -414,13 +376,12 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
         <p className="text-gray-500 text-sm mb-6">Manage users, ads, and platform analytics.</p>
 
-        {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit">
           {[
             { key: 'users', label: 'Users', icon: <Users size={14} /> },
             { key: 'ads', label: 'Ads', icon: <Megaphone size={14} /> },
             { key: 'analytics', label: 'Analytics', icon: <BarChart2 size={14} /> },
-      { key: 'data', label: 'Data', icon: <Database size={14} /> },
+            { key: 'data', label: 'Data', icon: <Database size={14} /> },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium ${tab === t.key ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
@@ -449,45 +410,34 @@ export default function AdminPage() {
             <div className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
               <div className="relative flex-1 max-w-sm">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="text" placeholder="Search by email, name, or builder..." value={userSearch}
-                  onChange={e => setUserSearch(e.target.value)}
+                <input type="text" placeholder="Search by email, name, or builder..." value={userSearch} onChange={e => setUserSearch(e.target.value)}
                   className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div className="flex items-center gap-2">
-                <select value={planFilter} onChange={e => setPlanFilter(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select value={planFilter} onChange={e => setPlanFilter(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="all">All plans</option>
                   <option value="free">Free</option>
                   <option value="basic">Basic</option>
                   <option value="pro">Pro</option>
                 </select>
-                <button onClick={loadUsers} className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50">
-                  <RefreshCw size={13} /> Refresh
-                </button>
+                <button onClick={loadUsers} className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"><RefreshCw size={13} /> Refresh</button>
               </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-700">{filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}</span>
               </div>
-              {usersLoading ? (
-                <div className="py-12 text-center text-gray-400 text-sm">Loading users...</div>
-              ) : filteredUsers.length === 0 ? (
-                <div className="py-12 text-center text-gray-400 text-sm">No users found.</div>
-              ) : (
+              {usersLoading ? <div className="py-12 text-center text-gray-400 text-sm">Loading users...</div> : filteredUsers.length === 0 ? <div className="py-12 text-center text-gray-400 text-sm">No users found.</div> : (
                 <div className="divide-y divide-gray-50">
                   {filteredUsers.map(user => (
                     <div key={user.id}>
-                      <div className="px-5 py-3 flex items-center justify-between gap-4 hover:bg-gray-50 cursor-pointer"
-                        onClick={() => setExpandedUser(expandedUser === user.id ? null : user.id)}>
+                      <div className="px-5 py-3 flex items-center justify-between gap-4 hover:bg-gray-50 cursor-pointer" onClick={() => setExpandedUser(expandedUser === user.id ? null : user.id)}>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-medium text-gray-900 truncate">{user.email}</span>
                             {user.name && <span className="text-xs text-gray-400">({user.name})</span>}
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PLAN_COLORS[user.plan] || 'bg-gray-100 text-gray-600'}`}>{user.plan}</span>
-                            {user.role === 'admin' && (
-                              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">admin</span>
-                            )}
+                            {user.role === 'admin' && <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">admin</span>}
                           </div>
                           <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-400 flex-wrap">
                             {user.builder_name && <span>{user.builder_name}</span>}
@@ -497,9 +447,7 @@ export default function AdminPage() {
                             {!user.onboarding_complete && <span className="text-orange-400">· Onboarding incomplete</span>}
                           </div>
                         </div>
-                        <div className="text-gray-400 shrink-0">
-                          {expandedUser === user.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </div>
+                        <div className="text-gray-400 shrink-0">{expandedUser === user.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</div>
                       </div>
                       {expandedUser === user.id && (
                         <div className="px-5 py-4 bg-gray-50 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -507,8 +455,7 @@ export default function AdminPage() {
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Plan</p>
                             <div className="flex gap-2 flex-wrap">
                               {['free', 'basic', 'pro'].map(p => (
-                                <button key={p} onClick={() => updateUserPlan(user.id, p)}
-                                  disabled={updatingUser === user.id}
+                                <button key={p} onClick={() => updateUserPlan(user.id, p)} disabled={updatingUser === user.id}
                                   className={`px-3 py-1.5 text-xs rounded-lg font-medium border transition-colors ${user.plan === p ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-600 hover:border-blue-300'}`}>
                                   {p.charAt(0).toUpperCase() + p.slice(1)}
                                 </button>
@@ -519,8 +466,7 @@ export default function AdminPage() {
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Role</p>
                             <div className="flex gap-2 flex-wrap">
                               {['user', 'admin'].map(r => (
-                                <button key={r} onClick={() => updateUserRole(user.id, r)}
-                                  disabled={updatingUser === user.id}
+                                <button key={r} onClick={() => updateUserRole(user.id, r)} disabled={updatingUser === user.id}
                                   className={`px-3 py-1.5 text-xs rounded-lg font-medium border transition-colors ${(user.role || 'user') === r ? 'border-red-400 bg-red-50 text-red-700' : 'border-gray-200 bg-white text-gray-600 hover:border-red-300'}`}>
                                   {r.charAt(0).toUpperCase() + r.slice(1)}
                                 </button>
@@ -532,15 +478,12 @@ export default function AdminPage() {
                             <div className="text-xs text-gray-500 space-y-0.5">
                               <p>ID: <span className="font-mono text-gray-400">{user.id}</span></p>
                               {user.warranty_start && <p>Warranty started: {new Date(user.warranty_start).toLocaleDateString()}</p>}
-                          </div>
+                            </div>
                           </div>
                           <div className="md:col-span-2 pt-2 border-t border-gray-200">
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Impersonate</p>
-                            <button
-                              onClick={() => loginAsUser(user)}
-                              disabled={!!loginAsLoading}
-                              className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg font-medium border transition-colors ${copiedLink === user.id ? 'border-green-400 bg-green-50 text-green-700' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} disabled:opacity-50`}
-                            >
+                            <button onClick={() => loginAsUser(user)} disabled={!!loginAsLoading}
+                              className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg font-medium border transition-colors ${copiedLink === user.id ? 'border-green-400 bg-green-50 text-green-700' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} disabled:opacity-50`}>
                               {loginAsLoading === user.id ? <RefreshCw size={12} className="animate-spin" /> : copiedLink === user.id ? <Check size={12} /> : <LogIn size={12} />}
                               {copiedLink === user.id ? 'Magic link copied!' : loginAsLoading === user.id ? 'Generating…' : 'Copy login link (magic link)'}
                             </button>
@@ -561,18 +504,10 @@ export default function AdminPage() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                  <Megaphone size={16} className="text-blue-500" /> Add New Ad
-                </h3>
+                <h3 className="font-semibold text-gray-800 flex items-center gap-2"><Megaphone size={16} className="text-blue-500" /> Add New Ad</h3>
                 <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                  <button onClick={() => setEmbedMode(false)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${!embedMode ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>
-                    <LayoutTemplate size={12} /> Manual
-                  </button>
-                  <button onClick={() => setEmbedMode(true)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${embedMode ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>
-                    <Code size={12} /> Paste HTML
-                  </button>
+                  <button onClick={() => setEmbedMode(false)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${!embedMode ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}><LayoutTemplate size={12} /> Manual</button>
+                  <button onClick={() => setEmbedMode(true)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${embedMode ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}><Code size={12} /> Paste HTML</button>
                 </div>
               </div>
               {!embedMode && (
@@ -580,19 +515,8 @@ export default function AdminPage() {
                   e.preventDefault()
                   const f = e.currentTarget as HTMLFormElement
                   const fd = new FormData(f)
-                  const { error } = await supabase.from('ads').insert({
-                    sponsor_name: fd.get('sponsor_name') as string,
-                    title: fd.get('title') as string,
-                    description: fd.get('description') as string,
-                    cta_text: fd.get('cta_text') as string,
-                    link_url: fd.get('link_url') as string,
-                    bg_color: fd.get('bg_color') as string,
-                    text_color: fd.get('text_color') as string,
-                    display_order: parseInt(fd.get('display_order') as string) || 0,
-                    active: true,
-                  })
-                  if (!error) { f.reset(); loadAds() }
-                  else alert('Error: ' + error.message)
+                  const { error } = await supabase.from('ads').insert({ sponsor_name: fd.get('sponsor_name') as string, title: fd.get('title') as string, description: fd.get('description') as string, cta_text: fd.get('cta_text') as string, link_url: fd.get('link_url') as string, bg_color: fd.get('bg_color') as string, text_color: fd.get('text_color') as string, display_order: parseInt(fd.get('display_order') as string) || 0, active: true })
+                  if (!error) { f.reset(); loadAds() } else alert('Error: ' + error.message)
                 }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Sponsor Name</label><input name="sponsor_name" required placeholder="e.g. Home Depot" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
                   <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Headline</label><input name="title" required placeholder="Short catchy headline" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
@@ -609,19 +533,16 @@ export default function AdminPage() {
                 <form key={formKey} onSubmit={submitEmbedAd} className="space-y-4">
                   <div className="flex flex-col gap-1">
                     <label className="text-xs text-gray-500 font-medium flex items-center gap-1"><Code size={12} /> Paste HTML embed code from Home Depot, Lowe&apos;s, etc.</label>
-                    <textarea rows={6} value={embedHtml} onChange={e => handleEmbedPaste(e.target.value)}
-                      placeholder={'Paste your affiliate HTML here, e.g.:\n<a href="https://www.homedepot.com/..."><img src="..." alt="Home Depot" /></a>'}
-                      className="border border-gray-200 rounded-lg px-3 py-2 text-xs font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <textarea rows={6} value={embedHtml} onChange={e => handleEmbedPaste(e.target.value)} placeholder={"Paste your affiliate HTML here..."} className="border border-gray-200 rounded-lg px-3 py-2 text-xs font-mono w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   {embedPreview && (
                     <div className="space-y-3">
                       <div className="border border-blue-100 bg-blue-50 rounded-lg p-3">
                         <p className="text-xs font-medium text-blue-700 mb-2">Auto-detected — confirm or edit:</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Sponsor Name</label><input name="sponsor_name" defaultValue={parsedFields.sponsor_name} placeholder="e.g. Home Depot" className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white" /></div>
-                          <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Label / Title</label><input name="title" defaultValue={parsedFields.title} placeholder="Short label for your records" className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white" /></div>
+                          <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Sponsor Name</label><input name="sponsor_name" defaultValue={parsedFields.sponsor_name} className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white" /></div>
+                          <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Label / Title</label><input name="title" defaultValue={parsedFields.title} className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white" /></div>
                           <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Display Order</label><input name="display_order" type="number" defaultValue="0" className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white" /></div>
-                          {parsedFields.link_url && (<div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Detected Link</label><input readOnly value={parsedFields.link_url} className="border border-gray-200 rounded-lg px-3 py-2 text-xs font-mono bg-gray-50 text-gray-500" /></div>)}
                         </div>
                       </div>
                       <div><p className="text-xs font-medium text-gray-500 mb-1">Preview:</p><div className="border border-gray-200 rounded-lg p-3 bg-white overflow-auto" dangerouslySetInnerHTML={{ __html: embedHtml }} /></div>
@@ -643,16 +564,12 @@ export default function AdminPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: ad.embed_html ? '#f0f9ff' : ad.bg_color, color: ad.embed_html ? '#0369a1' : ad.text_color }}>{ad.sponsor_name}</span>
-                          {ad.embed_html && (<span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1"><Code size={10} /> HTML embed</span>)}
+                          {ad.embed_html && <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1"><Code size={10} /> HTML embed</span>}
                           <span className={ad.active ? 'text-xs text-green-600 font-medium' : 'text-xs text-gray-400'}>{ad.active ? '● Active' : '○ Paused'}</span>
                           <span className="text-xs text-gray-400">Order {ad.display_order}</span>
                         </div>
                         <p className="font-medium text-gray-800 text-sm">{ad.title}</p>
-                        {ad.embed_html ? (
-                          <div className="mt-2 border border-gray-100 rounded-lg p-2 bg-gray-50 overflow-auto max-h-24" dangerouslySetInnerHTML={{ __html: ad.embed_html }} />
-                        ) : (
-                          <><p className="text-xs text-gray-500 mt-0.5">{ad.description}</p><div className="flex items-center gap-3 mt-1"><span className="text-xs text-gray-400">CTA: &quot;{ad.cta_text}&quot;</span><a href={ad.link_url} target="_blank" rel="noopener" className="text-xs text-blue-500 hover:underline truncate max-w-48">{ad.link_url}</a></div></>
-                        )}
+                        {ad.embed_html ? <div className="mt-2 border border-gray-100 rounded-lg p-2 bg-gray-50 overflow-auto max-h-24" dangerouslySetInnerHTML={{ __html: ad.embed_html }} /> : <><p className="text-xs text-gray-500 mt-0.5">{ad.description}</p><div className="flex items-center gap-3 mt-1"><span className="text-xs text-gray-400">CTA: &quot;{ad.cta_text}&quot;</span><a href={ad.link_url} target="_blank" rel="noopener" className="text-xs text-blue-500 hover:underline truncate max-w-48">{ad.link_url}</a></div></>}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <button onClick={async () => { await supabase.from('ads').update({ active: !ad.active }).eq('id', ad.id); loadAds() }} className={ad.active ? 'px-3 py-1 text-xs rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 font-medium' : 'px-3 py-1 text-xs rounded-lg bg-green-100 text-green-700 hover:bg-green-200 font-medium'}>{ad.active ? 'Pause' : 'Activate'}</button>
@@ -672,16 +589,10 @@ export default function AdminPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-500">Platform-wide stats. Data pulled live from Supabase.</p>
-              <button onClick={loadAnalytics} className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 bg-white">
-                <RefreshCw size={13} /> Refresh
-              </button>
+              <button onClick={loadAnalytics} className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 bg-white"><RefreshCw size={13} /> Refresh</button>
             </div>
-
-            {analyticsLoading ? (
-              <div className="py-24 text-center text-gray-400 text-sm">Loading analytics...</div>
-            ) : !analytics ? null : (
+            {analyticsLoading ? <div className="py-24 text-center text-gray-400 text-sm">Loading analytics...</div> : !analytics ? null : (
               <>
-                {/* KPI cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
                     { label: 'Total Users', value: analytics.totalUsers, sub: `+${analytics.newUsersLast30} last 30d`, icon: <Users size={18} className="text-blue-500" /> },
@@ -697,67 +608,50 @@ export default function AdminPage() {
                   ))}
                 </div>
 
-                {/* Response + Resolution times */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-white rounded-xl border border-gray-200 p-5">
                     <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2"><Clock size={15} className="text-blue-500" /> Response & Resolution</h3>
                     <div className="space-y-4">
                       <div>
                         <div className="flex justify-between mb-1"><span className="text-xs text-gray-500">Avg days to first builder response</span><span className="text-sm font-bold text-gray-800">{analytics.avgDaysToFirstResponse}d</span></div>
-                        <div className="w-full bg-gray-100 rounded-full h-1.5"><div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${Math.min(analytics.avgDaysToFirstResponse / 14 * 100, 100)}%` }} /></div>
+                        <div className="w-full bg-gray-100 rounded-full h-2"><div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${Math.min(analytics.avgDaysToFirstResponse / 14 * 100, 100)}%` }} /></div>
                       </div>
                       <div>
                         <div className="flex justify-between mb-1"><span className="text-xs text-gray-500">Avg days to resolution</span><span className="text-sm font-bold text-gray-800">{analytics.avgDaysToResolution}d</span></div>
-                        <div className="w-full bg-gray-100 rounded-full h-1.5"><div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${Math.min(analytics.avgDaysToResolution / 60 * 100, 100)}%` }} /></div>
+                        <div className="w-full bg-gray-100 rounded-full h-2"><div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${Math.min(analytics.avgDaysToResolution / 60 * 100, 100)}%` }} /></div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Claims by category */}
                   <div className="bg-white rounded-xl border border-gray-200 p-5">
                     <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2"><BarChart2 size={15} className="text-orange-500" /> Claims by Category</h3>
-                    <div className="space-y-2">
-                      {analytics.claimsByCategory.slice(0, 6).map(c => (
-                        <div key={c.category}>
-                          <div className="flex justify-between mb-0.5"><span className="text-xs text-gray-600 capitalize">{c.category}</span><span className="text-xs font-medium text-gray-800">{c.count}</span></div>
-                          <div className="w-full bg-gray-100 rounded-full h-1.5">
-                            <div className="bg-orange-400 h-1.5 rounded-full" style={{ width: `${analytics.totalClaims > 0 ? Math.round(c.count / analytics.totalClaims * 100) : 0}%` }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <SvgBarChart
+                      data={analytics.claimsByCategory.slice(0, 8).map(c => ({ label: c.category.slice(0, 6), value: c.count }))}
+                      color="#f97316"
+                      height={130}
+                    />
                   </div>
                 </div>
 
-                {/* Signups + Claims per week */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    { title: 'Signups per week (last 8 weeks)', data: analytics.signupsByWeek, color: 'bg-blue-400' },
-                    { title: 'New claims per week (last 8 weeks)', data: analytics.claimsByWeek, color: 'bg-orange-400' },
-                  ].map(chart => {
-                    const maxVal = Math.max(...chart.data.map(d => d.count), 1)
-                    return (
-                      <div key={chart.title} className="bg-white rounded-xl border border-gray-200 p-5">
-                        <h3 className="text-sm font-semibold text-gray-800 mb-4">{chart.title}</h3>
-                        {chart.data.length === 0 ? (
-                          <p className="text-xs text-gray-400 text-center py-6">Not enough data yet</p>
-                        ) : (
-                          <div className="flex items-end gap-2 h-28">
-                            {chart.data.map(d => (
-                              <div key={d.week} className="flex-1 flex flex-col items-center gap-1">
-                                <span className="text-[10px] text-gray-500">{d.count}</span>
-                                <div className={`w-full rounded-t ${chart.color}`} style={{ height: `${Math.max(d.count / maxVal * 80, 4)}px` }} />
-                                <span className="text-[9px] text-gray-400 text-center leading-tight">{d.week}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
+                  <div className="bg-white rounded-xl border border-gray-200 p-5">
+                    <h3 className="text-sm font-semibold text-gray-800 mb-4">Signups per week (last 8 weeks)</h3>
+                    <SvgBarChart
+                      data={analytics.signupsByWeek.map(d => ({ label: d.week, value: d.count }))}
+                      color="#3b82f6"
+                      height={130}
+                    />
+                  </div>
+                  <div className="bg-white rounded-xl border border-gray-200 p-5">
+                    <h3 className="text-sm font-semibold text-gray-800 mb-4">New claims per week (last 8 weeks)</h3>
+                    <SvgBarChart
+                      data={analytics.claimsByWeek.map(d => ({ label: d.week, value: d.count }))}
+                      color="#f59e0b"
+                      height={130}
+                    />
+                  </div>
                 </div>
 
-                {/* Builder leaderboard */}
                 {analytics.topBuilders.length > 0 && (
                   <div className="bg-white rounded-xl border border-gray-200 p-5">
                     <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2"><TrendingUp size={15} className="text-purple-500" /> Builder Activity</h3>
@@ -788,78 +682,114 @@ export default function AdminPage() {
           </div>
         )}
 
-
-      {tab === 'data' && (
-        <div className="max-w-6xl mx-auto px-4 pb-8 space-y-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-gray-500">Master rollup — every user and all their claims in one view.</p>
-            <button onClick={loadRollup} className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 bg-white">
-              <RefreshCw size={13} /> Refresh
-            </button>
-          </div>
-          {rollupLoading ? (
-            <div className="py-24 text-center text-gray-400 text-sm">Loading…</div>
-          ) : (
-            <div className="space-y-4">
-              {rollupData.map((u2: any) => (
-                <div key={u2.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-gray-800 text-sm">{u2.name || u2.email}</span>
-                      <span className="text-xs text-gray-400">{u2.email}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PLAN_COLORS[u2.plan] || 'bg-gray-100 text-gray-600'}`}>{u2.plan}</span>
-                      {u2.role === 'admin' && <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">admin</span>}
-                    </div>
-                    <div className="text-xs text-gray-400 flex items-center gap-2 flex-wrap">
-                      {u2.city && <span>{u2.city}</span>}
-                      {u2.builder_name && <span>· {u2.builder_name}</span>}
-                      <span className="font-medium text-gray-600">{u2.claims.length} claim{u2.claims.length !== 1 ? 's' : ''}</span>
-                      <button onClick={() => loginAsUser(u2)} disabled={!!loginAsLoading} className={`flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-medium ${copiedLink === u2.id ? 'border-green-400 bg-green-50 text-green-700' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} disabled:opacity-40`}>
-                        {loginAsLoading === u2.id ? <RefreshCw size={10} className="animate-spin" /> : copiedLink === u2.id ? <Check size={10} /> : <LogIn size={10} />}
-                        {copiedLink === u2.id ? 'Copied!' : 'Login as'}
-                      </button>
-                    </div>
+        {/* ── DATA TAB ── */}
+        {tab === 'data' && (
+          <div className="max-w-6xl mx-auto pb-8 space-y-4">
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-3">
+              <p className="text-sm text-gray-500">Master rollup — every user and all their claims in one view.</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Bulk status controls */}
+                {selectedClaims.size > 0 && (
+                  <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                    <span className="text-xs font-medium text-blue-700">{selectedClaims.size} selected</span>
+                    <select value={bulkStatus} onChange={e => setBulkStatus(e.target.value)} className="text-xs border border-blue-300 rounded px-2 py-1 text-blue-800 bg-white focus:outline-none">
+                      <option value="">Set status…</option>
+                      <option value="open">Open</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="awaiting_builder">Awaiting Builder</option>
+                      <option value="resolved">Resolved</option>
+                      <option value="escalated">Escalated</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                    <button onClick={applyBulkStatus} disabled={!bulkStatus || bulkUpdating}
+                      className="text-xs bg-blue-600 text-white px-2.5 py-1 rounded font-medium hover:bg-blue-700 disabled:opacity-40">
+                      {bulkUpdating ? 'Updating…' : 'Apply'}
+                    </button>
+                    <button onClick={clearSelection} className="text-xs text-blue-500 hover:text-blue-700">Clear</button>
                   </div>
-                  {u2.claims.length === 0 ? (
-                    <div className="px-5 py-3 text-xs text-gray-400 italic">No claims yet</div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead><tr className="border-b border-gray-100 text-left">
-                          <th className="px-4 py-2 text-gray-400 font-medium">Title</th>
-                          <th className="px-4 py-2 text-gray-400 font-medium">Category</th>
-                          <th className="px-4 py-2 text-gray-400 font-medium">Sev</th>
-                          <th className="px-4 py-2 text-gray-400 font-medium">Status</th>
-                          <th className="px-4 py-2 text-gray-400 font-medium">Location</th>
-                          <th className="px-4 py-2 text-gray-400 font-medium">Filed</th>
-                          <th className="px-4 py-2 text-gray-400 font-medium">1st Resp</th>
-                          <th className="px-4 py-2 text-gray-400 font-medium">Resolved</th>
-                          <th className="px-4 py-2 text-gray-400 font-medium">Public</th>
-                        </tr></thead>
-                        <tbody className="divide-y divide-gray-50">
-                          {u2.claims.map((c: any) => (
-                            <tr key={c.id} className="hover:bg-gray-50">
-                              <td className="px-4 py-2 text-gray-800 font-medium max-w-[200px] truncate" title={c.title}>{c.title}</td>
-                              <td className="px-4 py-2 capitalize text-gray-600">{c.category}</td>
-                              <td className="px-4 py-2"><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${c.severity === 'high' || c.severity === 'critical' ? 'bg-red-100 text-red-700' : c.severity === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>{c.severity}</span></td>
-                              <td className="px-4 py-2"><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${['resolved','closed'].includes(c.status) ? 'bg-green-100 text-green-700' : c.status === 'open' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>{c.status.replace(/_/g,' ')}</span></td>
-                              <td className="px-4 py-2 text-gray-500 max-w-[100px] truncate" title={c.defect_location}>{c.defect_location || '—'}</td>
-                              <td className="px-4 py-2 text-gray-400 whitespace-nowrap">{new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</td>
-                              <td className="px-4 py-2 text-gray-500 text-center">{c.days_to_first_response != null ? Math.round(c.days_to_first_response) + 'd' : '—'}</td>
-                              <td className="px-4 py-2 text-gray-500 text-center">{c.days_to_resolution != null ? Math.round(c.days_to_resolution) + 'd' : '—'}</td>
-                              <td className="px-4 py-2 text-center">{c.public_story ? <span className="text-green-600 font-bold">✓</span> : <span className="text-gray-300">—</span>}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              ))}
+                )}
+                <button onClick={selectAllClaims} className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 bg-white">
+                  <CheckSquare size={13} /> Select All Claims
+                </button>
+                <button onClick={() => exportRollupCsv(rollupData)} className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 bg-white font-medium">
+                  <Download size={13} /> Export CSV
+                </button>
+                <button onClick={loadRollup} className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 bg-white">
+                  <RefreshCw size={13} /> Refresh
+                </button>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+            {rollupLoading ? <div className="py-24 text-center text-gray-400 text-sm">Loading…</div> : (
+              <div className="space-y-4">
+                {rollupData.map((u2: any) => (
+                  <div key={u2.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-gray-800 text-sm">{u2.name || u2.email}</span>
+                        <span className="text-xs text-gray-400">{u2.email}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PLAN_COLORS[u2.plan] || 'bg-gray-100 text-gray-600'}`}>{u2.plan}</span>
+                        {u2.role === 'admin' && <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">admin</span>}
+                      </div>
+                      <div className="text-xs text-gray-400 flex items-center gap-2 flex-wrap">
+                        {u2.city && <span>{u2.city}</span>}
+                        {u2.builder_name && <span>· {u2.builder_name}</span>}
+                        <span className="font-medium text-gray-600">{u2.claims.length} claim{u2.claims.length !== 1 ? 's' : ''}</span>
+                        <button onClick={() => loginAsUser(u2)} disabled={!!loginAsLoading} className={`flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-medium ${copiedLink === u2.id ? 'border-green-400 bg-green-50 text-green-700' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} disabled:opacity-40`}>
+                          {loginAsLoading === u2.id ? <RefreshCw size={10} className="animate-spin" /> : copiedLink === u2.id ? <Check size={10} /> : <LogIn size={10} />}
+                          {copiedLink === u2.id ? 'Copied!' : 'Login as'}
+                        </button>
+                      </div>
+                    </div>
+                    {u2.claims.length === 0 ? (
+                      <div className="px-5 py-3 text-xs text-gray-400 italic">No claims yet</div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead><tr className="border-b border-gray-100 text-left">
+                            <th className="px-3 py-2 text-gray-400 font-medium w-8">
+                              <input type="checkbox"
+                                checked={u2.claims.every((c: any) => selectedClaims.has(c.id))}
+                                onChange={e => { u2.claims.forEach((c: any) => { if (e.target.checked) setSelectedClaims(prev => new Set([...prev, c.id])); else setSelectedClaims(prev => { const n = new Set(prev); n.delete(c.id); return n }) }) }}
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                            </th>
+                            <th className="px-4 py-2 text-gray-400 font-medium">Title</th>
+                            <th className="px-4 py-2 text-gray-400 font-medium">Category</th>
+                            <th className="px-4 py-2 text-gray-400 font-medium">Sev</th>
+                            <th className="px-4 py-2 text-gray-400 font-medium">Status</th>
+                            <th className="px-4 py-2 text-gray-400 font-medium">Location</th>
+                            <th className="px-4 py-2 text-gray-400 font-medium">Filed</th>
+                            <th className="px-4 py-2 text-gray-400 font-medium">1st Resp</th>
+                            <th className="px-4 py-2 text-gray-400 font-medium">Resolved</th>
+                            <th className="px-4 py-2 text-gray-400 font-medium">Public</th>
+                          </tr></thead>
+                          <tbody className="divide-y divide-gray-50">
+                            {u2.claims.map((c: any) => (
+                              <tr key={c.id} className={`hover:bg-gray-50 ${selectedClaims.has(c.id) ? 'bg-blue-50' : ''}`}>
+                                <td className="px-3 py-2">
+                                  <input type="checkbox" checked={selectedClaims.has(c.id)} onChange={() => toggleClaimSelection(c.id)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                                </td>
+                                <td className="px-4 py-2 text-gray-800 font-medium max-w-[200px] truncate" title={c.title}>{c.title}</td>
+                                <td className="px-4 py-2 capitalize text-gray-600">{c.category}</td>
+                                <td className="px-4 py-2"><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${c.severity === 'high' || c.severity === 'critical' ? 'bg-red-100 text-red-700' : c.severity === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>{c.severity}</span></td>
+                                <td className="px-4 py-2"><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${['resolved','closed'].includes(c.status) ? 'bg-green-100 text-green-700' : c.status === 'open' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>{c.status.replace(/_/g,' ')}</span></td>
+                                <td className="px-4 py-2 text-gray-500 max-w-[100px] truncate" title={c.defect_location}>{c.defect_location || '—'}</td>
+                                <td className="px-4 py-2 text-gray-400 whitespace-nowrap">{new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</td>
+                                <td className="px-4 py-2 text-gray-500 text-center">{c.days_to_first_response != null ? Math.round(c.days_to_first_response) + 'd' : '—'}</td>
+                                <td className="px-4 py-2 text-gray-500 text-center">{c.days_to_resolution != null ? Math.round(c.days_to_resolution) + 'd' : '—'}</td>
+                                <td className="px-4 py-2 text-center">{c.public_story ? <span className="text-green-600 font-bold">✓</span> : <span className="text-gray-300">—</span>}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
     </div>
