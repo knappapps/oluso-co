@@ -3,6 +3,7 @@
 // All fake rows use the @seed.oluso.fake email domain and can be deleted with one query.
 // Protected by x-seed-key header == process.env.SEED_SECRET
 // Idempotent: checks for existing seed users before inserting.
+// Pass ?force=true to delete existing seed data and re-seed.
 const { createClient } = require('@supabase/supabase-js')
 
 const supabase = createClient(
@@ -31,7 +32,9 @@ const CITIES = [
 
 const CATEGORIES = ['structural', 'water', 'electrical', 'hvac', 'plumbing', 'cosmetic', 'landscaping', 'other']
 const SEVERITIES  = ['low', 'medium', 'high', 'critical']
-const STATUSES    = ['open', 'in_progress', 'awaiting_builder', 'resolved', 'closed']
+// Community page only shows: resolved, closed, in_progress, awaiting_builder
+// so weight toward those to maximize community page population
+const STATUSES    = ['in_progress', 'awaiting_builder', 'resolved', 'closed']
 const WARRANTY_YEARS = [1, 2, 10]
 
 const FIRST_NAMES = [
@@ -58,6 +61,13 @@ const LAST_NAMES = [
   'Green','Adams','Nelson','Baker','Hall','Rivera','Campbell','Mitchell',
   'Carter','Roberts','Gomez','Phillips','Evans','Turner','Diaz','Parker',
   'Cruz','Edwards','Collins','Reyes','Stewart','Morris','Morales','Murphy',
+]
+
+const COMMUNITIES = [
+  'Canyon Crest', 'Sage Hollow', 'Willow Springs', 'Prairie Ridge',
+  'Summit View', 'Copper Creek', 'Silver Lake Estates', 'Heritage Point',
+  'Daybreak', 'Terra at Traverse Mountain', 'Holbrook Farms', 'Ivory Ridge',
+  'Oquirrh Lake', 'Saddleback', 'Traverse Mountain', 'Ranches at Traverse',
 ]
 
 const CLAIM_TITLES = [
@@ -156,20 +166,25 @@ function seedEmail(i) {
 }
 
 // Data generation
+// Note: city, state, builder_name, community_name live on the users table (not claims)
 
 function generateUsers(count) {
   const users = []
   const streets = ['Main St', 'Oak Ave', 'Maple Dr', 'Cedar Ln', 'Pine Way', 'Elm Ct', 'Birch Blvd', 'Aspen Cir']
   for (let i = 1; i <= count; i++) {
-    const firstName = pick(FIRST_NAMES)
-    const lastName  = pick(LAST_NAMES)
-    const city      = pick(CITIES)
+    const firstName   = pick(FIRST_NAMES)
+    const lastName    = pick(LAST_NAMES)
+    const city        = pick(CITIES)
+    const builderName = pick(BUILDERS)
     users.push({
-      email:        seedEmail(i),
-      name:         firstName + ' ' + lastName,
-      role:         'user',
-      address:      randomInt(1000, 9999) + ' ' + pick(streets) + ', ' + city + ', UT ' + randomInt(84000, 84999),
-      builder_name: null,
+      email:          seedEmail(i),
+      name:           firstName + ' ' + lastName,
+      role:           'user',
+      city:           city,
+      state:          'UT',
+      builder_name:   builderName,
+      community_name: pick(COMMUNITIES),
+      address:        randomInt(1000, 9999) + ' ' + pick(streets) + ', ' + city + ', UT ' + randomInt(84000, 84999),
     })
   }
   return users
@@ -185,7 +200,7 @@ function generateClaims(userIds, builderMap, targetCount) {
     const builderId   = builderMap[builderName] || null
     const category    = pick(CATEGORIES)
     const severity    = pickWeighted(SEVERITIES, [20, 40, 25, 15])
-    const status      = pickWeighted(STATUSES,   [25, 20, 15, 25, 15])
+    const status      = pickWeighted(STATUSES,   [20, 20, 35, 25])
     const warrantyYear = pick(WARRANTY_YEARS)
     const createdDaysAgo = randomInt(7, 540)
     const createdAt   = daysAgo(createdDaysAgo)
@@ -194,13 +209,11 @@ function generateClaims(userIds, builderMap, targetCount) {
     const resolvedAt  = isResolved ? addDays(createdAt, randomInt(14, 90)) : null
     const title       = CLAIM_TITLES[randomInt(0, CLAIM_TITLES.length - 1)]
 
-    // Only include columns that exist in the claims table schema
-    // (confirmed from create-claim.js: no builder_name column in claims)
     claims.push({
       user_id:                userId,
       builder_id:             builderId,
       title:                  title,
-      description:            'Seed data: ' + title + ' reported by a homeowner with ' + builderName + ' in ' + pick(CITIES) + ', UT.',
+      description:            'Seed data: ' + title + ' in a home built by ' + builderName + ' in ' + pick(CITIES) + ', UT.',
       category:               category,
       severity:               severity,
       status:                 status,
@@ -231,6 +244,10 @@ exports.handler = async function(event) {
     return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) }
   }
 
+  // Parse ?force=true to delete and re-seed
+  const params = event.queryStringParameters || {}
+  const force = params.force === 'true'
+
   try {
     // Idempotency check
     const { count: existingCount, error: countErr } = await supabase
@@ -241,18 +258,43 @@ exports.handler = async function(event) {
     if (countErr) throw countErr
 
     if (existingCount && existingCount > 0) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          users_inserted:  0,
-          claims_inserted: 0,
-          skipped:         existingCount,
-          message:         'Seed data already exists (' + existingCount + ' users). Delete existing seed rows first to re-seed.',
-        }),
+      if (!force) {
+        return {
+          statusCode: 200,
+          body: JSON.stringify({
+            users_inserted:  0,
+            claims_inserted: 0,
+            skipped:         existingCount,
+            message:         'Seed data already exists (' + existingCount + ' users). Pass ?force=true to delete and re-seed.',
+          }),
+        }
+      }
+
+      // force=true: delete existing seed data
+      // First get seed user IDs
+      const { data: seedUsers } = await supabase
+        .from('users')
+        .select('id')
+        .like('email', '%@seed.oluso.fake')
+
+      if (seedUsers && seedUsers.length > 0) {
+        const seedIds = seedUsers.map(function(u) { return u.id })
+
+        // Delete claims first (foreign key)
+        await supabase
+          .from('claims')
+          .delete()
+          .in('user_id', seedIds)
+
+        // Delete users
+        await supabase
+          .from('users')
+          .delete()
+          .like('email', '%@seed.oluso.fake')
       }
     }
 
-    // Look up builder IDs
+    // Look up builder IDs from builders table
     const { data: builderRows, error: builderErr } = await supabase
       .from('builders')
       .select('id, name')
@@ -264,7 +306,7 @@ exports.handler = async function(event) {
       builderRows.forEach(function(b) { builderMap[b.name] = b.id })
     }
 
-    // Insert 100 users
+    // Insert 100 users (city, state, builder_name, community_name are on users table)
     const users = generateUsers(100)
     const { data: insertedUsers, error: usersErr } = await supabase
       .from('users')
@@ -301,7 +343,7 @@ exports.handler = async function(event) {
       }
     }
 
-    // Refresh builder_scores materialized view via rpc
+    // Refresh builder_scores materialized view
     const { error: refreshErr } = await supabase.rpc('refresh_builder_scores')
     if (refreshErr) {
       console.error('refresh_builder_scores error (non-fatal):', refreshErr.message)
