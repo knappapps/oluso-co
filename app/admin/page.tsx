@@ -279,10 +279,7 @@ export default function AdminPage() {
     if (isAdmin && tab === 'analytics' && !analytics) {
       loadAnalytics()
     }
-    if (isAdmin && tab === 'data') {
-      loadRollup()
-    }
-  }, [isAdmin, tab, analytics, loadAnalytics, loadRollup])
+  }, [isAdmin, tab, analytics, loadAnalytics])
 
   async function loginAsUser(user: AdminUser) {
     setLoginAsLoading(user.id)
@@ -328,6 +325,13 @@ export default function AdminPage() {
       setRollupLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    if (isAdmin && tab === 'data') {
+      loadRollup()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, tab])
 
   async function updateUserPlan(userId: string, plan: string) {
     setUpdatingUser(userId)
