@@ -784,8 +784,6 @@ export default function AdminPage() {
           </div>
         )}
 
-      </div>
-    </div>
 
       {tab === 'data' && (
         <div className="max-w-6xl mx-auto px-4 pb-8 space-y-4">
@@ -858,5 +856,8 @@ export default function AdminPage() {
           )}
         </div>
       )}
+
+      </div>
+    </div>
   )
 }
