@@ -659,7 +659,7 @@ return (
                   <div className="relative">
                     {/* Build timeline events */}
                     {(() => {
-                      const events: { type: string; date: string; label: string; sub?: string; color: string }[] = []
+                      const events: Array<{ type: string; date: string; label: string; sub?: string; color: string }> = []
                       events.push({ type: 'filed', date: claim.created_at, label: 'Claim Filed', sub: claim.title, color: 'bg-blue-500' })
                       const msgs = threads[claim.id] || []
                       msgs.forEach(msg => {
@@ -678,7 +678,7 @@ return (
                         events.push({ type: 'resolved', date: (claim as any).resolved_at, label: 'Claim Resolved', color: 'bg-emerald-500' })
                       }
                       if (['resolved','closed'].includes(claim.status) && !(claim as any).resolved_at) {
-                        events.push({ type: 'resolved', date: claim.updated_at || claim.created_at, label: claim.status === 'closed' ? 'Claim Closed' : 'Claim Resolved', color: 'bg-emerald-500' })
+                        events.push({ type: 'resolved', date: claim.created_at, label: claim.status === 'closed' ? 'Claim Closed' : 'Claim Resolved', color: 'bg-emerald-500' })
                       }
                       events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                       return (
