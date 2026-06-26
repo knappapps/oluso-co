@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import Header from '@/components/Header'
 import { ShieldAlert, Megaphone, Code, LayoutTemplate, Users, Search, ChevronDown, ChevronUp, RefreshCw, BarChart2, TrendingUp, Clock, CheckCircle, Database, LogIn, Check, Download, CheckSquare, X, Edit2, RotateCcw, Building2, SlidersHorizontal } from 'lucide-react'
 
 
@@ -400,10 +401,11 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header />
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       {editingUser && <EditUserModal user={editingUser} builders={builders} session={session} onClose={() => setEditingUser(null)} onSaved={updated => setUsers(prev => prev.map(u => u.id === updated.id ? { ...u, ...updated } : u))} onToast={(msg, type) => setToast({ message: msg, type })} />}
       {metricsUser && <UserMetricsDrawer user={metricsUser} onClose={() => setMetricsUser(null)} onGoToData={uid => { setTab('data'); setMetricsUser(null) }} />}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 pt-20 pb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
         <p className="text-gray-500 text-sm mb-6">Manage users, ads, analytics, and builder reports.</p>
         <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit flex-wrap">
