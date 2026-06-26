@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
-import { ShieldAlert, Megaphone, Code, LayoutTemplate, Users, Search, ChevronDown, ChevronUp, RefreshCw, BarChart2, TrendingUp, Clock, CheckCircle } from 'lucide-react'
+import { ShieldAlert, Megaphone, Code, LayoutTemplate, Users, Search, ChevronDown, ChevronUp, RefreshCw, BarChart2, TrendingUp, Clock, CheckCircle, Database, LogIn, Check } from 'lucide-react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -114,6 +114,10 @@ export default function AdminPage() {
   // Analytics state
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
+  const [loginAsLoading, setLoginAsLoading] = useState<string | null>(null)
+  const [copiedLink, setCopiedLink] = useState<string | null>(null)
+  const [rollupData, setRollupData] = useState<any[]>([])
+  const [rollupLoading, setRollupLoading] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -275,7 +279,55 @@ export default function AdminPage() {
     if (isAdmin && tab === 'analytics' && !analytics) {
       loadAnalytics()
     }
-  }, [isAdmin, tab, analytics, loadAnalytics])
+    if (isAdmin && tab === 'data') {
+      loadRollup()
+    }
+  }, [isAdmin, tab, analytics, loadAnalytics, loadRollup])
+
+  async function loginAsUser(user: AdminUser) {
+    setLoginAsLoading(user.id)
+    try {
+      const res = await fetch('/api/admin/login-as', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+      })
+      const json = await res.json()
+      if (json.url) {
+        await navigator.clipboard.writeText(json.url)
+        setCopiedLink(user.id)
+        setTimeout(() => setCopiedLink(null), 3000)
+      } else {
+        alert('Could not generate link: ' + (json.error || 'Unknown error'))
+      }
+    } catch (e) {
+      alert('Error: ' + String(e))
+    } finally {
+      setLoginAsLoading(null)
+    }
+  }
+
+  const loadRollup = useCallback(async () => {
+    setRollupLoading(true)
+    try {
+      const { data: usersRaw } = await supabase
+        .from('users')
+        .select('id, name, email, city, plan, role, onboarding_complete, builder_name, community_name, created_at, warranty_start')
+        .order('created_at', { ascending: false })
+      const { data: claimsRaw } = await supabase
+        .from('claims')
+        .select('id, user_id, title, status, category, severity, created_at, defect_location, days_to_first_response, days_to_resolution, public_story')
+        .order('created_at', { ascending: false })
+      const byUser: Record<string, any[]> = {}
+      for (const c of (claimsRaw || [])) {
+        if (!byUser[c.user_id]) byUser[c.user_id] = []
+        byUser[c.user_id].push(c)
+      }
+      setRollupData((usersRaw || []).map((u: any) => ({ ...u, claims: byUser[u.id] || [] })))
+    } finally {
+      setRollupLoading(false)
+    }
+  }, [])
 
   async function updateUserPlan(userId: string, plan: string) {
     setUpdatingUser(userId)
@@ -364,6 +416,7 @@ export default function AdminPage() {
             { key: 'users', label: 'Users', icon: <Users size={14} /> },
             { key: 'ads', label: 'Ads', icon: <Megaphone size={14} /> },
             { key: 'analytics', label: 'Analytics', icon: <BarChart2 size={14} /> },
+      { key: 'data', label: 'Data', icon: <Database size={14} /> },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium ${tab === t.key ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
@@ -475,7 +528,19 @@ export default function AdminPage() {
                             <div className="text-xs text-gray-500 space-y-0.5">
                               <p>ID: <span className="font-mono text-gray-400">{user.id}</span></p>
                               {user.warranty_start && <p>Warranty started: {new Date(user.warranty_start).toLocaleDateString()}</p>}
-                            </div>
+                          </div>
+                          </div>
+                          <div className="md:col-span-2 pt-2 border-t border-gray-200">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Impersonate</p>
+                            <button
+                              onClick={() => loginAsUser(user)}
+                              disabled={!!loginAsLoading}
+                              className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg font-medium border transition-colors ${copiedLink === user.id ? 'border-green-400 bg-green-50 text-green-700' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} disabled:opacity-50`}
+                            >
+                              {loginAsLoading === user.id ? <RefreshCw size={12} className="animate-spin" /> : copiedLink === user.id ? <Check size={12} /> : <LogIn size={12} />}
+                              {copiedLink === user.id ? 'Magic link copied!' : loginAsLoading === user.id ? 'Generating…' : 'Copy login link (magic link)'}
+                            </button>
+                            <p className="text-xs text-gray-400 mt-1.5">Paste in a private window to log in as this user.</p>
                           </div>
                         </div>
                       )}
@@ -721,5 +786,77 @@ export default function AdminPage() {
 
       </div>
     </div>
+
+      {tab === 'data' && (
+        <div className="max-w-6xl mx-auto px-4 pb-8 space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-gray-500">Master rollup — every user and all their claims in one view.</p>
+            <button onClick={loadRollup} className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 bg-white">
+              <RefreshCw size={13} /> Refresh
+            </button>
+          </div>
+          {rollupLoading ? (
+            <div className="py-24 text-center text-gray-400 text-sm">Loading…</div>
+          ) : (
+            <div className="space-y-4">
+              {rollupData.map((u2: any) => (
+                <div key={u2.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-gray-800 text-sm">{u2.name || u2.email}</span>
+                      <span className="text-xs text-gray-400">{u2.email}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PLAN_COLORS[u2.plan] || 'bg-gray-100 text-gray-600'}`}>{u2.plan}</span>
+                      {u2.role === 'admin' && <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">admin</span>}
+                    </div>
+                    <div className="text-xs text-gray-400 flex items-center gap-2 flex-wrap">
+                      {u2.city && <span>{u2.city}</span>}
+                      {u2.builder_name && <span>· {u2.builder_name}</span>}
+                      <span className="font-medium text-gray-600">{u2.claims.length} claim{u2.claims.length !== 1 ? 's' : ''}</span>
+                      <button onClick={() => loginAsUser(u2)} disabled={!!loginAsLoading} className={`flex items-center gap-1 px-2 py-1 rounded border text-[10px] font-medium ${copiedLink === u2.id ? 'border-green-400 bg-green-50 text-green-700' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} disabled:opacity-40`}>
+                        {loginAsLoading === u2.id ? <RefreshCw size={10} className="animate-spin" /> : copiedLink === u2.id ? <Check size={10} /> : <LogIn size={10} />}
+                        {copiedLink === u2.id ? 'Copied!' : 'Login as'}
+                      </button>
+                    </div>
+                  </div>
+                  {u2.claims.length === 0 ? (
+                    <div className="px-5 py-3 text-xs text-gray-400 italic">No claims yet</div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead><tr className="border-b border-gray-100 text-left">
+                          <th className="px-4 py-2 text-gray-400 font-medium">Title</th>
+                          <th className="px-4 py-2 text-gray-400 font-medium">Category</th>
+                          <th className="px-4 py-2 text-gray-400 font-medium">Sev</th>
+                          <th className="px-4 py-2 text-gray-400 font-medium">Status</th>
+                          <th className="px-4 py-2 text-gray-400 font-medium">Location</th>
+                          <th className="px-4 py-2 text-gray-400 font-medium">Filed</th>
+                          <th className="px-4 py-2 text-gray-400 font-medium">1st Resp</th>
+                          <th className="px-4 py-2 text-gray-400 font-medium">Resolved</th>
+                          <th className="px-4 py-2 text-gray-400 font-medium">Public</th>
+                        </tr></thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {u2.claims.map((c: any) => (
+                            <tr key={c.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-2 text-gray-800 font-medium max-w-[200px] truncate" title={c.title}>{c.title}</td>
+                              <td className="px-4 py-2 capitalize text-gray-600">{c.category}</td>
+                              <td className="px-4 py-2"><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${c.severity === 'high' || c.severity === 'critical' ? 'bg-red-100 text-red-700' : c.severity === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>{c.severity}</span></td>
+                              <td className="px-4 py-2"><span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${['resolved','closed'].includes(c.status) ? 'bg-green-100 text-green-700' : c.status === 'open' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>{c.status.replace(/_/g,' ')}</span></td>
+                              <td className="px-4 py-2 text-gray-500 max-w-[100px] truncate" title={c.defect_location}>{c.defect_location || '—'}</td>
+                              <td className="px-4 py-2 text-gray-400 whitespace-nowrap">{new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</td>
+                              <td className="px-4 py-2 text-gray-500 text-center">{c.days_to_first_response != null ? Math.round(c.days_to_first_response) + 'd' : '—'}</td>
+                              <td className="px-4 py-2 text-gray-500 text-center">{c.days_to_resolution != null ? Math.round(c.days_to_resolution) + 'd' : '—'}</td>
+                              <td className="px-4 py-2 text-center">{c.public_story ? <span className="text-green-600 font-bold">✓</span> : <span className="text-gray-300">—</span>}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
   )
 }
