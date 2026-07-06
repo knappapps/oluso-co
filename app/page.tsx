@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Home, Shield, Clock, BarChart3, ChevronRight, Star, Building2, Users } from 'lucide-react'
+import { Shield, Clock, BarChart3, ChevronRight, Star, Building2, Users } from 'lucide-react'
+import HomeNav from '@/components/HomeNav'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -23,19 +24,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Nav */}
-      <nav className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-blue-600 font-bold text-xl">
-          <Home size={24} /> Oluso
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/builders" className="text-sm text-gray-500 hover:text-gray-700">Builders</Link>
-          <Link href="/community" className="text-sm text-gray-500 hover:text-gray-700">Community</Link>
-          <Link href="/blog" className="text-sm text-gray-500 hover:text-gray-700">Blog</Link>
-          <Link href="/login" className="text-sm text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">Sign in</Link>
-          <Link href="/signup" className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">Get started free</Link>
-        </div>
-      </nav>
+      <HomeNav />
 
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
