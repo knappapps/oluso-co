@@ -408,7 +408,7 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-4 pt-20 pb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
         <p className="text-gray-500 text-sm mb-6">Manage users, ads, analytics, and builder reports.</p>
-        <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit flex-wrap">
+        <div className="flex gap-1 mb-6 bg-white border border-gray-200 rounded-lg p-1 w-fit max-w-full overflow-x-auto">
           {[
             { key: 'users', label: 'Users', icon: <Users size={14} /> },
             { key: 'ads', label: 'Ads', icon: <Megaphone size={14} /> },
