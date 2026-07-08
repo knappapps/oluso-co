@@ -19,7 +19,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState({
     name: '', email: '', phone: '',
     address: '', city: '', state: '', zip: '',
-    builder_name: '', community_name: '',
+    builder_name: '', community_name: '', builder_phone: '',
     warranty_start: '', warranty_end: ''
   })
 
@@ -39,6 +39,7 @@ export default function ProfilePage() {
           zip: data.zip || '',
           builder_name: data.builder_name || '',
           community_name: data.community_name || '',
+          builder_phone: data.builder_phone || '',
           warranty_start: data.warranty_start || '',
           warranty_end: data.warranty_end || ''
         })
@@ -63,6 +64,7 @@ export default function ProfilePage() {
         zip: profile.zip,
         builder_name: profile.builder_name,
         community_name: profile.community_name,
+        builder_phone: profile.builder_phone,
         warranty_start: profile.warranty_start || null,
         warranty_end: profile.warranty_end || null
       }).eq('auth_id', session.user.id)
@@ -142,6 +144,7 @@ export default function ProfilePage() {
                   </select>
                 </div>
                 <div><label className="block text-xs font-medium text-gray-700 mb-1">Community / subdivision</label>{inp('community_name', 'Sage Creek Estates')}</div>
+                <div><label className="block text-xs font-medium text-gray-700 mb-1">Builder warranty rep phone (optional)</label>{inp('builder_phone', '(801) 555-0100', 'tel')}</div>
               </div>
             </div>
 
