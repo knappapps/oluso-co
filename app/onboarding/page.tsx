@@ -38,7 +38,7 @@ function OnboardingInner() {
   const [referralCode, setReferralCode] = useState<string>('')
   const [form, setForm] = useState({
     address: '', city: '', state: '', zip: '',
-    builder_name: '', community_name: '', builder_email: '',
+    builder_name: '', community_name: '', builder_email: '', builder_phone: '',
     warranty_start: '', warranty_end: '', warranty_year: ''
   })
 
@@ -91,6 +91,7 @@ function OnboardingInner() {
         builder_name: form.builder_name,
         community_name: form.community_name,
         builder_email: form.builder_email || null,
+        builder_phone: form.builder_phone || null,
         warranty_start: form.warranty_start || null,
         warranty_end: form.warranty_end || null,
         warranty_year: form.warranty_year ? parseInt(form.warranty_year) : null,
@@ -201,6 +202,11 @@ function OnboardingInner() {
                   <label className="block text-xs font-medium text-gray-700 mb-1">Builder warranty email (optional)</label>
                   {input('builder_email', 'warranty@yourbuilder.com', 'email')}
                   <p className="text-xs text-gray-400 mt-1">Used to pre-fill when you send claims</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Builder warranty rep phone (optional)</label>
+                  {input('builder_phone', '(801) 555-0100', 'tel')}
+                  <p className="text-xs text-gray-400 mt-1">Used to text your builder directly about claims</p>
                 </div>
               </div>
             </div>
