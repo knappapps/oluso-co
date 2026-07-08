@@ -10,7 +10,7 @@ export const metadata: Metadata = {
         manifest: '/manifest.json',
         icons: {
                     icon: ['/icon-192.png', '/icon-512.png'],
-                    apple: '/apple-touch-icon.png',
+                    apple: '/apple-touch-icon-v2.png',
         },
         openGraph: {
                     siteName: 'Oluso',
