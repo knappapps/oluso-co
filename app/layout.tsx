@@ -12,6 +12,9 @@ export const metadata: Metadata = {
                     icon: ['/icon-192.png', '/icon-512.png'],
                     apple: '/apple-touch-icon-v2.png',
         },
+        		appleWebApp: {
+                                			title: 'Oluso',
+                        },
         openGraph: {
                     siteName: 'Oluso',
                     type: 'website',
