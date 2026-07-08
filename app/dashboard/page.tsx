@@ -190,6 +190,7 @@ referral_code?: string
     plan?: string
 } | null>(null)
 const fileInputRef = useRef<HTMLInputElement>(null)
+  const newClaimRef = useRef<HTMLDivElement>(null)
 
 const [newClaim, setNewClaim] = useState({
 title: '',
@@ -216,6 +217,11 @@ if (params.get('upgrade') === 'success') {
   setTimeout(() => setShowUpgradeBanner(false), 8000)
 }
 }, [router])
+  useEffect(() => {
+if (showNew) {
+  newClaimRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+  }, [showNew])
 
 useEffect(() => {
 async function load() {
@@ -417,7 +423,7 @@ return (
       />
     )}
     {showNew && (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
+      <div ref={newClaimRef} className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
         <h2 className="font-semibold text-gray-900 mb-4">File a New Claim</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
