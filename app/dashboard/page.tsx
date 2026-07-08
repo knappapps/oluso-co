@@ -183,6 +183,7 @@ const [userProfile, setUserProfile] = useState<{
 id: string
 builder_name?: string
 builder_email?: string
+builder_phone?: string
 warranty_start?: string
 warranty_end?: string
 referral_code?: string
@@ -222,7 +223,7 @@ const { data: { session } } = await supabase.auth.getSession()
 if (!session) return
 const { data: profile } = await supabase
   .from('users')
-  .select('id, builder_name, community_name, warranty_start, warranty_end, referral_code, plan')
+  .select('id, builder_name, community_name, warranty_start, warranty_end, referral_code, plan, builder_phone')
   .eq('auth_id', session.user.id)
   .single()
 if (profile) {
@@ -754,6 +755,12 @@ return (
                         className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
                         <Send size={14} /> {sending ? 'Sending...' : 'Send to Builder'}
                       </button>
+                      {userProfile?.builder_phone && (
+                        <a href={`sms:${userProfile.builder_phone}?body=${encodeURIComponent('Re: Warranty Claim - ' + claim.title)}`}
+                          className="inline-flex items-center gap-2 mt-2 text-sm font-medium text-blue-600 hover:underline">
+                          <MessageSquare size={14} /> Text Builder
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>
