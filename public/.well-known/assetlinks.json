@@ -1,0 +1,8 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+          "namespace": "android_app",
+          "package_name": "co.oluso.twa",
+          "sha256_cert_fingerprints": ["FF:43:FB:E8:15:42:C8:B5:B8:16:C0:02:38:8F:7C:06:36:18:91:B3:0B:96:29:D5:BC:EE:CC:BE:11:E2:AA:D2"]
+    }
+}]
