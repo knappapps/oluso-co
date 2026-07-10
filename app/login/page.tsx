@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Home, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import IosInstallPrompt from '@/components/IosInstallPrompt'
+import { shouldShowIosInstallPrompt, recordIosInstallPromptDismissal } from '@/lib/iosInstallPrompt'
 
 function LoginForm() {
   const router = useRouter()
@@ -17,6 +18,8 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false)
+  const [pendingRedirect, setPendingRedirect] = useState<string | null>(null)
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -29,11 +32,15 @@ function LoginForm() {
         // Only send to onboarding if this is a brand-new signup (onboarding_complete === false).
         // Existing users whose row is missing or whose flag is null go straight to redirectTo.
         const { data: profile } = await supabase
-          .from('users').select('onboarding_complete').eq('auth_id', data.session.user.id).single()
-        if (profile?.onboarding_complete === false) {
-          window.location.href = '/onboarding'
+          .from('users').select('onboarding_complete, pwa_installed_at').eq('auth_id', data.session.user.id).single()
+        const target = profile?.onboarding_complete === false
+          ? '/onboarding'
+            : (redirectTo === '/onboarding' ? '/dashboard' : redirectTo)
+        if (shouldShowIosInstallPrompt(profile?.pwa_installed_at)) {
+            setPendingRedirect(target)
+            setShowInstallPrompt(true)
         } else {
-          window.location.href = redirectTo === '/onboarding' ? '/dashboard' : redirectTo
+            window.location.href = target
         }
       }
     } catch (err) {
@@ -43,7 +50,14 @@ function LoginForm() {
     }
   }
 
+  function handlePromptDismiss() {
+      recordIosInstallPromptDismissal()
+      setShowInstallPrompt(false)
+      if (pendingRedirect) window.location.href = pendingRedirect
+  }
+
   return (
+  <>
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
       <h1 className="text-xl font-bold text-gray-900 mb-6">Welcome back</h1>
 
@@ -97,6 +111,8 @@ function LoginForm() {
         <Link href="/signup" className="text-blue-600 font-medium hover:underline">Create one free</Link>
       </p>
     </div>
+  {showInstallPrompt && <IosInstallPrompt onDismiss={handlePromptDismiss} />}
+  </>
   )
 }
 
@@ -114,7 +130,6 @@ export default function LoginPage() {
           <LoginForm />
         </Suspense>
       </div>
-      <IosInstallPrompt />
     </div>
   )
 }
