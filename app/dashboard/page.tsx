@@ -124,27 +124,20 @@ if (showNew) {
   newClaimRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
   }, [showNew])
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('oluso-referral-card-state')
-      if (stored === 'minimized' || stored === 'dismissed') setReferralCardState(stored)
-    } catch {}
-  }, [])
-
-  function minimizeReferralCard() {
-    setReferralCardState('minimized')
-    try { localStorage.setItem('oluso-referral-card-state', 'minimized') } catch {}
+  async function minimizeReferralCard() {
+        setReferralCardState('minimized')
+        if (userProfile) await supabase.from('users').update({ referral_card_state: 'minimized' }).eq('id', userProfile.id)
   }
 
-  function dismissReferralCard() {
-    setReferralCardState('dismissed')
-    try { localStorage.setItem('oluso-referral-card-state', 'dismissed') } catch {}
-  }
+    async function dismissReferralCard() {
+          setReferralCardState('dismissed')
+          if (userProfile) await supabase.from('users').update({ referral_card_state: 'dismissed' }).eq('id', userProfile.id)
+    }
 
-  function expandReferralCard() {
-    setReferralCardState('expanded')
-    try { localStorage.setItem('oluso-referral-card-state', 'expanded') } catch {}
-  }
+    async function expandReferralCard() {
+          setReferralCardState('expanded')
+          if (userProfile) await supabase.from('users').update({ referral_card_state: 'expanded' }).eq('id', userProfile.id)
+    }
 
 useEffect(() => {
 async function load() {
@@ -152,11 +145,14 @@ const { data: { session } } = await supabase.auth.getSession()
 if (!session) return
 const { data: profile } = await supabase
   .from('users')
-  .select('id, builder_name, community_name, warranty_start, warranty_end, referral_code, plan, builder_phone')
+  .select('id, builder_name, community_name, warranty_start, warranty_end, referral_code, plan, builder_phone, referral_card_state')
   .eq('auth_id', session.user.id)
   .single()
 if (profile) {
   setUserProfile(profile)
+        if (profile.referral_card_state === 'minimized' || profile.referral_card_state === 'dismissed') {
+                  setReferralCardState(profile.referral_card_state)
+        }
   if (profile.builder_name) {
     setNewClaim(prev => ({ ...prev, builder_name: profile.builder_name || '' }))
   }
