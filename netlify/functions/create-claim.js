@@ -58,7 +58,6 @@ exports.handler = async function(event) {
         category: category || 'other',
         severity: severity || 'medium',
         builder_email: builder_email || null,
-        builder_name: builder_name || null,
         status: 'open',
         public_story: public_story || false,
         // Structured data fields
