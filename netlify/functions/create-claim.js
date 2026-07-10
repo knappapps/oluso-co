@@ -164,7 +164,7 @@ exports.handler = async function(event) {
     }
 
     // Refresh builder scores (fire-and-forget)
-    supabase.rpc('refresh_builder_scores').catch(function() {})
+    Promise.resolve(supabase.rpc('refresh_builder_scores')).catch(function() {})
 
     return {
       statusCode: 201,
