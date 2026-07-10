@@ -5,6 +5,7 @@ import AuthGuard from '@/components/AuthGuard'
 import Header from '@/components/Header'
 import { supabase } from '@/lib/supabase'
 import { User, MapPin, Building, Calendar, Save, CheckCircle, Loader2 } from 'lucide-react'
+import ReferralShareCard from '@/components/ReferralShareCard'
 
 const BUILDERS = [
   'David Weekley Homes','Ivory Homes','Woodside Homes','Toll Brothers',
@@ -16,6 +17,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [referralCode, setReferralCode] = useState('')
+  const [referralCount, setReferralCount] = useState(0)
   const [profile, setProfile] = useState({
     name: '', email: '', phone: '',
     address: '', city: '', state: '', zip: '',
@@ -43,6 +46,14 @@ export default function ProfilePage() {
           warranty_start: data.warranty_start || '',
           warranty_end: data.warranty_end || ''
         })
+        if (data.referral_code) {
+          setReferralCode(data.referral_code)
+          const { count } = await supabase
+            .from('users')
+            .select('id', { count: 'exact', head: true })
+            .eq('referred_by', data.referral_code)
+          setReferralCount(count || 0)
+        }
       }
       setLoading(false)
     }
@@ -163,6 +174,15 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
+
+            {/* Referral */}
+            {referralCode && (
+              <ReferralShareCard
+                referralCode={referralCode}
+                builderName={profile.builder_name}
+                referralCount={referralCount}
+              />
+            )}
           </div>
         </div>
       </main>
