@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { Home, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import IosInstallPrompt from '@/components/IosInstallPrompt'
 
 function LoginForm() {
   const router = useRouter()
@@ -113,6 +114,7 @@ export default function LoginPage() {
           <LoginForm />
         </Suspense>
       </div>
+      <IosInstallPrompt />
     </div>
   )
 }
