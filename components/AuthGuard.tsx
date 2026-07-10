@@ -6,6 +6,22 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Lock } from 'lucide-react'
 
+async function markPwaInstalledIfNeeded(userId: string) {
+  try {
+    const isStandalone = (window.navigator as any).standalone === true
+      || window.matchMedia('(display-mode: standalone)').matches
+    if (!isStandalone) return
+
+    const { data } = await supabase
+      .from('users').select('pwa_installed_at').eq('auth_id', userId).single()
+
+    if (data && !data.pwa_installed_at) {
+      await supabase
+        .from('users').update({ pwa_installed_at: new Date().toISOString() }).eq('auth_id', userId)
+    }
+  } catch {}
+}
+
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [checking, setChecking] = useState(true)
@@ -20,6 +36,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       if (session) {
         setAuthenticated(true)
         setChecking(false)
+        markPwaInstalledIfNeeded(session.user.id)
       } else {
         // No session from cookies — wait briefly for auth state to resolve
         // (createBrowserClient may need an extra tick after a fresh page load)
@@ -28,6 +45,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         if (!mounted) return
         setAuthenticated(!!s2)
         setChecking(false)
+        if (s2) markPwaInstalledIfNeeded(s2.user.id)
       }
     }
 
