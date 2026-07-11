@@ -523,7 +523,196 @@ Warranty transparency holds builders accountable and helps buyers make better de
 
 **Research before you buy. Document as you live there. Share what you learn.**
 `.trim()
-                                                                                                                          }
+                                                                                                                          },
+                {
+                  slug: 'roof-exterior-warranty-claims',
+                  title: 'Roof and Exterior Warranty Claims: What New Homeowners Often Miss',
+                  excerpt: 'Roof leaks, siding gaps, and drainage issues often go unnoticed until they cause serious damage. Here is what your warranty covers on the exterior of your home and how to catch problems early.',
+                  date: 'June 2, 2026',
+                  category: 'Warranty Guide',
+                  readMinutes: 5,
+                  content: `
+                  ## The Exterior Is Easy to Ignore
+
+                  Most new homeowners spend their first weeks focused on the interior — unpacking, decorating, settling in. The exterior of the home, especially the roof, gets far less attention. That is exactly why exterior defects are among the most commonly missed warranty issues.
+
+                  ## What Your Warranty Typically Covers
+
+                  **Roofing:** Workmanship defects in roof installation are usually covered under the first-year workmanship warranty, while roofing materials themselves often carry a separate manufacturer warranty. Improper flashing, insufficient nailing, and poor underlayment installation are builder responsibilities.
+
+                  **Siding and Trim:** Gaps, warping, and improper caulking around windows and doors are workmanship issues. Left unaddressed, these gaps allow water intrusion behind the siding.
+
+                  **Grading and Drainage:** Builders are responsible for grading the lot so water flows away from the foundation. Improper grading is one of the most consequential — and most fixable — defects if caught early.
+
+                  **Gutters and Downspouts:** Improperly sloped gutters or downspouts that discharge too close to the foundation can direct water exactly where it should not go.
+
+                  ## Signs to Watch For
+
+                  Walk your exterior perimeter every few months, especially after heavy rain. Look for standing water near the foundation, staining or streaking on siding, gaps where trim meets siding or windows, granule loss in the driveway near downspouts, and soft spots on the roof deck visible from the attic.
+
+                  ## Why These Defects Escalate Quickly
+
+                  Water intrusion issues rarely stay small. A minor flashing defect can lead to rotted sheathing within a single wet season. A grading problem can cause foundation settling over several years. Catching these issues while they are still cosmetic saves both money and warranty eligibility.
+
+                  ## Documenting Exterior Defects
+
+                  Photograph the full perimeter of your home during your move-in walkthrough, and again at three months and eleven months. Note weather conditions — a photo taken during or immediately after rain is more useful for documenting drainage issues than one taken on a dry day.
+
+                  If you notice a defect, report it immediately in writing with photos and the date first observed, just as you would for any other warranty claim.
+
+                  **Walk the perimeter often. Catch exterior defects while they are still small.**
+                  `.trim()
+                },
+                {
+                  slug: 'writing-warranty-claim-emails-that-get-responses',
+                  title: 'How to Write a Warranty Claim Email That Actually Gets a Response',
+                  excerpt: 'The way you write a warranty claim email can be the difference between a fast resolution and weeks of silence. Here is a structure that works.',
+                  date: 'June 9, 2026',
+                  category: 'Documentation',
+                  readMinutes: 5,
+                  content: `
+                  ## Most Claim Emails Are Too Vague
+
+                  A common mistake homeowners make is writing warranty emails the way they would write a casual message to a friend. This kind of message is easy for a busy warranty department to deprioritize.
+
+                  A well-structured claim email signals that you are organized, serious, and keeping a record — which tends to produce faster responses.
+
+                  ## The Structure That Works
+
+                  **Subject line:** Include the word "Warranty Claim," your address, and a brief defect description.
+
+                  **Opening line:** State clearly that this is a formal warranty claim, not a general inquiry.
+
+                  **Defect description:** Describe exactly what you observed, where, and when. Be factual rather than speculative — describe what you see, not what you assume caused it.
+
+                  **Date of discovery:** State the specific date you noticed the issue.
+
+                  **Supporting documentation:** Reference attached photos or reports, and describe what they show.
+
+                  **Requested action:** State what you are asking for — an inspection, a repair, a written response by a specific date.
+
+                  **Response deadline:** Politely but clearly state a reasonable deadline for acknowledgment, such as five business days.
+
+                  ## Tone Matters
+
+                  Keep the tone factual and professional, never accusatory in a first communication. Warranty coordinators are more responsive to homeowners who present as organized and reasonable. Save firmer language for follow-ups if the first attempt goes unanswered.
+
+                  ## Keep Every Thread
+
+                  Every claim email should live in its own thread so the full history — your original report, any replies, and your follow-ups — stays together and time-stamped. This is exactly the kind of record that matters if a claim needs to be escalated later.
+
+                  **Write clearly. Attach evidence. Set a deadline. Keep the record.**
+                  `.trim()
+                },
+                {
+                  slug: 'average-cost-common-construction-defects',
+                  title: 'The Average Cost of Common New Construction Defects',
+                  excerpt: 'Some warranty defects are inexpensive nuisances. Others can cost tens of thousands of dollars if left unaddressed. Here is what the data shows about typical repair costs.',
+                  date: 'June 16, 2026',
+                  category: 'Data & Insights',
+                  readMinutes: 5,
+                  content: `
+                  ## Why Cost Context Matters
+
+                  When a homeowner discovers a defect, it can be hard to judge how seriously to treat it. Understanding typical cost ranges helps homeowners prioritize which issues need urgent attention.
+
+                  ## Cosmetic Defects
+
+                  Drywall nail pops, minor paint touch-ups, small grout cracks, and door alignment issues are generally inexpensive to repair — often under a few hundred dollars in materials and labor. These are usually straightforward Year 1 warranty repairs builders complete quickly.
+
+                  ## Water Intrusion Issues
+
+                  A minor roof flashing repair might cost a few hundred dollars. However, if water intrusion has been ongoing undetected, repair costs can climb quickly once drywall, insulation, or framing needs replacement due to rot or mold. Early detection is what keeps these costs low.
+
+                  ## HVAC Defects
+
+                  Duct sealing and minor refrigerant charge corrections are relatively inexpensive. A full system replacement due to improper sizing, however, is a much larger expense — one that should clearly fall under builder responsibility if it stems from an installation defect rather than normal wear.
+
+                  ## Foundation and Structural Defects
+
+                  Structural repairs are the most expensive category by a significant margin. Foundation underpinning, major crack repair, or load-bearing framing corrections can run into the tens of thousands of dollars. This is why the structural warranty period is the longest of the three tiers.
+
+                  ## What This Means for Homeowners
+
+                  Because the cost of ignoring a defect tends to grow over time, the financial case for early documentation and prompt reporting is strong. A defect reported and resolved within warranty costs the homeowner nothing. The same defect discovered after warranty expiration can be a five-figure expense.
+
+                  **Small issues stay small when caught early. Document everything, regardless of how minor it seems.**
+                  `.trim()
+                },
+                {
+                  slug: 'hiring-an-attorney-for-warranty-disputes',
+                  title: 'Should You Hire an Attorney for a Warranty Dispute? How to Decide',
+                  excerpt: 'Not every warranty dispute needs a lawyer. Here is a practical framework for deciding when legal help is worth the cost — and when it is not.',
+                  date: 'June 23, 2026',
+                  category: 'Strategy',
+                  readMinutes: 6,
+                  content: `
+                  ## Legal Help Is a Tool, Not a First Step
+
+                  Many homeowners assume that any unresolved warranty dispute requires an attorney. In practice, most disputes are resolved through persistent, well-documented communication with the builder's warranty department.
+
+                  ## When an Attorney Is Probably Not Necessary
+
+                  If your claim is a first or second communication, if the defect is cosmetic or low-cost, or if the builder has been responsive even if slow, legal involvement is likely premature.
+
+                  ## When an Attorney Is Worth Considering
+
+                  Consider a consultation when the defect is structural or otherwise high-cost, when the builder has stopped responding entirely for an extended period, when a claim has been denied without a clear explanation, or when the warranty period is close to expiring and the builder is stalling.
+
+                  ## What a Consultation Actually Costs
+
+                  Many construction defect attorneys offer free or low-cost initial consultations. A single consultation can clarify whether your claim has merit and whether a formal demand letter is likely to be effective.
+
+                  ## Understanding Your Contract First
+
+                  Before hiring an attorney, review your purchase contract for arbitration clauses. Many new home contracts require disputes to go through binding arbitration rather than court.
+
+                  ## Weighing Cost Against the Claim
+
+                  For lower-dollar disputes, small claims court may be a more proportional option. For higher-value structural claims, an attorney working on contingency may make sense.
+
+                  ## Documentation Is What Makes Legal Help Effective
+
+                  Whether or not you hire an attorney, your documented history of the defect and every communication with the builder is what gives any legal strategy its strength.
+
+                  **Match your response to the size of the problem. Document first, escalate deliberately.**
+                  `.trim()
+                },
+                {
+                  slug: 'foundation-settling-vs-structural-defect',
+                  title: 'Foundation Settling vs. Structural Defect: How to Tell the Difference',
+                  excerpt: 'Not every foundation crack is a red flag, but some are. Here is how to distinguish normal settling from a genuine structural warranty issue.',
+                  date: 'June 30, 2026',
+                  category: 'Warranty Guide',
+                  readMinutes: 6,
+                  content: `
+                  ## Why This Distinction Matters
+
+                  Foundation cracks are one of the most anxiety-inducing things a new homeowner can discover. But not every crack signals a structural problem — some degree of settling is normal in any new home.
+
+                  ## What Normal Settling Looks Like
+
+                  New homes settle as the soil beneath them compresses and as building materials adjust to seasonal humidity changes. Normal settling typically produces small, vertical hairline cracks in poured concrete foundations, minor drywall cracks at corners or above doorways, and small gaps that open and close slightly with the seasons.
+
+                  ## What Warrants Closer Attention
+
+                  Horizontal cracks in a foundation wall, especially wider at one end, can indicate soil or hydrostatic pressure problems. Cracks wider than a quarter inch, or that continue to widen over several months, are a warning sign. Doors and windows that progressively stick more over time, floors that visibly slope, or gaps between walls and ceilings that grow larger are all signs worth having assessed.
+
+                  ## The Role of Measurement
+
+                  Rather than relying on memory, measure crack width with a simple crack gauge and note the date. Re-measure every few months. A crack that is stable in width over a year is behaving very differently than one that is steadily widening.
+
+                  ## When to Bring in a Structural Engineer
+
+                  If you observe any of the warning signs above, a structural engineer's assessment is worth the cost for the clarity it provides. Their written report either gives you peace of mind or gives you the documentation needed to support a structural warranty claim.
+
+                  ## Reporting a Suspected Structural Defect
+
+                  Structural warranty claims should always be reported in writing, with photos, measurements, and dates included. Because the structural warranty period is the longest of the standard tiers, there is no need to rush a claim — but there is also no reason to delay once you have credible evidence of a problem.
+
+                  **Most cracks are normal. The ones that are not are worth catching early — and worth documenting carefully.**
+                  `.trim()
+                }
 ]
                                                                                                                                                               
                                                                                                                                                               export function getPostBySlug(slug: string): BlogPost | undefined {
