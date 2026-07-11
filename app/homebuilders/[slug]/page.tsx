@@ -41,7 +41,7 @@ export default function HomebuilderProfilePage({ params }: { params: { slug: str
         </Link>
 
         <div className="mb-8">
-          <p className="text-sm text-blue-600 font-medium mb-1">Rank #{builder.rank} - {builder.tier} - U.S. Builder 100</p>
+          <p className="text-sm text-blue-600 font-medium mb-1">Rank #{builder.rank}</p>
           <h1 className="text-3xl font-bold text-gray-900">{builder.company}</h1>
           <p className="text-gray-500 text-sm mt-1">{builder.hq} - {builder.ownership}</p>
         </div>
