@@ -11,7 +11,7 @@ const resources = [
     icon: Scale,
     items: [
       { title: 'NAHB Consumer Resources', desc: 'National homebuilder consumer guidance and dispute resources', url: 'https://www.nahb.org/other/consumer-resources', type: 'link' },
-      { title: 'Sample Demand Letter Template', desc: 'Template for formal written demands', type: 'download' },
+      { title: 'Sample Demand Letter Template', desc: 'Template for formal written demands', url: '/documents/sample-demand-letter-template.txt', type: 'download' },
     ]
   },
   {
@@ -62,6 +62,14 @@ export default function ResourcesPage() {
                           <p className="text-xs text-gray-500">{item.desc}</p>
                         </div>
                         <ExternalLink size={14} className="text-gray-400" />
+                      </a>
+                    ) : item.type === 'download' && item.url ? (
+                      <a key={item.title} href={item.url} download className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-colors cursor-pointer">
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{item.title}</p>
+                          <p className="text-xs text-gray-500">{item.desc}</p>
+                        </div>
+                        <Download size={14} className="text-gray-400" />
                       </a>
                     ) : (
                       <div key={item.title} className="flex items-center justify-between p-3 rounded-lg border border-gray-100">

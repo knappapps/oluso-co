@@ -64,6 +64,14 @@ export default function StateResourcesPage({ params }: { params: { state: string
                         </div>
                         <ExternalLink size={14} className="text-gray-400" />
                       </a>
+                    ) : item.type === 'download' && item.url ? (
+                      <a key={item.title} href={item.url} download className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-colors cursor-pointer">
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{item.title}</p>
+                          <p className="text-xs text-gray-500">{item.desc}</p>
+                        </div>
+                        <Download size={14} className="text-gray-400" />
+                      </a>
                     ) : (
                       <div key={item.title} className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
                         <div>
