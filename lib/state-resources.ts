@@ -2,7 +2,7 @@ export type ResourceItem = { title: string; desc: string; url?: string; type: 'l
 export interface StateResource { slug: string; name: string; legal: ResourceItem[]; contacts: ResourceItem[] }
 
 const NAHB_ITEM: ResourceItem = { title: 'NAHB Consumer Resources', desc: 'National homebuilder consumer guidance and dispute resources', url: 'https://www.nahb.org/other/consumer-resources', type: 'link' }
-const DEMAND_LETTER_ITEM: ResourceItem = { title: 'Sample Demand Letter Template', desc: 'Template for formal written demands', type: 'download' }
+const DEMAND_LETTER_ITEM: ResourceItem = { title: 'Sample Demand Letter Template', desc: 'Template for formal written demands', url: '/documents/sample-demand-letter-template.txt', type: 'download' }const BBB_ITEM: ResourceItem = { title: 'Better Business Bureau', desc: 'File builder complaints publicly', url: 'https://www.bbb.org', type: 'link' }
 const BBB_ITEM: ResourceItem = { title: 'Better Business Bureau', desc: 'File builder complaints publicly', url: 'https://www.bbb.org', type: 'link' }
 
 export const stateResources: StateResource[] = [
