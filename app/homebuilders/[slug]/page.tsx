@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
-import { ArrowLeft, ExternalLink, Building2, Users, TrendingUp, Share2 } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Building2, Users, Share2 } from 'lucide-react'
 import { getHomebuilderBySlug, getAllHomebuilderSlugs } from '@/lib/homebuilders-data'
 import type { Metadata } from 'next'
 
@@ -94,13 +94,6 @@ export default function HomebuilderProfilePage({ params }: { params: { slug: str
             </div>
           </div>
         )}
-
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm mb-6">
-          <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <TrendingUp size={16} className="text-blue-600" /> Where Their Buyers Are
-          </h2>
-          <p className="text-sm text-gray-600">{builder.recommendedApproach}</p>
-        </div>
 
         {socialLinks.length > 0 && (
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
