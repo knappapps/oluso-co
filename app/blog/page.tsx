@@ -67,6 +67,41 @@ const posts = [
     excerpt: 'The warranty claims filed by existing homeowners in a subdivision tell you more about a builder than any sales brochure. Here is how to read them.',
     date: 'June 25, 2026',
     category: 'Data & Insights'
+  },
+  {
+    slug: 'roof-exterior-warranty-claims',
+    title: 'Roof and Exterior Warranty Claims: What New Homeowners Often Miss',
+    excerpt: 'Roof leaks, siding gaps, and drainage issues often go unnoticed until they cause serious damage. Here is what your warranty covers on the exterior of your home and how to catch problems early.',
+    date: 'June 2, 2026',
+    category: 'Warranty Guide'
+  },
+  {
+    slug: 'writing-warranty-claim-emails-that-get-responses',
+    title: 'How to Write a Warranty Claim Email That Actually Gets a Response',
+    excerpt: 'The way you write a warranty claim email can be the difference between a fast resolution and weeks of silence. Here is a structure that works.',
+    date: 'June 9, 2026',
+    category: 'Documentation'
+  },
+  {
+    slug: 'average-cost-common-construction-defects',
+    title: 'The Average Cost of Common New Construction Defects',
+    excerpt: 'Some warranty defects are inexpensive nuisances. Others can cost tens of thousands of dollars if left unaddressed. Here is what the data shows about typical repair costs.',
+    date: 'June 16, 2026',
+    category: 'Data & Insights'
+  },
+  {
+    slug: 'hiring-an-attorney-for-warranty-disputes',
+    title: 'Should You Hire an Attorney for a Warranty Dispute? How to Decide',
+    excerpt: 'Not every warranty dispute needs a lawyer. Here is a practical framework for deciding when legal help is worth the cost — and when it is not.',
+    date: 'June 23, 2026',
+    category: 'Strategy'
+  },
+  {
+    slug: 'foundation-settling-vs-structural-defect',
+    title: 'Foundation Settling vs. Structural Defect: How to Tell the Difference',
+    excerpt: 'Not every foundation crack is a red flag, but some are. Here is how to distinguish normal settling from a genuine structural warranty issue.',
+    date: 'June 30, 2026',
+    category: 'Warranty Guide'
   }
 ]
 
