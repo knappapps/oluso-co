@@ -1,6 +1,8 @@
 import AuthGuard from '@/components/AuthGuard'
 import Header from '@/components/Header'
-import { ExternalLink, Download, Phone, Scale } from 'lucide-react'
+import Link from 'next/link'
+import { ExternalLink, Download, Phone, Scale, MapPin } from 'lucide-react'
+import { stateResources } from '@/lib/state-resources'
 import type { Metadata } from 'next'
 
 const resources = [
@@ -8,8 +10,7 @@ const resources = [
     category: 'Legal',
     icon: Scale,
     items: [
-      { title: 'Utah New Home Warranty Act', desc: 'State law governing builder warranties in Utah', type: 'link' },
-      { title: 'NAHB Arbitration Program', desc: 'National homebuilder dispute resolution', type: 'link' },
+      { title: 'NAHB Consumer Resources', desc: 'National homebuilder consumer guidance and dispute resources', url: 'https://www.nahb.org/other/consumer-resources', type: 'link' },
       { title: 'Sample Demand Letter Template', desc: 'Template for formal written demands', type: 'download' },
     ]
   },
@@ -17,24 +18,24 @@ const resources = [
     category: 'Expert Contacts',
     icon: Phone,
     items: [
-      { title: 'Utah Division of Occupational & Professional Licensing', desc: 'File complaints against licensed contractors', type: 'link' },
-      { title: 'Better Business Bureau', desc: 'File builder complaints publicly', type: 'link' },
+      { title: 'Better Business Bureau', desc: 'File builder complaints publicly', url: 'https://www.bbb.org', type: 'link' },
     ]
   },
 ]
 
 export const metadata: Metadata = {
   title: 'New Home Warranty Resources | Oluso',
-  description: 'Resources for Utah new homeowners — Utah warranty law, consumer protection contacts, legal help, and tools to document and escalate builder warranty claims.',
+  description: 'Resources for new homeowners in all 50 states — state warranty law, consumer protection contacts, legal help, and tools to document and escalate builder warranty claims.',
   openGraph: {
     title: 'New Home Warranty Resources | Oluso',
-    description: 'Warranty resources and guides for Utah new homeowners.',
+    description: 'Warranty resources and guides for new homeowners in every state.',
     url: 'https://oluso.co/resources',
     siteName: 'Oluso',
     type: 'website',
   },
   twitter: { card: 'summary_large_image', title: 'New Home Warranty Resources | Oluso' },
 }
+
 export default function ResourcesPage() {
   return (
     <AuthGuard>
@@ -54,17 +55,41 @@ export default function ResourcesPage() {
                 </h2>
                 <div className="space-y-3">
                   {items.map(item => (
-                    <div key={item.title} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-colors cursor-pointer">
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">{item.title}</p>
-                        <p className="text-xs text-gray-500">{item.desc}</p>
+                    item.type === 'link' && item.url ? (
+                      <a key={item.title} href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-colors cursor-pointer">
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{item.title}</p>
+                          <p className="text-xs text-gray-500">{item.desc}</p>
+                        </div>
+                        <ExternalLink size={14} className="text-gray-400" />
+                      </a>
+                    ) : (
+                      <div key={item.title} className="flex items-center justify-between p-3 rounded-lg border border-gray-100">
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{item.title}</p>
+                          <p className="text-xs text-gray-500">{item.desc}</p>
+                        </div>
+                        <Download size={14} className="text-gray-400" />
                       </div>
-                      {item.type === 'link' ? <ExternalLink size={14} className="text-gray-400" /> : <Download size={14} className="text-gray-400" />}
-                    </div>
+                    )
                   ))}
                 </div>
               </div>
             ))}
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+              <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <MapPin size={16} className="text-blue-600" /> Browse by State
+              </h2>
+              <p className="text-xs text-gray-500 mb-4">State-specific warranty law and licensing board contacts</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {stateResources.map(state => (
+                  <Link key={state.slug} href={`/resources/${state.slug}`} className="text-sm text-gray-700 hover:text-blue-600 hover:underline px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                    {state.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </main>
