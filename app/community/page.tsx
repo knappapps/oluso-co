@@ -1,7 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import CommunityClient from './CommunityClient'
 
@@ -32,26 +29,6 @@ interface PageProps {
 }
 
 export default async function CommunityPage({ searchParams }: PageProps) {
-  const cookieStore = cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll() {},
-      },
-    }
-  )
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login?redirectTo=/community')
-  }
-
   const page = Math.max(1, parseInt((searchParams && searchParams.page) || '1', 10))
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
