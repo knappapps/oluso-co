@@ -129,6 +129,9 @@ const posts = [
 export const metadata: Metadata = {
   title: 'Warranty Resources & Guides | Oluso Blog',
   description: 'Builder warranty guides, documentation tips, and claim strategies for Utah new homeowners. Learn how to protect your investment.',
+  alternates: {
+    canonical: '/blog',
+  },
   openGraph: {
     title: 'Warranty Resources & Guides | Oluso Blog',
     description: 'Guides and strategies for navigating new home builder warranty claims.',
