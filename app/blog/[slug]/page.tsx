@@ -55,7 +55,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+      <Header publicNav />
 
       <main className="pt-24 max-w-2xl mx-auto px-4 pb-12">
         <Link href="/blog" className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-8">
