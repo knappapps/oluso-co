@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Oluso — Track Your New Home Warranty Claims',
   description: 'File and track warranty claims, communicate with your builder, and see how other homeowners in your community are holding builders accountable. Free to use.',
   keywords: ['home warranty', 'builder warranty', 'new home defects', 'warranty claims', 'homebuilder accountability'],
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'Oluso — Track Your New Home Warranty Claims',
     description: 'File warranty claims, track builder responses, and see real data from homeowners in your community.',
