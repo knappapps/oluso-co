@@ -15,7 +15,7 @@ interface Notification {
   created_at: string
 }
 
-export default function Header() {
+export default function Header({ publicNav = false }: { publicNav?: boolean } = {}) {
   const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
@@ -104,13 +104,14 @@ export default function Header() {
 
   const unreadCount = notifications.filter(n => !n.read).length
 
-  const nav = [
+  const fullNav = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/builders', label: 'Builders', icon: Building2 },
     { href: '/blog', label: 'Blog', icon: BookOpen },
     { href: '/community', label: 'Community', icon: Users },
     { href: '/resources', label: 'Resources', icon: HelpCircle },
   ]
+  const nav = (publicNav && !user) ? fullNav.filter((item) => item.href === '/blog') : fullNav
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 h-16">
