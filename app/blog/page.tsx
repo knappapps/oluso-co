@@ -102,6 +102,27 @@ const posts = [
     excerpt: 'Not every foundation crack is a red flag, but some are. Here is how to distinguish normal settling from a genuine structural warranty issue.',
     date: 'June 30, 2026',
     category: 'Warranty Guide'
+  },
+  {
+    slug: 'does-your-builder-warranty-transfer-when-you-sell',
+    title: 'Does Your Builder Warranty Transfer When You Sell Your Home?',
+    excerpt: 'If you sell your home before your builder warranty expires, the remaining coverage may or may not transfer to the new owner. Here is what buyers and sellers both need to know.',
+    date: 'July 7, 2026',
+    category: 'Warranty Guide'
+  },
+  {
+    slug: 'building-a-warranty-claim-folder',
+    title: 'How to Build a Warranty Claim Folder Your Builder Can Not Dispute',
+    excerpt: 'A disorganized pile of texts and photos will not hold up when a builder disputes your claim. Here is how to build a claim folder that leaves no room for argument.',
+    date: 'July 10, 2026',
+    category: 'Documentation'
+  },
+  {
+    slug: 'seasonal-patterns-in-warranty-claims',
+    title: 'Seasonal Patterns in Warranty Claims: When Most Defects Get Reported',
+    excerpt: 'Warranty claims are not evenly distributed throughout the year. Understanding seasonal patterns can help you know when to look more closely for defects in your own home.',
+    date: 'July 13, 2026',
+    category: 'Data & Insights'
   }
 ]
 
