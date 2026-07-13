@@ -14,6 +14,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   return {
     title: `${post.title} | Oluso Blog`,
     description: post.excerpt,
+    alternates: {
+      canonical: `/blog/${params.slug}`,
+    },
     openGraph: {
       title: post.title,
       description: post.excerpt,
@@ -56,6 +59,22 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   return (
     <div className="min-h-screen bg-white">
       <Header publicNav />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            headline: post.title,
+            description: post.excerpt,
+            datePublished: post.date,
+            author: { '@type': 'Organization', name: 'Oluso' },
+            publisher: { '@type': 'Organization', name: 'Oluso' },
+            mainEntityOfPage: `https://oluso.co/blog/${params.slug}`,
+          }),
+        }}
+      />
 
       <main className="pt-24 max-w-2xl mx-auto px-4 pb-12">
         <Link href="/blog" className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 mb-8">
