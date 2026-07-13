@@ -1,7 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import { Building2, TrendingUp, Clock, CheckCircle, ChevronRight, Star } from 'lucide-react'
@@ -43,26 +40,6 @@ const BUILDER_SLUGS: Record<string, string> = {
 }
 
 export default async function BuildersPage() {
-  const cookieStore = cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll() {},
-      },
-    }
-  )
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login?redirectTo=/builders')
-  }
-
   const { data: builderScores } = await supabaseAdmin
     .from('builder_scores')
     .select('name, total_claims, resolve_rate_pct, avg_days_to_first_response, accountability_score')
