@@ -121,7 +121,7 @@ export default function BlogPage() {
   const sortedPosts = [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header publicNav />
       <main className="pt-24 pb-16">
         <div className="max-w-3xl mx-auto px-4">
           <div className="text-center mb-12">
