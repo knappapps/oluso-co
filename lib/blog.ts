@@ -836,7 +836,137 @@ Warranty transparency holds builders accountable and helps buyers make better de
                                                                                                                                                                     
                                                                                                                                                                     **Do not wait for a defect to demand your attention. Look for it on its own schedule.**
                                                                                                                                                                     `.trim()
-                                                                                                                                                                  }
+                                                                                                                                                                  },
+                {
+                  slug: 'window-and-door-warranty-claims',
+                  title: 'Window and Door Warranty Claims: Common Defects and How to Document Them',
+                  excerpt: 'Drafty windows and misaligned doors are easy to dismiss as minor annoyances, but they often point to installation defects your warranty is meant to cover.',
+                  date: 'July 21, 2026',
+                  category: 'Documentation',
+                  readMinutes: 5,
+                  content: `
+                  ## Why Windows and Doors Are Easy to Dismiss
+
+                  A window that lets in a draft or a door that sticks a little in humid weather can feel like a minor annoyance rather than a warranty issue. In new construction, though, these symptoms are frequently signs of installation defects that your builder is responsible for correcting under the first-year workmanship warranty.
+
+                  ## Common Window Defects
+
+                  **Improper flashing and sealing**
+                  Water intrusion around window openings is one of the most consequential defects because it can lead to hidden rot inside the wall cavity long before any staining appears on the interior.
+
+                  **Poor operation**
+                  Windows that are difficult to open, do not latch fully, or feel loose in the frame often indicate the unit was installed out of square.
+
+                  **Condensation between panes**
+                  Fogging or condensation trapped between the panes of a double- or triple-pane window signals a failed seal and is typically a manufacturer defect rather than a builder installation issue.
+
+                  ## Common Door Defects
+
+                  **Sticking or dragging**
+                  A door that sticks against the frame, especially one that has gotten progressively worse, can indicate the frame was installed out of plumb or that the surrounding structure has shifted.
+
+                  **Gaps at the threshold**
+                  Visible daylight or a draft at the bottom of an exterior door usually means the threshold was not properly adjusted or sealed during installation.
+
+                  **Failure to latch**
+                  A door that does not latch securely is both a comfort issue and, for exterior doors, a security issue that should be reported promptly.
+
+                  ## How to Document These Defects
+
+                  - Photograph the window or door fully closed and fully open, including a close-up of any visible gap.
+                  - Note whether the issue is worse in certain weather conditions, since temperature and humidity changes often reveal installation defects.
+                  - Test operation multiple times and describe exactly what happens: does it stick at a specific point, does it fail to latch, is there visible daylight.
+                  - Record the date you first noticed the issue, since window and door defects generally fall under the first-year workmanship warranty and that window closes quickly.
+
+                  ## When to Call in a Third Party
+
+                  If a window or door defect seems to be causing water intrusion, or if the builder disputes that an installation defect exists, a written assessment from an independent window and door installer or a home inspector can strengthen your claim considerably.
+
+                  **Small drafts and sticky doors are worth reporting. They rarely fix themselves, and the warranty window to address them is shorter than you think.**
+                  `.trim()
+                },
+                {
+                  slug: 'how-many-warranty-claims-get-denied',
+                  title: 'How Many Warranty Claims Get Denied — and Why',
+                  excerpt: 'Not every warranty claim gets approved. Understanding the most common reasons builders deny claims can help you avoid making the same mistakes.',
+                  date: 'July 28, 2026',
+                  category: 'Data & Insights',
+                  readMinutes: 5,
+                  content: `
+                  ## Claims Get Denied More Often Than Homeowners Expect
+
+                  Not every warranty claim a homeowner files gets approved, and the reasons for denial are often more about process than about the defect itself. Understanding why claims get denied is one of the best ways to avoid having your own claim rejected.
+
+                  ## The Most Common Reasons for Denial
+
+                  **Filed outside the warranty period**
+                  The single most common reason a claim is denied is that it was submitted after the relevant coverage period expired. This is especially common with first-year cosmetic issues that homeowners do not report until well into year two.
+
+                  **Classified as normal wear and tear**
+                  Builders frequently deny claims by categorizing a defect as maintenance-related rather than a workmanship or materials issue. This distinction is often disputable, particularly when the wear is more severe than would be expected for the age of the home.
+
+                  **Lack of written documentation**
+                  A claim reported only verbally, with no written record of when it was first raised, is far easier for a builder to dispute or simply overlook.
+
+                  **Homeowner-caused damage**
+                  Builders will deny claims where they can point to homeowner modifications, improper maintenance, or damage from an unrelated event as the actual cause.
+
+                  **Insufficient evidence of the defect**
+                  A claim with no photos, no measurements, and no third-party assessment gives the builder little to evaluate and is an easy claim to deny or delay indefinitely.
+
+                  ## What the Denial Pattern Suggests
+
+                  Claims involving cosmetic, low-cost defects are more likely to be quietly denied or ignored than claims involving safety or structural concerns, where builders face greater liability exposure. This does not mean cosmetic claims are not worth filing. It means the burden of proof and persistence tends to fall more heavily on the homeowner for smaller issues.
+
+                  ## Reducing Your Risk of Denial
+
+                  - Submit every claim in writing, with a clear date of first observation.
+                  - Attach photos and, where relevant, a third-party inspection or technician report.
+                  - Respond quickly if the builder requests additional information rather than letting the request go unanswered.
+                  - Keep a copy of every communication in one place so you can show a complete history if a denial is disputed.
+
+                  **A denied claim is not always a final answer. A well-documented appeal, backed by evidence and a clear timeline, often succeeds where the original claim did not.**
+                  `.trim()
+                },
+                {
+                  slug: 'negotiating-with-your-builder',
+                  title: 'Negotiating With Your Builder: Strategies That Actually Work',
+                  excerpt: 'Getting a builder to say yes to a warranty repair often comes down to how you frame the conversation. Here is what tends to work.',
+                  date: 'August 4, 2026',
+                  category: 'Strategy',
+                  readMinutes: 6,
+                  content: `
+                  ## Negotiation Starts Long Before the Conversation
+
+                  Most homeowners think of negotiating with a builder as something that happens in a single tense phone call or meeting. In practice, the outcome of that conversation is usually decided by the documentation and preparation that came before it.
+
+                  ## Know What You Are Actually Asking For
+
+                  Vague requests are easy to deflect. Rather than asking a builder to fix a water issue in general terms, specify exactly what you want: an inspection by a specific date, a repair completed within a specific timeframe, or a written explanation if the builder believes the issue is not covered.
+
+                  ## Lead With Facts, Not Frustration
+
+                  Warranty coordinators handle a high volume of claims and tend to respond better to homeowners who present a clear, factual account than to homeowners who lead with frustration, even justified frustration. Save the harder tone for a follow-up if a reasonable first request goes unanswered.
+
+                  ## Use Comparable Cases
+
+                  If you know of similar defects in other homes in your subdivision, whether from personal conversation with neighbors or from shared community data, referencing that pattern can shift a conversation. A builder is more likely to act when a defect appears to be a pattern across multiple homes rather than an isolated complaint.
+
+                  ## Put Every Agreement in Writing
+
+                  If a builder agrees verbally to a repair, timeline, or resolution, follow up immediately with a written summary of what was agreed. This protects you if the conversation is later remembered differently, and it creates the paper trail you would need if the agreement is not honored.
+
+                  ## Know Your Alternatives Before You Need Them
+
+                  Understanding your escalation options, whether that is a formal complaint, a contractor licensing board, or legal consultation, gives you more confidence in a negotiation even if you never need to use them. Builders often respond differently to a homeowner who clearly understands their options than to one who does not.
+
+                  ## Stay Professional, Even When It Is Difficult
+
+                  The homeowner who remains organized and professional throughout a dispute typically has more leverage than one who becomes adversarial early. This is not about being passive. It is about ensuring that if the dispute escalates, your own conduct never becomes a distraction from the merits of your claim.
+
+                  **The strongest negotiating position is one built on documentation, clarity, and patience. Most builders respond to homeowners who are prepared, not to homeowners who are loud.**
+                  `.trim()
+                }
 ]
                                                                                                                                                               
                                                                                                                                                               export function getPostBySlug(slug: string): BlogPost | undefined {
