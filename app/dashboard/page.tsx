@@ -378,6 +378,33 @@ return (
               value={newClaim.description} onChange={e => setNewClaim(p => ({ ...p, description: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
+        <div className="md:col-span-2">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            <span className="flex items-center gap-1"><Paperclip size={12} /> Attach photos / documents</span>
+          </label>
+          <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.doc,.docx"
+            onChange={handleFileSelect} className="hidden" />
+          <button type="button" onClick={() => fileInputRef.current?.click()}
+            className="w-full border-2 border-dashed border-gray-300 rounded-lg py-4 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center gap-2">
+            <Upload size={16} /> Click to add photos or documents
+          </button>
+          {pendingFiles.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {pendingFiles.map((f, i) => (
+                <div key={i} className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-lg px-2 py-1 text-xs text-blue-700">
+                  {fileIcon(f.type)}
+                  <span className="max-w-24 truncate">{f.name}</span>
+                  <button onClick={() => setPendingFiles(prev => prev.filter((_, j) => j !== i))} className="text-blue-400 hover:text-blue-600 ml-1">
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="md:col-span-2 pt-2 mt-2 border-t border-gray-100">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Additional Details <span className="normal-case font-normal text-gray-400">(optional)</span></h3>
+        </div>
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
             <select value={newClaim.category}
@@ -445,31 +472,7 @@ return (
               value={newClaim.builder_name} onChange={e => setNewClaim(p => ({ ...p, builder_name: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
-          <div className="md:col-span-2">
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              <span className="flex items-center gap-1"><Paperclip size={12} /> Attach photos / documents</span>
-            </label>
-            <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.doc,.docx"
-              onChange={handleFileSelect} className="hidden" />
-            <button type="button" onClick={() => fileInputRef.current?.click()}
-              className="w-full border-2 border-dashed border-gray-300 rounded-lg py-4 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center gap-2">
-              <Upload size={16} /> Click to add photos or documents
-            </button>
-            {pendingFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {pendingFiles.map((f, i) => (
-                  <div key={i} className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-lg px-2 py-1 text-xs text-blue-700">
-                    {fileIcon(f.type)}
-                    <span className="max-w-24 truncate">{f.name}</span>
-                    <button onClick={() => setPendingFiles(prev => prev.filter((_, j) => j !== i))} className="text-blue-400 hover:text-blue-600 ml-1">
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="md:col-span-2">
+<div className="md:col-span-2">
             <label className="flex items-center gap-3 cursor-pointer">
               <div className="relative">
                 <input type="checkbox" className="sr-only"
