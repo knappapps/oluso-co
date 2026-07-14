@@ -49,6 +49,11 @@ function SignupPageInner() {
           plan: 'free',
           onboarding_complete: false
         })
+        fetch('/.netlify/functions/notify-new-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email })
+        }).catch(() => {})
         const qs = searchParams.toString()
         const onboardingUrl = '/onboarding' + (qs ? '?' + qs : '')
         if (data.session) {
