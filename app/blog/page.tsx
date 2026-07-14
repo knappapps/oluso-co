@@ -123,6 +123,27 @@ const posts = [
     excerpt: 'Warranty claims are not evenly distributed throughout the year. Understanding seasonal patterns can help you know when to look more closely for defects in your own home.',
     date: 'July 13, 2026',
     category: 'Data & Insights'
+  },
+  {
+    slug: 'window-and-door-warranty-claims',
+    title: 'Window and Door Warranty Claims: Common Defects and How to Document Them',
+    excerpt: 'Drafty windows and misaligned doors are easy to dismiss as minor annoyances, but they often point to installation defects your warranty is meant to cover.',
+    date: 'July 21, 2026',
+    category: 'Documentation'
+  },
+  {
+    slug: 'how-many-warranty-claims-get-denied',
+    title: 'How Many Warranty Claims Get Denied — and Why',
+    excerpt: 'Not every warranty claim gets approved. Understanding the most common reasons builders deny claims can help you avoid making the same mistakes.',
+    date: 'July 28, 2026',
+    category: 'Data & Insights'
+  },
+  {
+    slug: 'negotiating-with-your-builder',
+    title: 'Negotiating With Your Builder: Strategies That Actually Work',
+    excerpt: 'Getting a builder to say yes to a warranty repair often comes down to how you frame the conversation. Here is what tends to work.',
+    date: 'August 4, 2026',
+    category: 'Strategy'
   }
 ]
 
