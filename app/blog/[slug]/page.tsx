@@ -27,25 +27,26 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 function renderContent(content: string): string {
-  return content
-    .split('\n')
-    .map(line => {
-      if (line.startsWith('## ')) {
-        return `<h2 class="text-xl font-bold text-gray-900 mt-8 mb-3">${line.slice(3)}</h2>`
-      }
-      if (line.startsWith('**') && line.endsWith('**')) {
-        const inner = line.slice(2, -2)
-        return `<p class="font-semibold text-gray-900 mt-4 mb-1">${inner}</p>`
-      }
-      if (line.startsWith('- ')) {
-        return `<li class="text-gray-700 ml-4 list-disc">${line.slice(2)}</li>`
-      }
-      if (line.trim() === '') {
-        return '<br />'
-      }
-      return `<p class="text-gray-700 leading-relaxed mb-3">${line}</p>`
-    })
-    .join('\n')
+    return content
+      .split('\n')
+      .map(rawLine => {
+              const line = rawLine.trim()
+              if (line.startsWith('## ')) {
+                        return `<h2 class="text-xl font-bold text-gray-900 mt-8 mb-3">${line.slice(3)}</h2>`
+              }
+              if (line.startsWith('**') && line.endsWith('**') && line.length >= 4) {
+                        const inner = line.slice(2, -2)
+                        return `<p class="font-semibold text-gray-900 mt-4 mb-1">${inner}</p>`
+              }
+              if (line.startsWith('- ')) {
+                        return `<li class="text-gray-700 ml-4 list-disc">${line.slice(2)}</li>`
+              }
+              if (line === '') {
+                        return '<br />'
+              }
+              return `<p class="text-gray-700 leading-relaxed mb-3">${line}</p>`
+      })
+      .join('\n')
 }
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
