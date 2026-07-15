@@ -11,7 +11,7 @@ import {
 Plus, AlertTriangle, Clock, CheckCircle,
 MessageSquare, Send, ChevronDown, ChevronUp,
 Mail, Calendar, Paperclip, Upload, X, Image, FileText, Loader2, Shield,
-Share2, Copy, Check, Minus, User, AlertCircle
+Share2, Copy, Check, Minus, User, AlertCircle, Trash2
 } from 'lucide-react'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -72,6 +72,8 @@ const [claims, setClaims] = useState<Claim[]>([])
 const [loading, setLoading] = useState(true)
 const [showNew, setShowNew] = useState(false)
 const [expanded, setExpanded] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 const [threads, setThreads] = useState<Record<string, Message[]>>({})
 const [attachments, setAttachments] = useState<Record<string, Attachment[]>>({})
 const [replyText, setReplyText] = useState('')
@@ -169,6 +171,7 @@ if (profile) {
   const { data: claimsData } = await supabase
     .from('claims').select('*')
     .eq('user_id', profile.id)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
   setClaims(claimsData || [])
 }
@@ -205,6 +208,26 @@ if (data.claim) {
 }
 } catch (e) { console.error(e) }
 }
+
+  async function deleteClaim(claimId: string) {
+    if (!userProfile) return
+    setDeletingId(claimId)
+    try {
+      const resp = await fetch('/.netlify/functions/delete-claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claim_id: claimId, user_id: userProfile.id })
+      })
+      const data = await resp.json()
+      if (data.success) {
+        setClaims(prev => prev.filter(c => c.id !== claimId))
+        if (expanded === claimId) setExpanded(null)
+      }
+    } catch (e) { console.error(e) } finally {
+      setDeletingId(null)
+      setConfirmDeleteId(null)
+    }
+  }
 
 async function uploadFiles(files: File[], claimId: string) {
 setUploading(true)
@@ -589,7 +612,18 @@ return (
                 </div>
                 <div className="flex items-center gap-2 text-gray-400 shrink-0">
                   <span className="text-xs bg-gray-100 px-2 py-1 rounded capitalize">{claim.category}</span>
-                  {expanded === claim.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  {confirmDeleteId === claim.id ? (
+<div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+  <span className="text-xs text-gray-500">Delete?</span>
+              <button onClick={() => deleteClaim(claim.id)} disabled={deletingId === claim.id} className="text-xs font-medium text-red-600 hover:text-red-800 disabled:opacity-50">{deletingId === claim.id ? '...' : 'Yes'}</button>
+              <button onClick={() => setConfirmDeleteId(null)} className="text-xs font-medium text-gray-500 hover:text-gray-700">No</button>
+</div>
+     
+              ) : (
+              <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(claim.id) }} aria-label="Delete claim" title="Delete claim" className="text-gray-300 hover:text-red-500 transition-colors p-1">
+              <Trash2 size={14} /></button>
+              )}
+              {expanded === claim.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </div>
               </div>
             </div>
