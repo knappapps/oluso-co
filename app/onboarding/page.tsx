@@ -35,7 +35,9 @@ function OnboardingInner() {
   const [saving, setSaving] = useState(false)
   const [checking, setChecking] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
-  const [referralCode, setReferralCode] = useState<string>('')
+  const [userEmail, setUserEmail] = useState<string>('')
+  const [userName, setUserName] = useState<string>('')
+const [referralCode, setReferralCode] = useState<string>('')
   const [form, setForm] = useState({
     address: '', city: '', state: '', zip: '',
     builder_name: '', community_name: '', builder_email: '', builder_phone: '',
@@ -64,6 +66,8 @@ function OnboardingInner() {
       }
 
       setUserId(session.user.id)
+      setUserEmail(session.user.email || '')
+      setUserName(session.user.user_metadata?.name || '')
       setChecking(false)
     })
   }, [router, searchParams])
@@ -83,7 +87,10 @@ function OnboardingInner() {
   async function finish() {
     setSaving(true)
     try {
-      await supabase.from('users').update({
+      const { error } = await supabase.from('users').upsert({
+        auth_id: userId,
+        email: userEmail,
+        name: userName,
         address: form.address,
         city: form.city,
         state: form.state,
@@ -97,7 +104,8 @@ function OnboardingInner() {
         warranty_year: form.warranty_year ? parseInt(form.warranty_year) : null,
         referred_by: referralCode || null,
         onboarding_complete: true
-      }).eq('auth_id', userId)
+      }, { onConflict: 'auth_id' })
+      if (error) console.error('Onboarding save error:', error)
       router.push('/dashboard')
     } catch (err) {
       console.error(err)
