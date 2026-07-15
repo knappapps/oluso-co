@@ -4,6 +4,7 @@ import Header from '@/components/Header'
 import { ArrowLeft, ExternalLink, Building2, Users, Share2 } from 'lucide-react'
 import { getHomebuilderBySlug, getAllHomebuilderSlugs } from '@/lib/homebuilders-data'
 import type { Metadata } from 'next'
+import { NATIONAL_TO_UTAH_BUILDER_SLUG } from '@/lib/builder-crosslinks'
 
 export async function generateStaticParams() {
   return getAllHomebuilderSlugs().map(slug => ({ slug }))
@@ -29,6 +30,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default function HomebuilderProfilePage({ params }: { params: { slug: string } }) {
   const builder = getHomebuilderBySlug(params.slug)
   if (!builder) notFound()
+  const utahSlug = NATIONAL_TO_UTAH_BUILDER_SLUG[builder.slug]
 
   const socialLinks = Object.entries(builder.social).filter(([, url]) => !!url) as [string, string][]
 
@@ -45,6 +47,11 @@ export default function HomebuilderProfilePage({ params }: { params: { slug: str
           <h1 className="text-3xl font-bold text-gray-900">{builder.company}</h1>
           <p className="text-gray-500 text-sm mt-1">{builder.hq} - {builder.ownership}</p>
         </div>
+        {utahSlug && (
+      <Link href={`/builders/${utahSlug}`} className="block bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8 text-sm text-blue-700 hover:bg-blue-100">
+      See real Utah warranty claim data for {builder.company} →
+      </Link>
+      )}
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           <div className="bg-white rounded-xl border border-gray-200 p-4">
