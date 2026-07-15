@@ -74,6 +74,10 @@ const [showNew, setShowNew] = useState(false)
 const [expanded, setExpanded] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+const [showDeleted, setShowDeleted] = useState(false)
+  const [deletedClaims, setDeletedClaims] = useState<Claim[]>([])
+  const [loadingDeleted, setLoadingDeleted] = useState(false)
+  const [restoringId, setRestoringId] = useState<string | null>(null)
 const [threads, setThreads] = useState<Record<string, Message[]>>({})
 const [attachments, setAttachments] = useState<Record<string, Attachment[]>>({})
 const [replyText, setReplyText] = useState('')
@@ -229,6 +233,46 @@ if (data.claim) {
     }
   }
 
+async function loadDeletedClaims() {
+  if (!userProfile) return
+  setLoadingDeleted(true)
+  try {
+    const { data } = await supabase
+      .from('claims').select('*')
+      .eq('user_id', userProfile.id)
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false })
+    setDeletedClaims(data || [])
+  } finally {
+    setLoadingDeleted(false)
+  }
+}
+
+async function toggleShowDeleted() {
+  const next = !showDeleted
+  setShowDeleted(next)
+  if (next) await loadDeletedClaims()
+}
+
+async function restoreClaim(claimId: string) {
+  if (!userProfile) return
+  setRestoringId(claimId)
+  try {
+    const resp = await fetch('/.netlify/functions/restore-claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ claim_id: claimId, user_id: userProfile.id })
+    })
+    const data = await resp.json()
+    if (data.claim) {
+      setDeletedClaims(prev => prev.filter(c => c.id !== claimId))
+      setClaims(prev => [data.claim, ...prev])
+    }
+  } catch (e) { console.error(e) } finally {
+    setRestoringId(null)
+  }
+}
+
 async function uploadFiles(files: File[], claimId: string) {
 setUploading(true)
 try {
@@ -325,10 +369,16 @@ return (
         <h1 className="text-2xl font-bold text-gray-900">My Claims</h1>
         <p className="text-gray-500 text-sm mt-1">Track warranty issues and builder communications</p>
       </div>
-      <button onClick={() => setShowNew(!showNew)}
-        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-        <Plus size={16} /> New Claim
-      </button>
+      <div className="flex items-center gap-2">
+        <button onClick={toggleShowDeleted}
+          className="flex items-center gap-2 bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+          <Trash2 size={16} /> {showDeleted ? 'Hide Deleted' : 'View Deleted'}
+        </button>
+        <button onClick={() => setShowNew(!showNew)}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+          <Plus size={16} /> New Claim
+        </button>
+      </div>
     </div>
 
     {userProfile?.warranty_start && (
@@ -526,6 +576,33 @@ return (
         </div>
       </div>
     )}
+      {showDeleted && (
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
+        <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Trash2 size={16} className="text-gray-400" /> Deleted Claims
+        </h2>
+        {loadingDeleted ? (
+          <div className="text-sm text-gray-400">Loading...</div>
+        ) : deletedClaims.length === 0 ? (
+          <p className="text-sm text-gray-400 italic">No deleted claims</p>
+        ) : (
+          <div className="space-y-2">
+            {deletedClaims.map(c => (
+              <div key={c.id} className="flex items-center justify-between gap-3 border border-gray-100 rounded-lg px-3 py-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-700 truncate">{c.title}</p>
+                  <p className="text-xs text-gray-400">Deleted {(c as any).deleted_at ? daysSince((c as any).deleted_at) : '?'}d ago</p>
+                </div>
+                <button onClick={() => restoreClaim(c.id)} disabled={restoringId === c.id}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50 shrink-0">
+                  {restoringId === c.id ? 'Restoring...' : 'Restore'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      )}
       {/* Ad Banner — shown to free users */}
       {userPlan !== 'pro' && activeAd && (
         (activeAd as any).embed_html ? (
