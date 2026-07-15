@@ -55,6 +55,7 @@ export interface Claim {
     created_at: string
     first_response_at: string | null
     resolved_at: string | null
+    deleted_at: string | null
     defect_location: string | null
     defect_sub_category: string | null
     estimated_repair_cost: number | null
