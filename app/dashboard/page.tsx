@@ -590,7 +590,10 @@ return (
             {deletedClaims.map(c => (
               <div key={c.id} className="flex items-center justify-between gap-3 border border-gray-100 rounded-lg px-3 py-2">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-700 truncate">{c.title}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-medium text-gray-700 truncate">{c.title}</p>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700 shrink-0">Deleted</span>
+                  </div>
                   <p className="text-xs text-gray-400">Deleted {(c as any).deleted_at ? daysSince((c as any).deleted_at) : '?'}d ago</p>
                 </div>
                 <button onClick={() => restoreClaim(c.id)} disabled={restoringId === c.id}
