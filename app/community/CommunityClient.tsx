@@ -106,6 +106,7 @@ export default function CommunityClient({ rawStories, statsRow, builderScores, t
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-900 mb-3">Community Warranty Stories</h1>
           <p className="text-gray-500 max-w-xl mx-auto">Real warranty experiences. No names. No addresses. Just the facts.</p>
+          <Link href="/community/directory" className="inline-block mt-3 text-sm text-blue-600 hover:text-blue-800 font-medium">Browse neighborhoods by city</Link>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
