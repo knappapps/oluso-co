@@ -18,6 +18,9 @@
 [functions."send-warranty-alert"]
   schedule = "0 8 * * *"
 
+  [functions."fetch-industry-news"]
+    schedule = "0 6 * * *"
+
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
