@@ -73,6 +73,9 @@ const topCategories = Object.entries(catCounts).sort((a, b) => b[1] - a[1]).slic
 return (
 <div className="min-h-screen bg-gray-50">
 <Header />
+  {totalClaims >= 3 && (
+  <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: builderName || subdivisionName, aggregateRating: { '@type': 'AggregateRating', ratingValue: (totalClaims > 0 ? (resolved / totalClaims) * 4 + 1 : 3).toFixed(1), bestRating: '5', worstRating: '1', ratingCount: totalClaims } }) }} />
+  )}
 <main className="max-w-5xl mx-auto px-4 py-12 pt-24">
 <div className="mb-8">
 <Link href="/community" className="text-sm text-blue-600 hover:text-blue-700 mb-3 inline-block">
