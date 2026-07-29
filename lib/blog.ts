@@ -12,6 +12,49 @@ export interface BlogPost {
 
               export const blogPosts: BlogPost[] = [
   {
+    slug: 'your-first-week-in-a-new-home-start-documenting-now',
+    title: 'Your First Week in a New Home: Start Documenting Now',
+    excerpt: 'The most valuable warranty documentation you will ever create happens in your first days, before daily life adds its own wear. Here is how to start on day one.',
+    date: 'September 22, 2026',
+    category: 'Warranty Guide',
+    readMinutes: 6,
+    content: `
+## The Clock Starts the Day You Get the Keys
+
+Most new homeowners think about their builder warranty for the first time around month eleven, when someone mentions the coverage is about to expire. By then, the single most valuable thing you could have done is already behind you: capturing what your home looked like the day you moved in.
+
+Your warranty coverage runs for a full year from closing, but the quality of your claims depends on documentation you can only create early. The day after move-in is not too soon to start. It is exactly the right time.
+
+## Why the First Week Matters More Than Any Other
+
+A warranty claim is really an argument about two things: whether a defect exists, and whether it existed during the coverage period. Documentation settles both. When you photograph your home in its as-delivered condition, before furniture, before scuffs, before a year of normal living, you create a clean baseline. Six months later, when a hairline crack appears above a doorway or a floorboard starts to lift, that baseline is what proves the problem is a defect and not something you caused.
+
+Wait until month eleven and you are reconstructing a year from memory. Start in week one and you are simply adding to a record that already exists.
+
+## What to Capture in Your First Days
+
+**A full walkthrough of every room.** Wide shots of each space plus close-ups of anything that already looks off: gaps in trim, uneven paint, doors that stick, windows that do not seal. Date every photo.
+
+**The systems.** Photograph the furnace, water heater, electrical panel, and any visible plumbing. Note model numbers. These fall under longer warranty tiers, and a baseline now helps later.
+
+**The exterior.** Walk the perimeter. Photograph the roofline, siding, grading, and any early signs of settling or drainage issues.
+
+**Your paperwork.** Save your closing documents, warranty booklet, and the builder's warranty contact in one place, so filing a claim later is a two-minute task instead of a scavenger hunt.
+
+## Build the Habit, Not Just the Baseline
+
+The baseline is the start. The homeowners who get the most out of their warranty are the ones who log each issue as it appears throughout the year, rather than saving them all for a single end-of-year scramble. A defect logged with a date the week you noticed it is far stronger evidence than the same defect described from memory eleven months later.
+
+This is also where your neighbors matter. Buyers in the same subdivision, built by the same crews, tend to hit the same defects. Comparing notes early means you catch problems in your own home sooner, and shared issues get prioritized faster by the builder.
+
+## How Oluso Helps From Day One
+
+Oluso is a free app designed to be opened the day after you move in, not the month before your warranty expires. You log each issue with dated photos, keep your builder's warranty contact and documents in one place, submit claims directly to the warranty rep, and track every response with reminders when the builder goes quiet. With permission, you can also see which neighbors share the same open defect.
+
+The point is simple: your warranty is only as strong as what you documented while it was active. Start the day after you get the keys, and you will never be reconstructing your first year from memory.
+`
+  },
+  {
     slug: 'what-to-do-with-your-11-month-inspection-report',
     title: 'What to Do With Your 11-Month Inspection Report Before Your Warranty Expires',
     excerpt: 'You paid for an 11-month inspection and got a report full of defects. Here is exactly how to turn that list into documented, submitted warranty claims before your one-year coverage runs out.',
