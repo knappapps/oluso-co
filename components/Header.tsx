@@ -116,7 +116,7 @@ export default function Header({ publicNav = false }: { publicNav?: boolean } = 
   const nav = (publicNav && !user) ? fullNav.filter((item) => item.href === '/blog' || item.href === '/partners') : fullNav
 
   // Mobile: for logged-in users, keep Dashboard top-level and group the rest under a
-  // collapsible "Resources" section so the phone menu stays focused on claim tracking.
+  // collapsible "More" section so the phone menu stays focused on claim tracking.
   const mobileGrouped = fullNav.filter((item) => item.href !== '/dashboard')
 
   return (
@@ -224,10 +224,10 @@ export default function Header({ publicNav = false }: { publicNav?: boolean } = 
                 className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${pathname === '/dashboard' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'}`}>
                 <LayoutDashboard size={16} /> Dashboard
               </Link>
-              {/* Collapsible Resources group holds the secondary destinations */}
+              {/* Collapsible group holds the secondary destinations */}
               <button onClick={() => setResourcesOpen(v => !v)}
                 className="flex items-center justify-between w-full gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100">
-                <span className="flex items-center gap-2"><HelpCircle size={16} /> Resources</span>
+                <span className="flex items-center gap-2"><HelpCircle size={16} /> More</span>
                 <ChevronDown size={16} className={`transition-transform ${resourcesOpen ? 'rotate-180' : ''}`} />
               </button>
               {resourcesOpen && (
