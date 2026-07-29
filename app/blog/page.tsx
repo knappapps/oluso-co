@@ -5,6 +5,41 @@ import type { Metadata } from 'next'
 
 const posts = [
   {
+    slug: 'plumbing-warranty-claims-new-construction',
+    title: 'Plumbing Warranty Claims: Leaks, Pressure, and Water Quality in a New Home',
+    excerpt: 'Plumbing defects can stay hidden inside walls until they cause real damage. Here is what your warranty covers, what to watch for, and how to document a plumbing claim.',
+    date: 'August 11, 2026',
+    category: 'Documentation'
+  },
+  {
+    slug: 'understanding-arbitration-clauses-new-home-contracts',
+    title: 'Understanding Arbitration Clauses in Your New Home Purchase Contract',
+    excerpt: 'Most new home contracts require disputes to go through binding arbitration instead of court. Here is what that means for your warranty claims and why you should read the clause before you sign.',
+    date: 'August 18, 2026',
+    category: 'Strategy'
+  },
+  {
+    slug: 'first-30-days-warranty-documentation-checklist',
+    title: 'The First 30 Days in Your New Home: A Warranty Documentation Checklist',
+    excerpt: 'The habits you build in your first month set up every warranty claim you may ever file. Here is a step-by-step checklist for documenting your new home from day one.',
+    date: 'August 25, 2026',
+    category: 'Warranty Guide'
+  },
+  {
+    slug: 'electrical-warranty-issues-new-construction',
+    title: 'Electrical Warranty Issues in New Construction: What to Watch For',
+    excerpt: 'Electrical defects range from minor nuisances to genuine safety hazards. Here is what falls under your warranty, what warning signs matter, and when to act immediately.',
+    date: 'September 1, 2026',
+    category: 'Warranty Guide'
+  },
+  {
+    slug: 'best-time-to-buy-new-construction-warranty-data',
+    title: 'What Warranty Claim Data Reveals About the Best Time to Buy New Construction',
+    excerpt: 'Homes built during certain periods show different defect patterns than others. Here is what warranty claim data suggests about how build timing can affect quality.',
+    date: 'September 8, 2026',
+    category: 'Data & Insights'
+  },
+  {
     slug: 'understanding-builder-warranty',
     title: 'Understanding Your New Home Builder Warranty',
     excerpt: 'Most new home warranties have strict timelines. Here is what you need to know about what is covered and for how long — before your clock runs out.',
