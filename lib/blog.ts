@@ -11,6 +11,51 @@ export interface BlogPost {
               }
 
               export const blogPosts: BlogPost[] = [
+  {
+    slug: 'what-to-do-with-your-11-month-inspection-report',
+    title: 'What to Do With Your 11-Month Inspection Report Before Your Warranty Expires',
+    excerpt: 'You paid for an 11-month inspection and got a report full of defects. Here is exactly how to turn that list into documented, submitted warranty claims before your one-year coverage runs out.',
+    date: 'September 15, 2026',
+    category: 'Warranty Guide',
+    readMinutes: 7,
+    content: `
+## The Report Is a Starting Line, Not a Finish Line
+
+Scheduling an 11-month inspection is one of the smartest moves a new homeowner can make. A good inspector will hand you a detailed report listing every defect they found, from cosmetic drywall cracks to genuine mechanical problems. But the report itself does not fix anything, and it does not file a claim. It is raw material. What you do with it in the weeks that follow determines whether those items get repaired on the builder's dime or become your problem after coverage expires.
+
+The clock is the reason this matters. Most new-home warranties give you only twelve months of workmanship and materials coverage. If your inspection happened in month eleven, you have a narrow window to convert that report into formal, submitted claims before the builder can decline everything as out of warranty.
+
+## Step 1: Sort the Report by Warranty Tier
+
+Not every item in an inspection report is covered the same way. New-home warranties are typically tiered: a one-year workmanship and materials period, a two-year period for mechanical systems like plumbing, electrical, and HVAC, and a ten-year structural period. Go through the report and tag each finding with the tier it likely falls under.
+
+This matters because the one-year items are the urgent ones. A loose outlet cover or a poorly caulked window is a workmanship item that expires in weeks. A slow-draining fixture might fall under the two-year mechanical window and give you more time. Sorting first means you spend your limited days on the claims that are about to disappear.
+
+## Step 2: Translate Inspector Language Into Claim Language
+
+Inspectors write for accuracy, not for warranty departments. A report might say "efflorescence observed on north foundation wall, moisture intrusion possible." A builder's warranty rep wants to know the room, the exact location, when you first noticed it, and what you are asking them to do. Rewrite each finding as a plain, specific claim: what the defect is, where it is, and the repair you expect.
+
+Attach the inspector's photo for each item, and add your own dated photos if the condition has changed. Documentation with dates is what moves builders, because it removes the argument about whether the problem existed during the coverage period.
+
+## Step 3: Submit as a Single Organized Batch
+
+Resist the urge to email defects one at a time as you read the report. A scattered stream of messages is easy for a warranty department to lose or slow-walk. Instead, submit one organized claim package that lists every item, grouped by area or system, each with its description, location, and photo. A single dated submission also creates one clean timestamp proving you reported everything inside the coverage window.
+
+Keep a copy of exactly what you sent and the date you sent it. If the builder later claims an item was never reported, your batch submission is the record that settles it.
+
+## Step 4: Track the Follow-Up and Escalate Patterns
+
+Submitting is not the end. Builders often acknowledge a claim and then go quiet. Track each item's status: acknowledged, scheduled, repaired, or ignored. When an item stalls, a dated follow-up referencing your original submission keeps the pressure on and keeps the paper trail intact.
+
+One underused tactic: compare notes with your neighbors. Buyers in the same subdivision, built by the same crews, frequently share the same defects. Builders tend to prioritize a pattern across several homes far faster than a single complaint, so a shared issue is worth raising together.
+
+## How Oluso Helps
+
+Oluso is a free app built for exactly this workflow. You log each item from your inspection report with photos, submit it to your builder's warranty rep, and track the back-and-forth in one place, with reminders when the builder goes quiet. You can also see, with permission, which of your neighbors have the same open defect, so shared problems get the attention they deserve.
+
+If you have an inspection report sitting in your inbox and a warranty deadline coming up, the worst thing you can do is nothing. Turn the report into claims, submit them as a batch, and keep the record. Your coverage is only as good as what you document before it expires.
+`
+  },
                   {
     slug: 'plumbing-warranty-claims-new-construction',
     title: 'Plumbing Warranty Claims: Leaks, Pressure, and Water Quality in a New Home',
