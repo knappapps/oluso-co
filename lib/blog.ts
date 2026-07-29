@@ -11,6 +11,229 @@ export interface BlogPost {
               }
 
               export const blogPosts: BlogPost[] = [
+                  {
+    slug: 'plumbing-warranty-claims-new-construction',
+    title: 'Plumbing Warranty Claims: Leaks, Pressure, and Water Quality in a New Home',
+    excerpt: 'Plumbing defects can stay hidden inside walls until they cause real damage. Here is what your warranty covers, what to watch for, and how to document a plumbing claim.',
+    date: 'August 11, 2026',
+    category: 'Documentation',
+    readMinutes: 6,
+    content: `
+## Plumbing Defects Hide Until They Do Not
+
+Plumbing is one of the few home systems that runs almost entirely out of sight, inside walls, under slabs, and above ceilings. That invisibility is exactly why plumbing defects are so often caught late, after a slow leak has already damaged framing, drywall, or flooring.
+
+In most states, including Utah, plumbing systems fall under the two-year mechanical systems warranty rather than the one-year workmanship period. That gives homeowners a longer window to catch defects, but only if they know what to look for.
+
+## Common Plumbing Defects in New Construction
+
+**Slow or hidden leaks**
+A fitting that was not fully tightened, a supply line pinched during installation, or a poorly soldered joint can weep slowly for months. The first visible sign is often a stain on a ceiling or the base of a wall, long after the leak began.
+
+**Low or uneven water pressure**
+Pressure that is weak throughout the home, or noticeably weaker at certain fixtures, can indicate undersized supply lines, a partially closed valve left over from construction, or debris in the lines.
+
+**Drainage and venting problems**
+Slow drains, gurgling sounds, or sewer odors often point to improper drain slope or venting defects. These are workmanship issues that will not resolve on their own.
+
+**Water heater installation defects**
+An improperly sized, incorrectly vented, or poorly connected water heater is a builder responsibility when the defect stems from installation rather than the appliance itself.
+
+**Water quality issues**
+Discolored water, a persistent metallic taste, or sediment at fixtures can indicate debris left in the lines during construction or a defect in how the system was flushed and commissioned.
+
+## How to Document a Plumbing Claim
+
+Because plumbing defects are often intermittent, documentation matters even more than usual. Photograph any staining or moisture and note the exact date. If a leak is active, capture video showing the water. Record whether the problem is constant or tied to specific use, such as running a particular fixture or the dishwasher.
+
+For pressure or water quality issues, a written assessment from a licensed plumber carries significant weight and helps distinguish an installation defect from normal variation.
+
+## Do Not Wait on a Suspected Leak
+
+Water damage compounds quickly. A defect that would have been a simple fitting repair can become a mold remediation and framing replacement project within a single season. If you suspect a plumbing defect, report it in writing immediately, even if the visible symptom seems minor.
+
+**Plumbing coverage usually runs two years. Use every month of it, and never sit on a suspected leak.**
+`.trim()
+  },
+  {
+    slug: 'understanding-arbitration-clauses-new-home-contracts',
+    title: 'Understanding Arbitration Clauses in Your New Home Purchase Contract',
+    excerpt: 'Most new home contracts require disputes to go through binding arbitration instead of court. Here is what that means for your warranty claims and why you should read the clause before you sign.',
+    date: 'August 18, 2026',
+    category: 'Strategy',
+    readMinutes: 6,
+    content: `
+## The Clause Most Buyers Never Read
+
+Buried in nearly every new home purchase contract is a mandatory arbitration clause. It is easy to skim past during the flurry of closing paperwork, but it fundamentally shapes what you can do if a warranty dispute ever arises. Understanding it before you sign is far better than discovering its terms in the middle of a dispute.
+
+## What an Arbitration Clause Actually Does
+
+A binding arbitration clause means that if you and the builder cannot resolve a dispute, you generally cannot take the builder to court. Instead, the dispute is decided by a private arbitrator whose decision is final and binding, with very limited grounds for appeal.
+
+Arbitration is not inherently bad for homeowners. It is often faster and less expensive than litigation. But it is a different process with different rules, and it removes options a homeowner might otherwise have, including a jury trial and, in many clauses, the ability to join with other affected homeowners in a class action.
+
+## Key Terms to Look For
+
+**Which organization administers it**
+Most clauses name a specific arbitration provider such as the American Arbitration Association or JAMS. Each has its own procedural rules and fee structures worth reviewing.
+
+**Who pays the costs**
+Arbitration filing and arbitrator fees can be substantial. Some clauses split costs, others assign them to the losing party, and the details matter for smaller claims where fees could exceed the value in dispute.
+
+**Whether it waives class actions**
+Many clauses require you to bring claims individually. If a defect turns out to be common across an entire subdivision, this limits collective action.
+
+**Carve-outs**
+Some clauses exempt certain claims, such as those below a dollar threshold, allowing them to go to small claims court instead.
+
+## Why It Matters for Warranty Claims
+
+Because arbitration is often the only formal path available, the quality of your documentation becomes even more decisive. An arbitrator will weigh evidence: timestamped reports, photographs, third-party assessments, and a clear timeline of the builder's response. The homeowner who arrives with an organized evidence file is in a far stronger position than one relying on recollection.
+
+## What to Do Before You Sign
+
+Read the arbitration clause in full, and do not hesitate to ask questions or have an attorney review it. You generally cannot negotiate it away, but understanding its terms lets you plan your documentation strategy from day one, knowing exactly what process a dispute would follow.
+
+**Arbitration is the path most warranty disputes will take. Know the rules of that path before you ever need them.**
+`.trim()
+  },
+  {
+    slug: 'first-30-days-warranty-documentation-checklist',
+    title: 'The First 30 Days in Your New Home: A Warranty Documentation Checklist',
+    excerpt: 'The habits you build in your first month set up every warranty claim you may ever file. Here is a step-by-step checklist for documenting your new home from day one.',
+    date: 'August 25, 2026',
+    category: 'Warranty Guide',
+    readMinutes: 5,
+    content: `
+## Your First Month Sets the Baseline
+
+The single most valuable documentation you will ever create is a record of your home in its as-delivered condition. In your first 30 days, before daily life adds its own wear and marks, you have a clean baseline that makes every future warranty claim easier to prove.
+
+This checklist walks through what to capture and when.
+
+## Week 1: The Full Baseline Record
+
+**Photograph every room.** Take a wide shot of each room and close-ups of anything that already looks off. Keep original files with their timestamps intact.
+
+**Photograph the full exterior perimeter.** Walk around the house and capture siding, trim, the roofline from the ground, the driveway, and the grading around the foundation.
+
+**Record your systems.** Photograph the furnace, water heater, and electrical panel, including any labels and model numbers. Note the HVAC filter condition and change date.
+
+**Save all closing paperwork digitally.** Scan or photograph your warranty document, the purchase contract, and any walkthrough punch list, and back them up somewhere outside your phone.
+
+## Week 2: Test Everything
+
+**Run every fixture.** Test water pressure and temperature at every faucet, shower, and tub. Look under every sink for moisture.
+
+**Test every outlet and switch.** Confirm each one works, and test that GFCI outlets trip and reset properly.
+
+**Operate every window and door.** Open, close, and latch each one, noting anything that sticks or does not seal.
+
+**Run the HVAC in each mode.** Confirm the system reaches the set temperature in every zone.
+
+## Weeks 3 and 4: Establish Your System
+
+**Create a claim folder structure.** Set up one folder per issue rather than a single catch-all, so each potential claim stays self-contained.
+
+**Report anything you have found, in writing.** Do not wait to batch issues. Report each defect as you confirm it, with photos and the date of discovery.
+
+**Set a reminder for month 11.** Schedule your third-party inspection now, while it is on your mind, so you do not miss the end of the first-year workmanship window.
+
+## Why This Front-Loaded Effort Pays Off
+
+A few hours of documentation in your first month creates a reference record you can point to for years. When a builder questions whether a defect existed at delivery or appeared later, your dated baseline answers the question before it becomes an argument.
+
+**Document the home the way it was delivered. That baseline is the foundation of every claim that follows.**
+`.trim()
+  },
+  {
+    slug: 'electrical-warranty-issues-new-construction',
+    title: 'Electrical Warranty Issues in New Construction: What to Watch For',
+    excerpt: 'Electrical defects range from minor nuisances to genuine safety hazards. Here is what falls under your warranty, what warning signs matter, and when to act immediately.',
+    date: 'September 1, 2026',
+    category: 'Warranty Guide',
+    readMinutes: 5,
+    content: `
+## Electrical Defects Deserve Extra Attention
+
+Most warranty defects are questions of cost and comfort. Electrical defects can be those things too, but some are genuine safety hazards, which makes them a category worth understanding carefully. In most states, electrical systems fall under the two-year mechanical systems warranty, giving homeowners a meaningful window to catch installation defects.
+
+## Common Electrical Defects in New Homes
+
+**Dead or miswired outlets**
+An outlet that does not work, or one wired with reversed polarity, points to an installation error. Reversed polarity in particular can be a shock and fire risk and should be corrected promptly.
+
+**Breakers that trip repeatedly**
+A breaker that trips under normal load may indicate an overloaded circuit or an undersized wire for the load it serves. This is a design or installation issue, not something a homeowner should simply reset and ignore.
+
+**GFCI and AFCI problems**
+Ground-fault outlets in kitchens, bathrooms, and exteriors, and arc-fault breakers in living areas, are code-required safety devices. Ones that will not reset, or that trip constantly, indicate either a wiring fault or a defective device.
+
+**Flickering or dimming lights**
+Lights that flicker or dim when appliances turn on can signal loose connections or an issue at the panel, both of which warrant a licensed electrician's assessment.
+
+**Panel and labeling defects**
+An improperly labeled panel, loose connections, or a panel that was not installed to specification are builder responsibilities and can be safety concerns.
+
+## When to Act Immediately
+
+Most warranty issues can follow the normal documentation-then-report rhythm. Electrical issues are the exception when safety is involved. A burning smell, warm or discolored outlets or switch plates, sparking, or repeated unexplained breaker trips warrant immediate attention from a licensed electrician, not a wait-and-see approach. Document the issue, but do not let documentation delay addressing a genuine hazard.
+
+## How to Document Electrical Claims
+
+Note exactly which outlet, switch, fixture, or circuit is affected and what the symptom is. Photograph any visible discoloration or damage. For intermittent issues, record the conditions that trigger them, such as a specific appliance turning on. A licensed electrician's written report is often the deciding piece of evidence, both because it confirms the defect and because it distinguishes an installation error from later homeowner modifications.
+
+## Reporting
+
+File electrical claims in writing with the date of first observation, the symptoms, photos, and any electrician's assessment. For anything involving a potential safety hazard, note that clearly in your report so the builder understands the urgency.
+
+**Treat electrical defects seriously. Document like any other claim, but never let a genuine safety hazard wait on paperwork.**
+`.trim()
+  },
+  {
+    slug: 'best-time-to-buy-new-construction-warranty-data',
+    title: 'What Warranty Claim Data Reveals About the Best Time to Buy New Construction',
+    excerpt: 'Homes built during certain periods show different defect patterns than others. Here is what warranty claim data suggests about how build timing can affect quality.',
+    date: 'September 8, 2026',
+    category: 'Data & Insights',
+    readMinutes: 5,
+    content: `
+## Build Timing Is a Variable Buyers Rarely Consider
+
+When evaluating a new construction home, buyers weigh location, price, floor plan, and builder reputation. One variable that rarely enters the conversation is when the home was actually built. Yet warranty claim data suggests that build timing can correlate with defect patterns in ways worth understanding.
+
+## Why Timing Can Matter
+
+New home construction quality is not constant throughout the year or across market conditions. Several factors tied to timing can influence how carefully a home is built.
+
+**Peak-season volume**
+During spring and summer, builders often work at maximum capacity. Crews are stretched, subcontractors are juggling multiple sites, and schedules are compressed. Homes completed during the busiest stretch of the building season sometimes show higher rates of workmanship defects than those built during slower periods.
+
+**Weather during construction**
+A home framed or finished during extreme weather can face challenges that a home built in mild conditions does not. Materials installed in very wet or very cold conditions may behave differently over time.
+
+**Market pressure**
+When demand is high and builders are racing to close as many homes as possible, the pressure to finish quickly can work against careful workmanship. Slower markets sometimes see more deliberate building paces.
+
+## What the Claim Patterns Suggest
+
+Aggregated warranty data tends to show that cosmetic and workmanship claims cluster more heavily among homes completed during peak-volume periods, while structural claims are distributed more evenly, since they depend more on soil, design, and foundation work than on crew scheduling.
+
+None of this means a home built in peak season is a bad home. Plenty of high-quality homes are completed in the busiest months. It simply means build timing is one more signal a buyer can factor in, and one more reason to inspect thoroughly regardless of when a home was finished.
+
+## How to Use This as a Buyer
+
+Ask when the home was completed and, if possible, how long the build took. A home rushed to completion in an unusually short window during peak season deserves an especially careful inspection. Whenever the home was built, an independent inspection before closing remains the most reliable way to surface defects that timing alone cannot predict.
+
+## The Broader Point
+
+Warranty data is most valuable not for making absolute rules but for revealing patterns that help buyers ask better questions. Build timing is a useful lens, but it never replaces the fundamentals: research the builder, inspect the home, and document from day one.
+
+**Build timing is a signal, not a verdict. Use it to inspect smarter, not to judge a home before you have seen it.**
+`.trim()
+  },
+
                 {
                     slug: 'understanding-builder-warranty',
                         title: 'Understanding Your New Home Builder Warranty',
