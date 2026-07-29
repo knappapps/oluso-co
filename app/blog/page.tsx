@@ -5,6 +5,13 @@ import type { Metadata } from 'next'
 
 const posts = [
   {
+    slug: 'what-to-do-with-your-11-month-inspection-report',
+    title: 'What to Do With Your 11-Month Inspection Report Before Your Warranty Expires',
+    excerpt: 'You paid for an 11-month inspection and got a report full of defects. Here is exactly how to turn that list into documented, submitted warranty claims before your one-year coverage runs out.',
+    date: 'September 15, 2026',
+    category: 'Warranty Guide'
+  },
+  {
     slug: 'plumbing-warranty-claims-new-construction',
     title: 'Plumbing Warranty Claims: Leaks, Pressure, and Water Quality in a New Home',
     excerpt: 'Plumbing defects can stay hidden inside walls until they cause real damage. Here is what your warranty covers, what to watch for, and how to document a plumbing claim.',
