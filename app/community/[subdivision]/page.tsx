@@ -4,6 +4,7 @@ import { Building2, MapPin, Clock, CheckCircle, AlertCircle, Users, TrendingUp }
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Header from '@/components/Header'
+import ShareNeighbors from './ShareNeighbors'
 
 const supabaseAdmin = createClient(
 process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -61,6 +62,7 @@ const respStats = stats.filter((s: any) => s.days_to_first_response != null)
 const avgResponse = respStats.length
 ? respStats.reduce((a: number, b: any) => a + (b.days_to_first_response || 0), 0) / respStats.length
 : 0
+const resolutionRate = totalClaims > 0 ? Math.round((resolved / totalClaims) * 100) : 0
 
 // Builder name from first story
 const builderName = stats.length > 0 ? (stats[0] as any).users?.builder_name : null
@@ -73,9 +75,9 @@ const topCategories = Object.entries(catCounts).sort((a, b) => b[1] - a[1]).slic
 return (
 <div className="min-h-screen bg-gray-50">
 <Header />
-  {totalClaims >= 3 && (
-  <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: builderName || subdivisionName, aggregateRating: { '@type': 'AggregateRating', ratingValue: (totalClaims > 0 ? (resolved / totalClaims) * 4 + 1 : 3).toFixed(1), bestRating: '5', worstRating: '1', ratingCount: totalClaims } }) }} />
-  )}
+{totalClaims >= 3 && (
+<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: builderName || subdivisionName, aggregateRating: { '@type': 'AggregateRating', ratingValue: (totalClaims > 0 ? (resolved / totalClaims) * 4 + 1 : 3).toFixed(1), bestRating: '5', worstRating: '1', ratingCount: totalClaims } }) }} />
+)}
 <main className="max-w-5xl mx-auto px-4 py-12 pt-24">
 <div className="mb-8">
 <Link href="/community" className="text-sm text-blue-600 hover:text-blue-700 mb-3 inline-block">
@@ -106,6 +108,15 @@ return (
 </div>
 ))}
 </div>
+{totalClaims > 0 && (
+<ShareNeighbors
+subdivisionName={subdivisionName}
+builderName={builderName}
+totalClaims={totalClaims}
+resolutionRate={resolutionRate}
+shareUrl={`https://oluso.co/community/${params.subdivision}`}
+/>
+)}
 {topCategories.length > 0 && (
 <div className="bg-white rounded-xl border border-gray-200 p-5 mb-8">
 <h2 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">Common Issues</h2>
