@@ -6,7 +6,9 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_KEY!
 )
 
-export const revalidate = 3600
+// Render on every request so newly ingested news appears without waiting
+// for the ISR cache window to expire.
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Industry News | Oluso',
