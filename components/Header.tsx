@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Home, Menu, X, LogOut, User, LayoutDashboard, BookOpen, Users, HelpCircle, Building2, Bell, ShieldAlert } from 'lucide-react'
+import { Home, Menu, X, LogOut, User, LayoutDashboard, BookOpen, Users, HelpCircle, Building2, Bell, ShieldAlert, Handshake } from 'lucide-react'
 
 interface Notification {
   id: string
@@ -109,9 +109,10 @@ export default function Header({ publicNav = false }: { publicNav?: boolean } = 
     { href: '/builders', label: 'Builders', icon: Building2 },
     { href: '/blog', label: 'Blog', icon: BookOpen },
     { href: '/community', label: 'Community', icon: Users },
+    { href: '/partners', label: 'Partners', icon: Handshake },
     { href: '/resources', label: 'Resources', icon: HelpCircle },
   ]
-  const nav = (publicNav && !user) ? fullNav.filter((item) => item.href === '/blog') : fullNav
+  const nav = (publicNav && !user) ? fullNav.filter((item) => item.href === '/blog' || item.href === '/partners') : fullNav
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 h-16">
