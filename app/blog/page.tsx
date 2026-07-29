@@ -5,6 +5,13 @@ import type { Metadata } from 'next'
 
 const posts = [
   {
+    slug: 'your-first-week-in-a-new-home-start-documenting-now',
+    title: 'Your First Week in a New Home: Start Documenting Now',
+    excerpt: 'The most valuable warranty documentation you will ever create happens in your first days, before daily life adds its own wear. Here is how to start on day one.',
+    date: 'September 22, 2026',
+    category: 'Warranty Guide'
+  },
+  {
     slug: 'what-to-do-with-your-11-month-inspection-report',
     title: 'What to Do With Your 11-Month Inspection Report Before Your Warranty Expires',
     excerpt: 'You paid for an 11-month inspection and got a report full of defects. Here is exactly how to turn that list into documented, submitted warranty claims before your one-year coverage runs out.',
