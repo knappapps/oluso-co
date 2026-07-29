@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Home, Menu, X, LogOut, User, LayoutDashboard, BookOpen, Users, HelpCircle, Building2, Bell, ShieldAlert, Handshake } from 'lucide-react'
+import { Home, Menu, X, LogOut, User, LayoutDashboard, BookOpen, Users, HelpCircle, Building2, Bell, ShieldAlert, Handshake, ChevronDown } from 'lucide-react'
 
 interface Notification {
   id: string
@@ -19,6 +19,7 @@ export default function Header({ publicNav = false }: { publicNav?: boolean } = 
   const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [resourcesOpen, setResourcesOpen] = useState(false)
   const [user, setUser] = useState<{ email: string; name?: string; authId?: string } | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -113,6 +114,10 @@ export default function Header({ publicNav = false }: { publicNav?: boolean } = 
     { href: '/resources', label: 'Resources', icon: HelpCircle },
   ]
   const nav = (publicNav && !user) ? fullNav.filter((item) => item.href === '/blog' || item.href === '/partners') : fullNav
+
+  // Mobile: for logged-in users, keep Dashboard top-level and group the rest under a
+  // collapsible "Resources" section so the phone menu stays focused on claim tracking.
+  const mobileGrouped = fullNav.filter((item) => item.href !== '/dashboard')
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 h-16">
@@ -212,21 +217,36 @@ export default function Header({ publicNav = false }: { publicNav?: boolean } = 
       </div>
       {open && (
         <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg px-4 py-4 space-y-1">
-          {nav.map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href} onClick={() => setOpen(false)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${pathname === href ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'}`}>
-              <Icon size={16} /> {label}
-            </Link>
-          ))}
-          {isAdmin && (
-            <Link href="/admin" onClick={() => setOpen(false)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${pathname === '/admin' || pathname.startsWith('/admin/') ? 'bg-red-50 text-red-600' : 'text-red-500 hover:bg-red-50'}`}>
-              <ShieldAlert size={16} /> Admin
-            </Link>
-          )}
-          <div className="border-t border-gray-100 pt-3 mt-3">
-            {user ? (
-              <>
+          {user ? (
+            <>
+              {/* Dashboard stays top-level for quick claim access */}
+              <Link href="/dashboard" onClick={() => setOpen(false)}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${pathname === '/dashboard' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'}`}>
+                <LayoutDashboard size={16} /> Dashboard
+              </Link>
+              {/* Collapsible Resources group holds the secondary destinations */}
+              <button onClick={() => setResourcesOpen(v => !v)}
+                className="flex items-center justify-between w-full gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100">
+                <span className="flex items-center gap-2"><HelpCircle size={16} /> Resources</span>
+                <ChevronDown size={16} className={`transition-transform ${resourcesOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {resourcesOpen && (
+                <div className="pl-3 space-y-1">
+                  {mobileGrouped.map(({ href, label, icon: Icon }) => (
+                    <Link key={href} href={href} onClick={() => setOpen(false)}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${pathname === href ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}>
+                      <Icon size={16} /> {label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+              {isAdmin && (
+                <Link href="/admin" onClick={() => setOpen(false)}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${pathname === '/admin' || pathname.startsWith('/admin/') ? 'bg-red-50 text-red-600' : 'text-red-500 hover:bg-red-50'}`}>
+                  <ShieldAlert size={16} /> Admin
+                </Link>
+              )}
+              <div className="border-t border-gray-100 pt-3 mt-3">
                 {notifications.filter(n => !n.read).length > 0 && (
                   <div className="px-3 py-2 mb-1">
                     <p className="text-xs font-semibold text-gray-500 mb-1">Unread notifications</p>
@@ -242,14 +262,22 @@ export default function Header({ publicNav = false }: { publicNav?: boolean } = 
                 <button onClick={() => { signOut(); setOpen(false); }} className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
                   <LogOut size={16} /> Sign out
                 </button>
-              </>
-            ) : (
-              <>
+              </div>
+            </>
+          ) : (
+            <>
+              {nav.map(({ href, label, icon: Icon }) => (
+                <Link key={href} href={href} onClick={() => setOpen(false)}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium ${pathname === href ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'}`}>
+                  <Icon size={16} /> {label}
+                </Link>
+              ))}
+              <div className="border-t border-gray-100 pt-3 mt-3">
                 <Link href="/login" onClick={() => setOpen(false)} className="block px-3 py-2.5 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Sign in</Link>
                 <Link href="/signup" onClick={() => setOpen(false)} className="block px-3 py-2.5 rounded-lg text-sm bg-blue-600 text-white font-medium mt-1 text-center">Get started free</Link>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </header>
