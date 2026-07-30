@@ -30,7 +30,7 @@ export default function ForBuildersPage() {
             Oluso hosts public profiles for the top U.S. homebuilders, with company details, leadership, and official channels. We are building a way for builders to claim their profile and add their own side. Register your interest and we will reach out as claiming opens up.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/contact" className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
+            <Link href="/builderscontact" className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
               Register your interest
             </Link>
             <Link href="/homebuilders" className="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 transition">
@@ -80,7 +80,7 @@ export default function ForBuildersPage() {
           <Building2 className="mx-auto text-blue-600 mb-4" size={32} />
           <h2 className="text-2xl font-bold text-gray-900 mb-3">Want first access?</h2>
           <p className="text-gray-600 mb-6">Register your interest and we will reach out as claiming opens up.</p>
-          <Link href="/contact" className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
+          <Link href="/builderscontact" className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
             Register your interest
           </Link>
         </section>
