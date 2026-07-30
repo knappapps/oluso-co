@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Home, Menu, X, LogOut, User, LayoutDashboard, BookOpen, Users, HelpCircle, Building2, Bell, ShieldAlert, Handshake, ChevronDown } from 'lucide-react'
+import { Home, Menu, X, LogOut, User, LayoutDashboard, BookOpen, Users, HelpCircle, Building2, Bell, ShieldAlert, Handshake, ChevronDown, Mail } from 'lucide-react'
 
 interface Notification {
   id: string
@@ -113,8 +113,9 @@ export default function Header({ publicNav = false }: { publicNav?: boolean } = 
     { href: '/partners', label: 'Partners', icon: Handshake },
     { href: '/for-builders', label: 'For Builders', icon: Building2 },
     { href: '/resources', label: 'Resources', icon: HelpCircle },
+    { href: '/contact', label: 'Contact', icon: Mail },
   ]
-  const nav = (publicNav && !user) ? fullNav.filter((item) => item.href === '/blog' || item.href === '/partners' || item.href === '/for-builders') : fullNav
+  const nav = (publicNav && !user) ? fullNav.filter((item) => item.href === '/blog' || item.href === '/partners' || item.href === '/for-builders' || item.href === '/contact') : fullNav
 
   // Mobile: for logged-in users, keep Dashboard top-level and group the rest under a
   // collapsible "More" section so the phone menu stays focused on claim tracking.
