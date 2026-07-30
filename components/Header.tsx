@@ -111,9 +111,10 @@ export default function Header({ publicNav = false }: { publicNav?: boolean } = 
     { href: '/blog', label: 'Blog', icon: BookOpen },
     { href: '/community', label: 'Community', icon: Users },
     { href: '/partners', label: 'Partners', icon: Handshake },
+    { href: '/for-builders', label: 'For Builders', icon: Building2 },
     { href: '/resources', label: 'Resources', icon: HelpCircle },
   ]
-  const nav = (publicNav && !user) ? fullNav.filter((item) => item.href === '/blog' || item.href === '/partners') : fullNav
+  const nav = (publicNav && !user) ? fullNav.filter((item) => item.href === '/blog' || item.href === '/partners' || item.href === '/for-builders') : fullNav
 
   // Mobile: for logged-in users, keep Dashboard top-level and group the rest under a
   // collapsible "More" section so the phone menu stays focused on claim tracking.
