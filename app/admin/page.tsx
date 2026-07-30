@@ -10,6 +10,9 @@ import { ShieldAlert, Megaphone, Code, LayoutTemplate, Users, Search, ChevronDow
 interface Ad {
   id: string; sponsor_name: string; title: string; description: string; cta_text: string; link_url: string; bg_color: string; text_color: string; active: boolean; display_order: number; embed_html?: string
 }
+interface Partner {
+  id: string; name: string; area: string; type: 'inspection' | 'agent'; status: string; active: boolean; display_order: number
+}
 interface AdminUser {
   id: string; email: string; name: string | null; builder_name: string | null; community_name: string | null; plan: string; role: string | null; onboarding_complete: boolean; created_at: string; warranty_start: string | null; city?: string | null; state?: string | null; claim_count?: number
 }
@@ -185,6 +188,10 @@ export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [session, setSession] = useState<any>(null)
   const [tab, setTab] = useState('users')
+
+  // Partners
+  const [partners, setPartners] = useState<Partner[]>([])
+  const [partnerFormKey, setPartnerFormKey] = useState(0)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Ads
@@ -245,6 +252,11 @@ export default function AdminPage() {
       setAuthChecked(true)
     })
   }, [router])
+
+  const loadPartners = useCallback(async () => {
+    const { data } = await supabase.from('partners').select('*').order('type').order('display_order')
+    setPartners((data as Partner[]) || [])
+  }, [])
 
   const loadAds = useCallback(async () => {
     const { data } = await supabase.from('ads').select('*').order('display_order')
@@ -322,6 +334,7 @@ export default function AdminPage() {
   }, [session, builderDateRange, builderWarrantyYear])
 
   useEffect(() => { if (isAdmin) { loadAds(); loadUsers() } }, [isAdmin, loadAds, loadUsers])
+  useEffect(() => { if (isAdmin && tab === 'partners') { loadPartners() } }, [isAdmin, tab, loadPartners])
   useEffect(() => { if (isAdmin && tab === 'analytics' && !analytics) { loadAnalytics() } }, [isAdmin, tab, analytics, loadAnalytics])
   useEffect(() => { if (isAdmin && tab === 'data') { loadRollup() } }, [isAdmin, tab, loadRollup])
   useEffect(() => { if (isAdmin && tab === 'builder_reports' && session) { loadBuilderReport(session) } }, [isAdmin, tab, session])
@@ -415,6 +428,7 @@ export default function AdminPage() {
             { key: 'analytics', label: 'Analytics', icon: <BarChart2 size={14} /> },
             { key: 'data', label: 'Data', icon: <Database size={14} /> },
             { key: 'builder_reports', label: 'Builder Reports', icon: <Building2 size={14} /> },
+            { key: 'partners', label: 'Partners', icon: <Users size={14} /> },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium ${tab === t.key ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
               {t.icon}{t.label}
@@ -847,6 +861,51 @@ export default function AdminPage() {
               </div>
             )}
           </div>
+
+        {/* ── PARTNERS TAB ── */}
+        {tab === 'partners' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-semibold text-gray-800 flex items-center gap-2"><Users size={16} className="text-blue-500" /> Add Partner Profile</h3>
+              </div>
+              <form key={partnerFormKey} onSubmit={async (e) => {
+                e.preventDefault()
+                const f = e.currentTarget as HTMLFormElement; const fd = new FormData(f)
+                const { error } = await supabase.from('partners').insert({ name: fd.get('name') as string, area: fd.get('area') as string, type: fd.get('type') as string, status: (fd.get('status') as string) || 'Pending', display_order: parseInt(fd.get('display_order') as string) || 0, active: true })
+                if (!error) { f.reset(); setPartnerFormKey(k => k + 1); loadPartners(); setToast({ message: 'Partner added', type: 'success' }) } else setToast({ message: 'Error: ' + error.message, type: 'error' })
+              }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Name</label><input name="name" required placeholder="e.g. Owl Home Inspection" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+                <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Area</label><input name="area" required placeholder="e.g. South Jordan, Herriman, Lehi" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+                <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Type</label><select name="type" required className="border border-gray-200 rounded-lg px-3 py-2 text-sm"><option value="inspection">Inspection Partner</option><option value="agent">Agent Partner</option></select></div>
+                <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Status</label><input name="status" defaultValue="Pending" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+                <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Display Order</label><input name="display_order" type="number" defaultValue="0" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+                <div className="md:col-span-2"><button type="submit" className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Add Partner</button></div>
+              </form>
+            </div>
+            {(['inspection', 'agent'] as const).map(group => (
+              <div key={group} className="bg-white rounded-xl border border-gray-200">
+                <div className="px-5 py-4 border-b border-gray-100"><h3 className="font-semibold text-gray-800 capitalize">{group === 'inspection' ? 'Inspection Partners' : 'Agent Partners'} ({partners.filter(p => p.type === group).length})</h3></div>
+                <div className="divide-y divide-gray-50">
+                  {partners.filter(p => p.type === group).map(p => (
+                    <div key={p.id} className="px-5 py-4 flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                          <p className="font-medium text-gray-800 text-sm">{p.name}</p>
+                          <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{p.status}</span>
+                          <span className="text-xs text-gray-400">Order {p.display_order}</span>
+                        </div>
+                        <p className="text-xs text-gray-500">{p.area}</p>
+                      </div>
+                      <button onClick={async () => { if (!confirm('Delete this partner?')) return; await supabase.from('partners').delete().eq('id', p.id); loadPartners() }} className="px-3 py-1 text-xs rounded-lg bg-red-100 text-red-700 hover:bg-red-200 font-medium shrink-0">Delete</button>
+                    </div>
+                  ))}
+                  {partners.filter(p => p.type === group).length === 0 && <p className="text-center py-8 text-gray-400 text-sm">None yet. Add one above.</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         )}
 
       </div>
