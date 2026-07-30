@@ -5,6 +5,7 @@ import { ArrowLeft, ExternalLink, Building2, Users, Share2 } from 'lucide-react'
 import { getHomebuilderBySlug, getAllHomebuilderSlugs } from '@/lib/homebuilders-data'
 import type { Metadata } from 'next'
 import { NATIONAL_TO_UTAH_BUILDER_SLUG } from '@/lib/builder-crosslinks'
+import ClaimProfile from './ClaimProfile'
 
 export async function generateStaticParams() {
   return getAllHomebuilderSlugs().map(slug => ({ slug }))
@@ -116,6 +117,7 @@ export default function HomebuilderProfilePage({ params }: { params: { slug: str
             </div>
           </div>
         )}
+        <ClaimProfile builderSlug={builder.slug} builderName={builder.company} />
       </main>
     </div>
   )
