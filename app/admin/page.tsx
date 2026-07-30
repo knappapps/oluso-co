@@ -861,8 +861,9 @@ export default function AdminPage() {
               </div>
             )}
           </div>
+        )}
 
-        {/* ── PARTNERS TAB ── */}
+        {/* PARTNERS TAB */}
         {tab === 'partners' && (
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -871,9 +872,10 @@ export default function AdminPage() {
               </div>
               <form key={partnerFormKey} onSubmit={async (e) => {
                 e.preventDefault()
-                const f = e.currentTarget as HTMLFormElement; const fd = new FormData(f)
+                const f = e.currentTarget as HTMLFormElement
+                const fd = new FormData(f)
                 const { error } = await supabase.from('partners').insert({ name: fd.get('name') as string, area: fd.get('area') as string, type: fd.get('type') as string, status: (fd.get('status') as string) || 'Pending', display_order: parseInt(fd.get('display_order') as string) || 0, active: true })
-                if (!error) { f.reset(); setPartnerFormKey(k => k + 1); loadPartners(); setToast({ message: 'Partner added', type: 'success' }) } else setToast({ message: 'Error: ' + error.message, type: 'error' })
+                if (!error) { f.reset(); setPartnerFormKey(k => k + 1); loadPartners(); setToast({ message: 'Partner added', type: 'success' }) } else { setToast({ message: 'Error: ' + error.message, type: 'error' }) }
               }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Name</label><input name="name" required placeholder="e.g. Owl Home Inspection" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
                 <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Area</label><input name="area" required placeholder="e.g. South Jordan, Herriman, Lehi" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
@@ -883,29 +885,32 @@ export default function AdminPage() {
                 <div className="md:col-span-2"><button type="submit" className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Add Partner</button></div>
               </form>
             </div>
-            {(['inspection', 'agent'] as const).map(group => (
+            {['inspection', 'agent'].map(group => {
+              const list = partners.filter(p => p.type === group)
+              const heading = group === 'inspection' ? 'Inspection Partners' : 'Agent Partners'
+              return (
               <div key={group} className="bg-white rounded-xl border border-gray-200">
-                <div className="px-5 py-4 border-b border-gray-100"><h3 className="font-semibold text-gray-800 capitalize">{group === 'inspection' ? 'Inspection Partners' : 'Agent Partners'} ({partners.filter(p => p.type === group).length})</h3></div>
+                <div className="px-5 py-4 border-b border-gray-100"><h3 className="font-semibold text-gray-800">{heading + ' (' + list.length + ')'}</h3></div>
                 <div className="divide-y divide-gray-50">
-                  {partners.filter(p => p.type === group).map(p => (
+                  {list.map(p => (
                     <div key={p.id} className="px-5 py-4 flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                           <p className="font-medium text-gray-800 text-sm">{p.name}</p>
                           <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{p.status}</span>
-                          <span className="text-xs text-gray-400">Order {p.display_order}</span>
+                          <span className="text-xs text-gray-400">{'Order ' + p.display_order}</span>
                         </div>
                         <p className="text-xs text-gray-500">{p.area}</p>
                       </div>
                       <button onClick={async () => { if (!confirm('Delete this partner?')) return; await supabase.from('partners').delete().eq('id', p.id); loadPartners() }} className="px-3 py-1 text-xs rounded-lg bg-red-100 text-red-700 hover:bg-red-200 font-medium shrink-0">Delete</button>
                     </div>
                   ))}
-                  {partners.filter(p => p.type === group).length === 0 && <p className="text-center py-8 text-gray-400 text-sm">None yet. Add one above.</p>}
+                  {list.length === 0 && <p className="text-center py-8 text-gray-400 text-sm">None yet. Add one above.</p>}
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
-        )}
         )}
 
       </div>
