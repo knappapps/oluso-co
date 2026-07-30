@@ -11,7 +11,7 @@ interface Ad {
   id: string; sponsor_name: string; title: string; description: string; cta_text: string; link_url: string; bg_color: string; text_color: string; active: boolean; display_order: number; embed_html?: string
 }
 interface Partner {
-  id: string; name: string; area: string; type: 'inspection' | 'agent'; status: string; active: boolean; display_order: number
+  id: string; name: string; area: string; type: 'inspection' | 'agent'; status: string; email: string | null; phone: string | null; active: boolean; display_order: number
 }
 interface AdminUser {
   id: string; email: string; name: string | null; builder_name: string | null; community_name: string | null; plan: string; role: string | null; onboarding_complete: boolean; created_at: string; warranty_start: string | null; city?: string | null; state?: string | null; claim_count?: number
@@ -874,11 +874,13 @@ export default function AdminPage() {
                 e.preventDefault()
                 const f = e.currentTarget as HTMLFormElement
                 const fd = new FormData(f)
-                const { error } = await supabase.from('partners').insert({ name: fd.get('name') as string, area: fd.get('area') as string, type: fd.get('type') as string, status: (fd.get('status') as string) || 'Pending', display_order: parseInt(fd.get('display_order') as string) || 0, active: true })
+                const { error } = await supabase.from('partners').insert({ name: fd.get('name') as string, area: fd.get('area') as string, type: fd.get('type') as string, status: (fd.get('status') as string) || 'Pending', email: (fd.get('email') as string) || null, phone: (fd.get('phone') as string) || null, display_order: parseInt(fd.get('display_order') as string) || 0, active: true })
                 if (!error) { f.reset(); setPartnerFormKey(k => k + 1); loadPartners(); setToast({ message: 'Partner added', type: 'success' }) } else { setToast({ message: 'Error: ' + error.message, type: 'error' }) }
               }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Name</label><input name="name" required placeholder="e.g. Owl Home Inspection" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
                 <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Area</label><input name="area" required placeholder="e.g. South Jordan, Herriman, Lehi" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+                <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Email</label><input name="email" type="email" placeholder="e.g. hello@example.com" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
+                <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Phone</label><input name="phone" placeholder="e.g. (801) 555-0123" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
                 <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Type</label><select name="type" required className="border border-gray-200 rounded-lg px-3 py-2 text-sm"><option value="inspection">Inspection Partner</option><option value="agent">Agent Partner</option></select></div>
                 <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Status</label><input name="status" defaultValue="Pending" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
                 <div className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">Display Order</label><input name="display_order" type="number" defaultValue="0" className="border border-gray-200 rounded-lg px-3 py-2 text-sm" /></div>
@@ -901,6 +903,9 @@ export default function AdminPage() {
                           <span className="text-xs text-gray-400">{'Order ' + p.display_order}</span>
                         </div>
                         <p className="text-xs text-gray-500">{p.area}</p>
+                        {(p.email || p.phone) && (
+                          <p className="text-xs text-gray-400 mt-0.5">{[p.email, p.phone].filter(Boolean).join(' · ')}</p>
+                        )}
                       </div>
                       <button onClick={async () => { if (!confirm('Delete this partner?')) return; await supabase.from('partners').delete().eq('id', p.id); loadPartners() }} className="px-3 py-1 text-xs rounded-lg bg-red-100 text-red-700 hover:bg-red-200 font-medium shrink-0">Delete</button>
                     </div>
