@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Header from '@/components/Header'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { ShieldCheck, ClipboardCheck, Home, MapPin, ArrowRight } from 'lucide-react'
+import { ShieldCheck, ClipboardCheck, Home, MapPin, Mail, Phone, ArrowRight } from 'lucide-react'
 
 interface Partner {
   id: string
@@ -12,6 +12,8 @@ interface Partner {
   area: string
   type: 'inspection' | 'agent'
   status: string
+  email?: string
+  phone?: string
   display_order: number
 }
 
@@ -22,7 +24,7 @@ export default function PartnersClient() {
   useEffect(() => {
     supabase
       .from('partners')
-      .select('id, name, area, type, status, display_order')
+      .select('id, name, area, type, status, email, phone, display_order')
       .eq('active', true)
       .order('display_order', { ascending: true })
       .then(({ data }) => { setPartners((data as Partner[]) || []); setLoading(false) })
@@ -63,6 +65,20 @@ export default function PartnersClient() {
                       <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                         <MapPin size={12} /> {p.area}
                       </p>
+                      {(p.email || p.phone) && (
+                        <div className="mt-2 flex flex-col gap-0.5 text-sm text-gray-600">
+                          {p.email && (
+                            <a href={`mailto:${p.email}`} className="flex items-center gap-1 hover:text-blue-600">
+                              <Mail size={12} /> {p.email}
+                            </a>
+                          )}
+                          {p.phone && (
+                            <a href={`tel:${p.phone}`} className="flex items-center gap-1 hover:text-blue-600">
+                              <Phone size={12} /> {p.phone}
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-1 rounded-full whitespace-nowrap">{p.status}</span>
                   </div>
@@ -91,6 +107,20 @@ export default function PartnersClient() {
                       <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                         <MapPin size={12} /> {p.area}
                       </p>
+                      {(p.email || p.phone) && (
+                        <div className="mt-2 flex flex-col gap-0.5 text-sm text-gray-600">
+                          {p.email && (
+                            <a href={`mailto:${p.email}`} className="flex items-center gap-1 hover:text-blue-600">
+                              <Mail size={12} /> {p.email}
+                            </a>
+                          )}
+                          {p.phone && (
+                            <a href={`tel:${p.phone}`} className="flex items-center gap-1 hover:text-blue-600">
+                              <Phone size={12} /> {p.phone}
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-1 rounded-full whitespace-nowrap">{p.status}</span>
                   </div>
