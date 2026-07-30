@@ -137,7 +137,7 @@ export default function PartnersClient() {
             <p className="text-gray-600 text-sm mb-4 max-w-xl mx-auto">
               Are you a home inspector or real estate agent who works with new-construction buyers? Partner with Oluso to give your clients a free tool for documenting warranty issues, and get featured here. No fees, no rev-share.
             </p>
-            <Link href="/contact" className="inline-flex items-center gap-1 text-sm text-blue-600 font-medium hover:text-blue-700">
+            <Link href="/partnerscontact" className="inline-flex items-center gap-1 text-sm text-blue-600 font-medium hover:text-blue-700">
               Get in touch <ArrowRight size={14} />
             </Link>
           </section>
