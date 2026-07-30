@@ -9,9 +9,8 @@ export const metadata: Metadata = {
   alternates: { canonical: '/partners' },
 }
 
-// NOTE: Inspection partners are real Utah businesses identified as prospects.
-// They are listed as "pending" until each confirms the partnership.
-// Agent partners are placeholder examples to be replaced as agents sign on.
+// NOTE: Inspection and agent partners are real Utah businesses identified as prospects.
+// They are listed as "Pending" until each confirms the partnership.
 const inspectionPartners = [
   { name: 'Owl Home Inspection', area: 'South Jordan, Herriman, Lehi', status: 'Pending' },
   { name: 'Forward Inspections', area: 'Salt Lake, Utah & Wasatch Counties', status: 'Pending' },
@@ -22,9 +21,12 @@ const inspectionPartners = [
 ]
 
 const agentPartners = [
-  { name: 'Your Agency Name', area: 'Example: Utah County new construction', status: 'Example' },
-  { name: 'Example Realty Group', area: 'Example: Salt Lake Valley', status: 'Example' },
-  { name: 'Add Your Brokerage Here', area: 'Example: Wasatch Front', status: 'Example' },
+  { name: 'Zander Real Estate Team', area: 'South Jordan, Daybreak & Salt Lake Valley', status: 'Pending' },
+  { name: 'Becks Nielson Real Estate', area: 'South Jordan, Herriman & Daybreak', status: 'Pending' },
+  { name: 'Mike Anderson, Utah Valley Realtor', area: 'Eagle Mountain, Saratoga Springs, Lehi, Traverse Mountain', status: 'Pending' },
+  { name: 'Live in Daybreak (Johnny Hansen)', area: 'Daybreak new construction, Salt Lake Valley', status: 'Pending' },
+  { name: 'Brooke Mortensen, Watts Real Estate', area: 'Heber, Midway & Wasatch County', status: 'Pending' },
+  { name: 'BJ Christianson', area: 'Park City & Summit County', status: 'Pending' },
 ]
 
 export default function PartnersPage() {
@@ -74,19 +76,19 @@ export default function PartnersPage() {
               <h2 className="text-xl font-bold text-gray-900">Agent Partners</h2>
             </div>
             <p className="text-gray-500 text-sm mb-6">
-              New-construction buyer's agents who share Oluso with clients at closing as a free resource for protecting their new home. The profiles below are placeholders to be replaced as agents join.
+              New-construction buyer's agents who share Oluso with clients at closing as a free resource for protecting their new home.
             </p>
             <div className="space-y-4">
               {agentPartners.map(p => (
-                <div key={p.name} className="bg-white rounded-2xl border border-dashed border-gray-300 p-6">
+                <div key={p.name} className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-400">{p.name}</h3>
-                      <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
+                      <h3 className="text-lg font-semibold text-gray-900">{p.name}</h3>
+                      <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                         <MapPin size={12} /> {p.area}
                       </p>
                     </div>
-                    <span className="text-xs font-medium bg-gray-50 text-gray-400 px-2 py-1 rounded-full whitespace-nowrap">{p.status}</span>
+                    <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-1 rounded-full whitespace-nowrap">{p.status}</span>
                   </div>
                 </div>
               ))}
