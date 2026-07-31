@@ -43,6 +43,18 @@ exports.handler = async function (event) {
 
   const action = payload.action || 'list-statements'
 
+  // LIST all builders (for the admin picker when linking accounts).
+  if (action === 'list-builders') {
+    const { data, error } = await supabase
+      .from('builders')
+      .select('id, company, slug')
+      .order('company', { ascending: true })
+    if (error) {
+      return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Could not load builders' }) }
+    }
+    return { statusCode: 200, headers: CORS, body: JSON.stringify({ builders: data }) }
+  }
+
   // LIST all statements (optionally by status), joined with builder company/slug.
   if (action === 'list-statements') {
     let q = supabase
