@@ -32,6 +32,11 @@ export default function BuilderStatementsAdminPage() {
   const [error, setError] = useState<string | null>(null)
   const [linkEmail, setLinkEmail] = useState<Record<string, string>>({})
   const [linkMsg, setLinkMsg] = useState<Record<string, string>>({})
+  const [builders, setBuilders] = useState<{ id: string; company: string | null; slug: string | null }[]>([])
+  const [linkBuilderId, setLinkBuilderId] = useState('')
+  const [linkAcctEmail, setLinkAcctEmail] = useState('')
+  const [linkResult, setLinkResult] = useState<string | null>(null)
+  const [linking, setLinking] = useState(false)
 
   const call = useCallback(async (body: Record<string, unknown>) => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -89,6 +94,12 @@ export default function BuilderStatementsAdminPage() {
         return
       }
       setAuthorized(true)
+      call({ action: 'list-builders' }).then(async (res) => {
+        if (res && res.ok) {
+          const json = await res.json()
+          setBuilders(json.builders || [])
+        }
+      })
       load('pending')
     })
     return () => { active = false }
@@ -117,6 +128,23 @@ export default function BuilderStatementsAdminPage() {
       setLinkMsg({ ...linkMsg, [s.id]: 'Linked ' + (json.user?.email || email) + ' as builder.' })
     } else {
       setLinkMsg({ ...linkMsg, [s.id]: json.error || 'Could not link that account.' })
+    }
+  }
+
+  const linkStandalone = async () => {
+    const email = linkAcctEmail.trim()
+    if (!email || !linkBuilderId) return
+    setLinking(true)
+    setLinkResult(null)
+    const res = await call({ action: 'link-user', email, builder_id: linkBuilderId })
+    setLinking(false)
+    if (!res) return
+    const json = await res.json().catch(() => ({}))
+    if (res.ok) {
+      setLinkResult('Linked ' + (json.user?.email || email) + ' as builder.')
+      setLinkAcctEmail('')
+    } else {
+      setLinkResult(json.error || 'Could not link that account.')
     }
   }
 
@@ -149,6 +177,43 @@ export default function BuilderStatementsAdminPage() {
           profile until you publish it here. Use the link form to grant an existing
           signed-up account builder access.
         </p>
+
+        <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+          <h2 className="font-semibold text-slate-900 mb-1 flex items-center gap-2">
+            <Link2 className="w-4 h-4 text-blue-600" /> Link a builder account
+          </h2>
+          <p className="text-sm text-slate-500 mb-3">
+            Grant an existing signed-up account builder access to one profile. The
+            person must already have an Oluso account.
+          </p>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <select
+              value={linkBuilderId}
+              onChange={(e) => setLinkBuilderId(e.target.value)}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm bg-white"
+            >
+              <option value="">Select a builder…</option>
+              {builders.map((b) => (
+                <option key={b.id} value={b.id}>{b.company || b.slug || b.id}</option>
+              ))}
+            </select>
+            <input
+              type="email"
+              value={linkAcctEmail}
+              onChange={(e) => setLinkAcctEmail(e.target.value)}
+              placeholder="account@email.com"
+              className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm"
+            />
+            <button
+              disabled={linking || !linkBuilderId || !linkAcctEmail.trim()}
+              onClick={linkStandalone}
+              className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            >
+              <Link2 className="w-4 h-4" /> {linking ? 'Linking…' : 'Link account'}
+            </button>
+          </div>
+          {linkResult && <p className="text-xs text-slate-500 mt-2">{linkResult}</p>}
+        </div>
 
         <div className="flex items-center gap-2 mb-6">
           {STATUS_FILTERS.map((f) => (
