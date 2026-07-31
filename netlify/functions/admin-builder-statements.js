@@ -19,7 +19,7 @@ async function verifyAdmin(authHeader) {
   const { data: profile } = await supabase
     .from('users')
     .select('role')
-    .eq('id', user.id)
+    .eq('auth_id', user.id)
     .maybeSingle()
   return !!profile && profile.role === 'admin'
 }
