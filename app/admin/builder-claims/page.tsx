@@ -75,7 +75,7 @@ export default function BuilderClaimsAdminPage() {
       const { data: profile } = await supabase
         .from('users')
         .select('role')
-        .eq('id', session.user.id)
+        .eq('auth_id', session.user.id)
         .maybeSingle()
       if (!active) return
       if (!profile || profile.role !== 'admin') {
