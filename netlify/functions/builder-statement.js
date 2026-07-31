@@ -22,8 +22,8 @@ async function resolveBuilderUser(authHeader) {
   if (error || !user) return null
   const { data: profile } = await supabase
     .from('users')
-    .select('id, role, builder_id')
-    .eq('id', user.id)
+    .select('id, auth_id, role, builder_id')
+    .eq('auth_id', user.id)
     .maybeSingle()
   if (!profile || !profile.builder_id) return null
   return profile
